@@ -24,6 +24,11 @@ dependencies {
     // https://mvnrepository.com/artifact/gg.jte/jte
     implementation("gg.jte:jte:2.0.2")
     implementation("gg.jte:jte-kotlin:2.0.2")
+    // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
+    implementation("org.jetbrains.exposed:exposed:0.17.14")
+    // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.postgresql:postgresql:42.3.3")
 }
 
 tasks.test {

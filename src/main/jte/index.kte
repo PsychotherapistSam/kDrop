@@ -9,6 +9,10 @@ content = @`
     <h1>Hello World</h1>
     <p>This is a simple example of a JTE page.</p>
     <a class="ui green button">Buttons also work :D</a>
+    <div class="ui segment">
+        <p>The first user is: ${page.firstUser.name}, they registered
+            on ${page.firstUser.registrationDate.toLocalDate().toString()}</p>
+    </div>
 `
 )
 
