@@ -1,0 +1,39 @@
+@import de.sam.base.Page
+@import gg.jte.Content
+
+@param page: Page
+@param content: Content
+@param footer: Content? = null
+<html lang="en">
+<head>
+    <!-- Standard Meta -->
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    @if(page.pageDescription != null)
+        <meta name="description" content="${page.pageDescription}">
+    @endif
+
+
+    <title>${page.pageTitle}</title>
+
+    <!-- You MUST include jQuery before Fomantic -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+
+</head>
+<body>
+<div class="full height">
+    @template.layout.navbar(page)
+    <div class="ui container">
+        <div class="ui basic fitted segment">
+            ${content}
+        </div>
+    </div>
+</div>
+
+@template.layout.footer(page)
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+@import de.sam.base.pages.IndexPage
+
+@param page: IndexPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <br>
+    <h1>Hello World</h1>
+    <p>This is a simple example of a JTE page.</p>
+    <a class="ui green button">Buttons also work :D</a>
+`
+)
+

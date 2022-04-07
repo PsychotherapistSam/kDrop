@@ -1,0 +1,228 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.IndexPage
+@import de.sam.base.users.UserRoles
+
+@param page: Page
+
+<!--Start: Nav  -->
+<div class="ui medium borderless menu">
+    <div class="ui container grid">
+        <!--Start: Desktop Nav-->
+        <div class="computer only row">
+            <a class="header item" href="/">Base Template</a>
+            <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Home</a>
+            <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+            <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+
+            <div class="right menu">
+                @if(page.user != null)
+                    <div class="ui search item">
+                        <div class="ui transparent left icon input">
+                            <input class="prompt" type="text" placeholder="Search creators..."/>
+                            <i class="search icon"></i>
+                        </div>
+                    </div>
+
+                    @if(page.user.sortedRoles.first().powerLevel > 1)
+                        <a class="disabled item">
+                            <div class="ui ${page.user.sortedRoles.first().color} label">
+                                ${page.user.sortedRoles.first().name}
+                            </div>
+                        </a>
+                    @endif
+
+                    <div class="ui dropdown item">
+                        ${page.user.name}<i class="dropdown icon"></i>
+                        <div class="menu">
+                            <div class="header">
+                                Signed in as ${page.user.name}
+                            </div>
+                            <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
+                                <i class="settings icon"></i>
+                                Settings
+                            </a>
+                            <div class="divider"></div>
+                            @if(page.user.sortedRoles.first().powerLevel >= UserRoles.ADMIN.powerLevel)
+                                <div class="header">
+                                    Administration
+                                </div>
+                                <div class="item">
+                                    <i class="terminal icon"></i>
+                                    Console
+                                </div>
+                                <a class="@if(page.name == "users") active @endif item" href="/admin/users">
+                                    <i class="users icon"></i>
+                                    View Users
+                                </a>
+                                <div class="item">
+                                    <i class="exclamation triangle icon"></i>
+                                    Reports
+                                </div>
+                                <div class="divider"></div>
+                            @endif
+                            <a class="item" href="/logout">
+                                <i class="sign out triangle icon"></i>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                @else
+                    <a class="@if(page.name == "login") active @endif item"
+                       href="/login">Login</a>
+                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
+                @endif
+            </div>
+        </div>
+        <!--End: Desktop Nav-->
+
+        <!--Start: Mobile Nav-->
+        <div class="tablet mobile only row">
+            <a class="header item" href="/">Base Template</a>
+            <div class="right menu">
+                <a class="menu item">
+                    <div class="ui basic icon toggle button">
+                        <i class="content icon"></i>
+                    </div>
+                </a>
+            </div>
+            <div class="ui vertical fluid menu">
+                <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Index</a>
+                <a class="@if(page.name == "index") placeholder @endif item" href="#">Placeholder</a>
+                <a class="@if(page.name == "index") placeholder @endif item" href="#">Placeholder</a>
+
+                <div class="ui fitted divider"></div>
+
+                @if(page.user == null)
+                    <a class="@if(page.name == "login") active @endif item" href="/login">Login</a>
+                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
+                @else
+                    <div class="ui item">
+                        ${page.user.name}
+                        <div class="ui ${page.user.sortedRoles.first().color} label">
+                            ${page.user.sortedRoles.first().name}
+                        </div>
+                    </div>
+                    <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
+                        <i class="settings icon"></i>
+                        Settings
+                    </a>
+                    <div class="ui fitted divider"></div>
+                    @if(page.user.sortedRoles.first().powerLevel >= UserRoles.ADMIN.powerLevel)
+                        <div class="item">
+                            <i class="terminal icon"></i>
+                            Console
+                        </div>
+                        <a class="@if(page.name == "users") active @endif item" href="/admin/users">
+                            <i class="users icon"></i>
+                            View Users
+                        </a>
+                        <div class="item">
+                            <i class="exclamation triangle icon"></i>
+                            Reports
+                        </div>
+                        <div class="ui fitted divider"></div>
+                    @endif
+                    <a class="item" href="/logout">
+                        <i class="sign out triangle icon"></i>
+                        Sign Out
+                    </a>
+                @endif
+                <!-- <div class="ui fluid popup bottom left transition visible">
+               <div class="ui four column relaxed equal height divided grid">
+                 <div class="column">
+                   <h4 class="ui header">Fabrics</h4>
+                   <div class="ui link list">
+                     <a class="item">Cashmere</a>
+                     <a class="item">Linen</a>
+                     <a class="item">Cotton</a>
+                     <a class="item">Viscose</a>
+                   </div>
+                 </div>
+                 <div class="column">
+                   <h4 class="ui header">Size</h4>
+                   <div class="ui link list">
+                     <a class="item">Small</a>
+                     <a class="item">Medium</a>
+                     <a class="item">Large</a>
+                     <a class="item">Plus Sizes</a>
+                   </div>
+                 </div>
+                 <div class="column">
+                   <h4 class="ui header">Colored</h4>
+                   <div class="ui link list">
+                     <a class="item">Neutrals</a>
+                     <a class="item">Brights</a>
+                     <a class="item">Pastels</a>
+                   </div>
+                 </div>
+                 <div class="column">
+                   <h4 class="ui header">Types</h4>
+                   <div class="ui link list">
+                     <a class="item">Knitwear</a>
+                     <a class="item">Outerwear</a>
+                     <a class="item">Pants</a>
+                     <a class="item">Shoes</a>
+                   </div>
+                 </div>
+               </div>
+             </div>-->
+            </div>
+            <!--
+    <div class="ui vertical accordion borderless fluid menu">
+    <a class="ui item"></a>
+        <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Posts</a>
+        <a class="@if(page.name == "placeholder") active @endif item" href="#">Videos</a>
+      <div class="item">
+        <div class="title">
+          Sam<i class="dropdown icon"></i>
+        </div>
+        <div class="content">
+          <div class="item">
+            <i class="file icon"></i>
+            My Files
+          </div>
+          <div class="ui divider"></div>
+          <div class="item">
+            <i class="terminal icon"></i>
+            Console
+          </div>
+          <div class="item">
+            <i class="users icon"></i>
+            View Users
+          </div>
+          <div class="item">
+            <i class="exclamation triangle icon"></i>
+            Reports
+          </div>
+          <div class="divider"></div>
+          <div class="item">
+            <i class="sign out triangle icon"></i>
+            Sign Out
+          </div>
+        </div>
+      </div>
+    </div>-->
+        </div>
+        <!--End: Mobile Nav-->
+    </div>
+</div>
+<!--End: Nav  -->
+<script> <!-- nonce -->
+    $(".ui.search").search({
+        apiSettings: {
+            url: "/api/search?q={query}",
+        },
+        fields: {
+            title: "name",
+            url: "html_url",
+        },
+        hideDelay: 100,
+        minCharacters: 2,
+    });
+    $(".ui.dropdown").dropdown();
+    $(".ui.toggle.button").click(function () {
+        $(".ui.vertical.menu").fadeToggle();
+    });
+    $(".ui.vertical.menu").toggle();
+</script>
+
