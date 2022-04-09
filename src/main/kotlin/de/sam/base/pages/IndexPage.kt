@@ -3,12 +3,10 @@ package de.sam.base.pages
 import de.sam.base.Page
 import de.sam.base.database.DatabaseManager
 import io.javalin.http.Context
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
-import java.util.*
 
 class IndexPage(ctx: Context) : Page(ctx) {
     companion object {
@@ -27,7 +25,10 @@ class IndexPage(ctx: Context) : Page(ctx) {
 
         transaction {
             addLogger(StdOutSqlLogger)
-            firstUser = DatabaseManager.User.find { DatabaseManager.Users.name eq "Samuel" }.first()
+            firstUser = DatabaseManager.User.all()
+                .orderBy(DatabaseManager.UsersTable.registrationDate to SortOrder.ASC)
+                .limit(1)
+                .first()
         }
 
         super.render()

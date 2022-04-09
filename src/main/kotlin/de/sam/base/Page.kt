@@ -1,7 +1,7 @@
 package de.sam.base
 
-import de.sam.base.users.User
-import de.sam.base.users.UserRoles
+import de.sam.base.database.DatabaseManager
+import de.sam.base.utils.getUser
 import io.javalin.http.Context
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -13,15 +13,10 @@ abstract class Page(private val ctx: Context) {
     abstract var pageDescription: String
     abstract var templateName: String
     private val createdNanoTime = System.nanoTime()
-    var user: User = User(
-        UUID.randomUUID(),
-        "Sam",
-        "123456",
-        null,
-        listOf(UserRoles.ADMIN, UserRoles.PREMIUM),
-        hashMapOf("nsfw" to false, "language" to "en")
-    )
 
+    var user: DatabaseManager.User? = ctx.getUser()
+
+    //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
 
     val renderTime =

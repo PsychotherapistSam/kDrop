@@ -1,14 +1,15 @@
 @import de.sam.base.Page
+@import de.sam.base.site.configuration.Configuration
 
 @param page: Page
 
 <footer>
-    <div class="ui secondary segment">
+    <div class="ui basic secondary segment">
         <div class="ui container">
             <div class="ui stackable grid">
                 <div class="two column computer tablet only row">
                     <div class="left aligned column">
-                        <p>Be a Lama, Inc. 2021. All Rights Reserved</p>
+                        <p>${Configuration.copyrightLine}</p>
                     </div>
                     <div class="right aligned column">
                         <div class="ui horizontal small divided link list">
@@ -20,7 +21,7 @@
                 </div>
                 <div class="two column mobile only center aligned row">
                     <div class="column">
-                        <p>Be a Lama, Inc. 2021. All Rights Reserved</p>
+                        <p>${Configuration.copyrightLine}</p>
                     </div>
                     <div class="column">
                         <div class="ui horizontal small divided link list">

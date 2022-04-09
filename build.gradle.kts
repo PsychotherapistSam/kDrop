@@ -29,6 +29,11 @@ dependencies {
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.3.3")
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
+    // https://mvnrepository.com/artifact/com.password4j/password4j
+    implementation("com.password4j:password4j:1.5.4")
+
 }
 
 tasks.test {

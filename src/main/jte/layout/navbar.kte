@@ -1,21 +1,26 @@
 @import de.sam.base.Page
+@import de.sam.base.database.DatabaseManager.User
 @import de.sam.base.pages.IndexPage
 @import de.sam.base.users.UserRoles
+@import de.sam.base.site.configuration.Configuration
 
 @param page: Page
+
+!{val user: User? = page.user}
 
 <!--Start: Nav  -->
 <div class="ui medium borderless menu">
     <div class="ui container grid">
         <!--Start: Desktop Nav-->
         <div class="computer only row">
-            <a class="header item" href="/">Base Template</a>
+            <a class="header item" href="/">${Configuration.name}</a>
             <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Home</a>
             <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
             <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
 
             <div class="right menu">
-                @if(page.user != null)
+                @if(user != null)
+                    !{val highestRole = user.getHighestRole()}
                     <div class="ui search item">
                         <div class="ui transparent left icon input">
                             <input class="prompt" type="text" placeholder="Search creators..."/>
@@ -23,26 +28,26 @@
                         </div>
                     </div>
 
-                    @if(page.user.sortedRoles.first().powerLevel > 1)
+                    @if(highestRole.powerLevel > 1)
                         <a class="disabled item">
-                            <div class="ui ${page.user.sortedRoles.first().color} label">
-                                ${page.user.sortedRoles.first().name}
+                            <div class="ui ${highestRole.color} label">
+                                ${highestRole.name}
                             </div>
                         </a>
                     @endif
 
                     <div class="ui dropdown item">
-                        ${page.user.name}<i class="dropdown icon"></i>
+                        ${user.name}<i class="dropdown icon"></i>
                         <div class="menu">
                             <div class="header">
-                                Signed in as ${page.user.name}
+                                Signed in as ${user.name}
                             </div>
                             <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
                                 <i class="settings icon"></i>
                                 Settings
                             </a>
                             <div class="divider"></div>
-                            @if(page.user.sortedRoles.first().powerLevel >= UserRoles.ADMIN.powerLevel)
+                            @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
                                 <div class="header">
                                     Administration
                                 </div>
@@ -77,7 +82,7 @@
 
         <!--Start: Mobile Nav-->
         <div class="tablet mobile only row">
-            <a class="header item" href="/">Base Template</a>
+            <a class="header item" href="/">${Configuration.name}</a>
             <div class="right menu">
                 <a class="menu item">
                     <div class="ui basic icon toggle button">
@@ -92,14 +97,12 @@
 
                 <div class="ui fitted divider"></div>
 
-                @if(page.user == null)
-                    <a class="@if(page.name == "login") active @endif item" href="/login">Login</a>
-                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
-                @else
+                @if(user != null)
+                    !{val highestRole = user.getHighestRole()}
                     <div class="ui item">
-                        ${page.user.name}
-                        <div class="ui ${page.user.sortedRoles.first().color} label">
-                            ${page.user.sortedRoles.first().name}
+                        ${user.name}
+                        <div class="ui ${highestRole.color} label">
+                            ${highestRole.name}
                         </div>
                     </div>
                     <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
@@ -107,7 +110,7 @@
                         Settings
                     </a>
                     <div class="ui fitted divider"></div>
-                    @if(page.user.sortedRoles.first().powerLevel >= UserRoles.ADMIN.powerLevel)
+                    @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
                         <div class="item">
                             <i class="terminal icon"></i>
                             Console
@@ -126,6 +129,9 @@
                         <i class="sign out triangle icon"></i>
                         Sign Out
                     </a>
+                @else
+                    <a class="@if(page.name == "login") active @endif item" href="/login">Login</a>
+                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
                 @endif
                 <!-- <div class="ui fluid popup bottom left transition visible">
                <div class="ui four column relaxed equal height divided grid">
