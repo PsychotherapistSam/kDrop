@@ -22,12 +22,6 @@
             <div class="right menu">
                 @if(user != null)
                     !{val highestRole = user.getHighestRole()}
-                    <div class="ui search item">
-                        <div class="ui transparent left icon input">
-                            <input class="prompt" type="text" placeholder="Search creators..."/>
-                            <i class="search icon"></i>
-                        </div>
-                    </div>
 
                     @if(highestRole.powerLevel > 1)
                         <a class="disabled item">
@@ -214,17 +208,6 @@
 </div>
 <!--End: Nav  -->
 <script> <!-- nonce -->
-    $(".ui.search").search({
-        apiSettings: {
-            url: "/api/search?q={query}",
-        },
-        fields: {
-            title: "name",
-            url: "html_url",
-        },
-        hideDelay: 100,
-        minCharacters: 2,
-    });
     $(".ui.dropdown").dropdown();
     $(".ui.toggle.button").click(function () {
         $(".ui.vertical.menu").fadeToggle();

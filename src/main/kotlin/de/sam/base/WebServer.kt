@@ -20,6 +20,7 @@ class WebServer {
         app.get(IndexPage.ROUTE) { IndexPage(it).render() }
         app.get(LoginPage.ROUTE) { LoginPage(it).render() }
 
+        // https://stackoverflow.com/a/7260540
         app.routes {
             path("api") {
                 path("v1") {
