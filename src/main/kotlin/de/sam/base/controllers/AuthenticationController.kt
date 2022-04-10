@@ -66,7 +66,6 @@ class AuthenticationController {
             if (passwordIsVerified) {
                 ctx.sessionAttribute("user", user)
                 ctx.status(200)
-                ctx.redirect("/")
             } else {
                 ctx.status(401)
             }
@@ -143,11 +142,9 @@ class AuthenticationController {
 
         ctx.sessionAttribute("user", user)
         ctx.status(200)
-        ctx.redirect("/login")
     }
 
     fun logoutRequest(ctx: Context) {
         ctx.req.session.invalidate()
-        ctx.redirect("/")
     }
 }

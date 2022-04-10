@@ -23,10 +23,14 @@ class WebServer {
         app.routes {
             path("api") {
                 path("v1") {
+                    path("session"){
+                        post(AuthenticationController()::loginRequest)
+                        delete(AuthenticationController()::logoutRequest)
+                        // crud
+                    }
                     path("users") {
-                        post("/login", AuthenticationController()::loginRequest)
-                        post("/register", AuthenticationController()::registrationRequest)
-                        get("/logout", AuthenticationController()::logoutRequest)
+                        post(AuthenticationController()::registrationRequest)
+                        // crud stuff
                     }
                 }
             }
