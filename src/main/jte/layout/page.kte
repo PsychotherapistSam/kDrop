@@ -16,7 +16,7 @@
     @endif
 
 
-    <title>${page.pageTitle}</title>
+    <title>${page.title}</title>
 
     <!-- You MUST include jQuery before Fomantic -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>

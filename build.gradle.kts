@@ -31,6 +31,9 @@ dependencies {
     implementation("org.postgresql:postgresql:42.3.3")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.2")
+
     // https://mvnrepository.com/artifact/com.password4j/password4j
     implementation("com.password4j:password4j:1.5.4")
 

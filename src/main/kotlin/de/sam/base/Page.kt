@@ -9,7 +9,7 @@ import java.util.*
 
 abstract class Page(private val ctx: Context) {
     abstract var name: String
-    abstract var pageTitle: String
+    abstract var title: String
     abstract var pageDescription: String
     abstract var templateName: String
     private val createdNanoTime = System.nanoTime()
@@ -19,9 +19,9 @@ abstract class Page(private val ctx: Context) {
     //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
 
-    val renderTime =
-        //"${BigDecimal(System.nanoTime() - createdNanoTime / 1000000.0).setScale(2, RoundingMode.HALF_EVEN)}ms"
-        "${BigDecimal(System.nanoTime() - createdNanoTime).divide(BigDecimal(1000000), 4, RoundingMode.HALF_UP)}ms"
+    fun getRenderTime(): String {
+        return "${BigDecimal(System.nanoTime() - createdNanoTime).divide(BigDecimal(1000000), 4, RoundingMode.HALF_UP)}ms"
+    }
 
     open fun render() {
         ctx.render(templateName, Collections.singletonMap("page", this))

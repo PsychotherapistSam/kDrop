@@ -1,5 +1,5 @@
 @import de.sam.base.Page
-@import de.sam.base.site.configuration.Configuration
+@import de.sam.base.config.Configuration.Companion.config
 
 @param page: Page
 
@@ -9,25 +9,25 @@
             <div class="ui stackable grid">
                 <div class="two column computer tablet only row">
                     <div class="left aligned column">
-                        <p>${Configuration.copyrightLine}</p>
+                        <p>${config.copyrightLine}</p>
                     </div>
                     <div class="right aligned column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">Privacy Policy</a>
-                            <a class="item" href="/about">${page.renderTime}</a>
+                            <a class="item" href="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>
                 <div class="two column mobile only center aligned row">
                     <div class="column">
-                        <p>${Configuration.copyrightLine}</p>
+                        <p>${config.copyrightLine}</p>
                     </div>
                     <div class="column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">Privacy Policy</a>
-                            <a class="item" href="/about">${page.renderTime}</a>
+                            <a class="item" href="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>

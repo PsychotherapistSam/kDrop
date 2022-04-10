@@ -1,8 +1,9 @@
 @import de.sam.base.Page
 @import de.sam.base.database.DatabaseManager.User
 @import de.sam.base.pages.IndexPage
+@import de.sam.base.pages.user.LoginPage
 @import de.sam.base.users.UserRoles
-@import de.sam.base.site.configuration.Configuration
+@import de.sam.base.config.Configuration.Companion.config
 
 @param page: Page
 
@@ -13,8 +14,8 @@
     <div class="ui container grid">
         <!--Start: Desktop Nav-->
         <div class="computer only row">
-            <a class="header item" href="/">${Configuration.name}</a>
-            <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Home</a>
+            <a class="header item" href="/">${config.name}</a>
+            <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Home</a>
             <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
             <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
 
@@ -65,15 +66,14 @@
                                 </div>
                                 <div class="divider"></div>
                             @endif
-                            <a class="item" href="/logout">
+                            <a class="item" href="/api/v1/users/logout">
                                 <i class="sign out triangle icon"></i>
                                 Sign Out
                             </a>
                         </div>
                     </div>
                 @else
-                    <a class="@if(page.name == "login") active @endif item"
-                       href="/login">Login</a>
+                    <a class="@if(page is LoginPage) active @endif item" href="${LoginPage.ROUTE}">Login</a>
                     <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
                 @endif
             </div>
@@ -82,7 +82,7 @@
 
         <!--Start: Mobile Nav-->
         <div class="tablet mobile only row">
-            <a class="header item" href="/">${Configuration.name}</a>
+            <a class="header item" href="/">${config.name}</a>
             <div class="right menu">
                 <a class="menu item">
                     <div class="ui basic icon toggle button">
@@ -91,9 +91,9 @@
                 </a>
             </div>
             <div class="ui vertical fluid menu">
-                <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Index</a>
-                <a class="@if(page.name == "index") placeholder @endif item" href="#">Placeholder</a>
-                <a class="@if(page.name == "index") placeholder @endif item" href="#">Placeholder</a>
+                <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Index</a>
+                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
 
                 <div class="ui fitted divider"></div>
 
@@ -125,12 +125,12 @@
                         </div>
                         <div class="ui fitted divider"></div>
                     @endif
-                    <a class="item" href="/logout">
+                    <a class="item" href="/api/v1/users/logout">
                         <i class="sign out triangle icon"></i>
                         Sign Out
                     </a>
                 @else
-                    <a class="@if(page.name == "login") active @endif item" href="/login">Login</a>
+                    <a class="@if(page is LoginPage) active @endif item" href="${LoginPage.ROUTE}">Login</a>
                     <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
                 @endif
                 <!-- <div class="ui fluid popup bottom left transition visible">

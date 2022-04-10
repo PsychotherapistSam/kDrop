@@ -5,7 +5,7 @@ import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.database.DatabaseManager.User
 import de.sam.base.database.DatabaseManager.UsersTable
-import de.sam.base.site.configuration.Configuration
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.utils.getUser
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -60,12 +60,13 @@ class AuthenticationController {
         if (user != null) {
             val passwordIsVerified = Password.check(password, user.password)
                 .addSalt("${user.id}${user.name}") // argon2id salts the passwords on itself, but better safe than sorry
-                .addPepper(Configuration.passwordPepper)
+                .addPepper(config.passwordPepper)
                 .with(argon2Instance)
 
             if (passwordIsVerified) {
                 ctx.sessionAttribute("user", user)
                 ctx.status(200)
+                ctx.redirect("/")
             } else {
                 ctx.status(401)
             }
@@ -121,7 +122,7 @@ class AuthenticationController {
                 this.name = username
                 this.password = Password.hash(password)
                     .addSalt("${this.id}${this.name}") // argon2id salts the passwords on itself, but better safe than sorry
-                    .addPepper(Configuration.passwordPepper)
+                    .addPepper(config.passwordPepper)
                     .with(argon2Instance)
                     .result
                 this.roles = "0"
@@ -142,6 +143,11 @@ class AuthenticationController {
 
         ctx.sessionAttribute("user", user)
         ctx.status(200)
-        return
+        ctx.redirect("/login")
+    }
+
+    fun logoutRequest(ctx: Context) {
+        ctx.req.session.invalidate()
+        ctx.redirect("/")
     }
 }

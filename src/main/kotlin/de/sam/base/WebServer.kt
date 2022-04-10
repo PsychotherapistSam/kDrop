@@ -8,21 +8,25 @@ import gg.jte.resolve.DirectoryCodeResolver
 import io.javalin.Javalin
 import io.javalin.plugin.rendering.template.JavalinJte
 import java.nio.file.Path
-import  io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.apibuilder.ApiBuilder.*
+import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.pages.user.LoginPage
 
 class WebServer {
     fun start() {
-        val app = Javalin.create().start(7070)
+        val app = Javalin.create().start(config.port)
         JavalinJte.configure(createTemplateEngine())
 
         app.get(IndexPage.ROUTE) { IndexPage(it).render() }
+        app.get(LoginPage.ROUTE) { LoginPage(it).render() }
 
         app.routes {
             path("api") {
                 path("v1") {
                     path("users") {
-                        get("/login", AuthenticationController()::loginRequest)
+                        post("/login", AuthenticationController()::loginRequest)
                         post("/register", AuthenticationController()::registrationRequest)
+                        get("/logout", AuthenticationController()::logoutRequest)
                     }
                 }
             }

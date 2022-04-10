@@ -1,0 +1,91 @@
+@import de.sam.base.pages.user.LoginPage
+@import de.sam.base.config.Configuration.Companion.config
+
+@param page: LoginPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <div class="ui basic fitted segment">
+        <h1>${page.title}</h1>
+        <div class="ui grid">
+            <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
+                <form class="ui form" action="/api/v1/users/login" method="post" id="login-form">
+                    <div class="field">
+                        <label for="username">Username</label>
+                        <input type="text" name="username" id="username" value="" placeholder="Username" tabindex="1">
+                    </div>
+                    <div class="field">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" id="password" placeholder="Password"
+                               tabindex="2">
+                    </div>
+                    <div class="ui negative hidden message">
+                    </div>
+                    <input type="submit" class="ui secondary button" value="Log In" tabindex="3">
+                    <a class="ui right floated button" href="/password_reset/" tabindex="4">Forgot
+                        password?</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $("#login-form").submit(function (event) {
+            event.preventDefault();
+            const form = $(this);
+            const url = form.attr('action');
+            const data = form.serialize();
+
+            // add loading indicator
+            form.addClass('loading');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: data
+            }).always(function (response) {
+                form.removeClass('loading');
+            }).done(function (request) {
+                $('.ui.negative.message')
+                    .addClass("hidden")
+                // get redirect from header
+
+                window.location.href = '/';
+            }).fail(function (data) {
+                if (data.status === 401) {
+                    // append error message to ".ui.negative.hidden.message"
+                    $('.ui.negative.hidden.message')
+                        .removeClass("hidden")
+                        .html('<p>Invalid username or password</p>');
+                }
+            });
+
+            /* $.post(url, data, function (data) {
+                 form.removeClass('loading');
+                 if (data.success) {
+                     $('.ui.negative.hidden.message')
+                         .addClass("hidden")
+                     // get redirect from header
+
+                     window.location.href = data.redirect;
+                 }
+             })
+                 .fail(function (data) {
+                     form.removeClass('loading');
+                     // if status code is 401, show error message
+                     if (data.status === 401) {
+                         // append error message to ".ui.negative.hidden.message"
+                         $('.ui.negative.hidden.message')
+                             .removeClass("hidden")
+                             .html('<p>Invalid username or password</p>');
+                     }
+                     /*$.each(data.responseJSON.errors, function (key, value) {
+                         $("#" + key).parent().addClass('error');
+                         $("#" + key).parent().append('<div class="ui red pointing label">' + value + '</div>');
+                     });*/
+            //});
+        });
+    </script>
+`
+)
+

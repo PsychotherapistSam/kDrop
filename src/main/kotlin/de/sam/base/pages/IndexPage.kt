@@ -6,6 +6,7 @@ import io.javalin.http.Context
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class IndexPage(ctx: Context) : Page(ctx) {
@@ -14,7 +15,7 @@ class IndexPage(ctx: Context) : Page(ctx) {
     }
 
     override var name: String = "Index"
-    override var pageTitle: String = "Index"
+    override var title: String = "Index"
     override var pageDescription: String = "Index of the homepage"
     override var templateName: String = "index.kte"
 
@@ -25,10 +26,13 @@ class IndexPage(ctx: Context) : Page(ctx) {
 
         transaction {
             addLogger(StdOutSqlLogger)
-            firstUser = DatabaseManager.User.all()
-                .orderBy(DatabaseManager.UsersTable.registrationDate to SortOrder.ASC)
-                .limit(1)
-                .first()
+
+            logTimeSpent("Getting first user") {
+                firstUser = DatabaseManager.User.all()
+                    .orderBy(DatabaseManager.UsersTable.registrationDate to SortOrder.ASC)
+                    .limit(1)
+                    .first()
+            }
         }
 
         super.render()

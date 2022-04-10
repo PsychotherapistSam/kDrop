@@ -5,17 +5,18 @@ import de.sam.base.users.UserRoles
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import java.util.*
+import de.sam.base.config.Configuration.Companion.config
 
 class DatabaseManager {
     fun start() {
-        val ds = HikariDataSource()
-        ds.jdbcUrl = "jdbc:postgresql://db.tcbipcnpdbvkdydnnzbk.supabase.co:5432/postgres"
-        ds.username = "postgres"
-        ds.password = "supersecretdatabasepasswordonlyusedforthisproject"
+        val hikariDataSource = HikariDataSource()
+        hikariDataSource.jdbcUrl =
+            "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.database}"
+        hikariDataSource.username = config.database.username
+        hikariDataSource.password = config.database.password
 
-        Database.connect(ds)
+        Database.connect(hikariDataSource)
 
         transaction {
             // print sql to std-out
@@ -23,7 +24,7 @@ class DatabaseManager {
             SchemaUtils.create(UsersTable)
 
             // create default user if not exists
-            if (UsersTable.select { UsersTable.name eq "Samuel" }.count() == 0) {
+            /*if (UsersTable.select { UsersTable.name eq "Samuel" }.count() == 0) {
                 User.new {
                     name = "Samuel"
                     password = "supersecretpassword"
@@ -32,7 +33,7 @@ class DatabaseManager {
                     preferences = "{\"language\":\"en\"}"
                     registrationDate = DateTime.now()
                 }
-            }
+            }*/
         }
     }
 
