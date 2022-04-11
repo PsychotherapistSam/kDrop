@@ -22,8 +22,8 @@ class WebServer {
         }.start(config.port)
 
         app.routes {
-            get("/") { IndexPage(it, it.path()).render() }
-            get("/login") { LoginPage(it, it.path()).render() }
+            get("/") { IndexPage(it).render() }
+            get("/login") { LoginPage(it).render() }
         }
 
         // https://stackoverflow.com/a/7260540

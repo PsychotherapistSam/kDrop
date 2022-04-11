@@ -10,14 +10,14 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class IndexPage(ctx: Context, path: String) : Page(ctx) {
+class IndexPage(ctx: Context) : Page(ctx) {
 
     companion object {
         lateinit var ROUTE: String
     }
 
     init {
-        ROUTE = path
+        ROUTE = ctx.path()
     }
 
     override var name: String = "Index"
