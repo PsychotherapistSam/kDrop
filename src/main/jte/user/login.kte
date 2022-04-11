@@ -1,7 +1,7 @@
-@import de.sam.base.pages.user.LoginPage
+@import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param page: LoginPage
+@param page: UserLoginPage
 
 @template.layout.page(
 page = page,
@@ -36,54 +36,26 @@ content = @`
             const url = form.attr('action');
             const data = form.serialize();
 
-            // add loading indicator
+            // add loading indicator to form
             form.addClass('loading');
 
             $.ajax({
                 type: 'POST',
                 url: url,
                 data: data
-            }).always(function (response) {
+            }).always(function () {
                 form.removeClass('loading');
-            }).done(function (request) {
+            }).done(function () {
                 $('.ui.negative.message')
                     .addClass("hidden")
-                // get redirect from header
-
                 window.location.href = '/';
             }).fail(function (data) {
                 if (data.status === 401) {
-                    // append error message to ".ui.negative.hidden.message"
                     $('.ui.negative.hidden.message')
                         .removeClass("hidden")
                         .html('<p>Invalid username or password</p>');
                 }
             });
-
-            /* $.post(url, data, function (data) {
-                 form.removeClass('loading');
-                 if (data.success) {
-                     $('.ui.negative.hidden.message')
-                         .addClass("hidden")
-                     // get redirect from header
-
-                     window.location.href = data.redirect;
-                 }
-             })
-                 .fail(function (data) {
-                     form.removeClass('loading');
-                     // if status code is 401, show error message
-                     if (data.status === 401) {
-                         // append error message to ".ui.negative.hidden.message"
-                         $('.ui.negative.hidden.message')
-                             .removeClass("hidden")
-                             .html('<p>Invalid username or password</p>');
-                     }
-                     /*$.each(data.responseJSON.errors, function (key, value) {
-                         $("#" + key).parent().addClass('error');
-                         $("#" + key).parent().append('<div class="ui red pointing label">' + value + '</div>');
-                     });*/
-            //});
         });
     </script>
 `

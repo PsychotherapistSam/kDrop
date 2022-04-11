@@ -1,7 +1,8 @@
 @import de.sam.base.Page
 @import de.sam.base.database.User
 @import de.sam.base.pages.IndexPage
-@import de.sam.base.pages.user.LoginPage
+@import de.sam.base.pages.user.UserLoginPage
+@import de.sam.base.pages.user.UserSettingsPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
 
@@ -24,7 +25,7 @@
                     !{val highestRole = user.getHighestRole()}
 
                     @if(highestRole.powerLevel > 1)
-                        <a class="disabled item">
+                        <a class="disabled vertically fitted item">
                             <div class="ui ${highestRole.color} label">
                                 ${highestRole.name}
                             </div>
@@ -37,7 +38,7 @@
                             <div class="header">
                                 Signed in as ${user.name}
                             </div>
-                            <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
+                            <a class="@if(page is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
                                 <i class="settings icon"></i>
                                 Settings
                             </a>
@@ -67,7 +68,7 @@
                         </div>
                     </div>
                 @else
-                    <a class="@if(page is LoginPage) active @endif item" href="${LoginPage.ROUTE}">Login</a>
+                    <a class="@if(page is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
                     <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
                 @endif
             </div>
@@ -99,7 +100,7 @@
                             ${highestRole.name}
                         </div>
                     </div>
-                    <a class="@if(page.name == "settings") active @endif item" href="/user/settings">
+                    <a class="@if(page is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
                         <i class="settings icon"></i>
                         Settings
                     </a>
@@ -124,7 +125,7 @@
                         Sign Out
                     </a>
                 @else
-                    <a class="@if(page is LoginPage) active @endif item" href="${LoginPage.ROUTE}">Login</a>
+                    <a class="@if(page is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
                     <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
                 @endif
                 <!-- <div class="ui fluid popup bottom left transition visible">

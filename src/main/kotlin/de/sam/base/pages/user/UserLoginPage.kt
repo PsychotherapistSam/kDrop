@@ -3,13 +3,9 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import io.javalin.http.Context
 
-class LoginPage(ctx: Context) : Page(ctx) {
+class UserLoginPage(ctx: Context) : Page(ctx) {
     companion object {
         lateinit var ROUTE: String
-    }
-
-    init {
-        ROUTE = ctx.path()
     }
 
     override var name: String = "Login"

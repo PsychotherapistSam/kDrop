@@ -10,20 +10,25 @@ import io.javalin.plugin.rendering.template.JavalinJte
 import java.nio.file.Path
 import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.pages.user.LoginPage
+import de.sam.base.pages.user.UserLoginPage
+import de.sam.base.pages.user.UserSettingsPage
 import de.sam.base.utils.session.Session
+import io.javalin.core.util.RouteOverviewPlugin
 
 class WebServer {
     fun start() {
         val app = Javalin.create {
             // it.enableWebjars()
             it.sessionHandler { Session.fileSessionHandler() }
+            it.registerPlugin(RouteOverviewPlugin("/routes"));
             JavalinJte.configure(createTemplateEngine())
         }.start(config.port)
 
         app.routes {
-            get("/") { IndexPage(it).render() }
-            get("/login") { LoginPage(it).render() }
+            // well this works... although its very ugly
+            get(IndexPage.apply { ROUTE = "/" }.ROUTE) { IndexPage(it).render() }
+            get(UserLoginPage.apply { ROUTE = "/login" }.ROUTE) { UserLoginPage(it).render() }
+            get(UserSettingsPage.apply { ROUTE = "/user/settings" }.ROUTE) { UserSettingsPage(it).render() }
         }
 
         // https://stackoverflow.com/a/7260540

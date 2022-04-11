@@ -16,10 +16,6 @@ class IndexPage(ctx: Context) : Page(ctx) {
         lateinit var ROUTE: String
     }
 
-    init {
-        ROUTE = ctx.path()
-    }
-
     override var name: String = "Index"
     override var title: String = "Index"
     override var pageDescription: String = "Index of the homepage"
