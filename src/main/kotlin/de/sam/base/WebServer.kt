@@ -16,27 +16,27 @@ import de.sam.base.utils.session.Session
 class WebServer {
     fun start() {
         val app = Javalin.create {
-           // it.enableWebjars()
+            // it.enableWebjars()
             it.sessionHandler { Session.fileSessionHandler() }
             JavalinJte.configure(createTemplateEngine())
         }.start(config.port)
 
-        app.get(IndexPage.ROUTE) { IndexPage(it).render() }
-        app.get(LoginPage.ROUTE) { LoginPage(it).render() }
+        app.routes {
+            get("/") { IndexPage(it, it.path()).render() }
+            get("/login") { LoginPage(it, it.path()).render() }
+        }
 
         // https://stackoverflow.com/a/7260540
         app.routes {
-            path("api") {
-                path("v1") {
-                    path("session") {
-                        post(AuthenticationController()::loginRequest)
-                        delete(AuthenticationController()::logoutRequest)
-                        // crud
-                    }
-                    path("users") {
-                        post(AuthenticationController()::registrationRequest)
-                        // crud stuff
-                    }
+            path("api/v1") {
+                path("session") {
+                    post(AuthenticationController()::loginRequest)
+                    delete(AuthenticationController()::logoutRequest)
+                    // crud
+                }
+                path("users") {
+                    // crud stuff
+                    post(AuthenticationController()::registrationRequest)
                 }
             }
         }

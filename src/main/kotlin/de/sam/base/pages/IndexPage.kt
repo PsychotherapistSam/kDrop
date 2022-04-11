@@ -10,9 +10,14 @@ import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class IndexPage(ctx: Context) : Page(ctx) {
+class IndexPage(ctx: Context, path: String) : Page(ctx) {
+
     companion object {
-        const val ROUTE: String = "/"
+        lateinit var ROUTE: String
+    }
+
+    init {
+        ROUTE = path
     }
 
     override var name: String = "Index"
