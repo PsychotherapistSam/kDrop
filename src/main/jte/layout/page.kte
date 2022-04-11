@@ -4,6 +4,7 @@
 @param page: Page
 @param content: Content
 @param footer: Content? = null
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

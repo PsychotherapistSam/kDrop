@@ -11,11 +11,15 @@ import java.nio.file.Path
 import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.pages.user.LoginPage
+import de.sam.base.utils.session.Session
 
 class WebServer {
     fun start() {
-        val app = Javalin.create().start(config.port)
-        JavalinJte.configure(createTemplateEngine())
+        val app = Javalin.create {
+           // it.enableWebjars()
+            it.sessionHandler { Session.fileSessionHandler() }
+            JavalinJte.configure(createTemplateEngine())
+        }.start(config.port)
 
         app.get(IndexPage.ROUTE) { IndexPage(it).render() }
         app.get(LoginPage.ROUTE) { LoginPage(it).render() }
@@ -24,7 +28,7 @@ class WebServer {
         app.routes {
             path("api") {
                 path("v1") {
-                    path("session"){
+                    path("session") {
                         post(AuthenticationController()::loginRequest)
                         delete(AuthenticationController()::logoutRequest)
                         // crud

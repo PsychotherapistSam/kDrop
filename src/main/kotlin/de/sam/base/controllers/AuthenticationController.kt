@@ -3,10 +3,11 @@ package de.sam.base.controllers
 import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
-import de.sam.base.database.DatabaseManager.User
-import de.sam.base.database.DatabaseManager.UsersTable
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.utils.getUser
+import de.sam.base.database.UserDAO
+import de.sam.base.database.UsersTable
+import de.sam.base.database.toUser
+import de.sam.base.utils.currentUser
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
@@ -20,7 +21,7 @@ class AuthenticationController {
     private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
 
     fun loginRequest(ctx: Context) {
-        if (ctx.getUser() != null) {
+        if (ctx.currentUser != null) {
             ctx.status(200)
             return
         }
@@ -47,24 +48,22 @@ class AuthenticationController {
         val username = usernameValidator.get()
         val password = passwordValidator.get()
 
-        val user = transaction {
+        val userDAO = transaction {
             addLogger(StdOutSqlLogger)
-            return@transaction User
+            return@transaction UserDAO
                 .find { UsersTable.name.lowerCase() eq username.lowercase() }
                 .limit(1)
                 .firstOrNull()
         }
 
-
-
-        if (user != null) {
-            val passwordIsVerified = Password.check(password, user.password)
-                .addSalt("${user.id}${user.name}") // argon2id salts the passwords on itself, but better safe than sorry
+        if (userDAO != null) {
+            val passwordIsVerified = Password.check(password, userDAO.password)
+                .addSalt("${userDAO.id}${userDAO.name}") // argon2id salts the passwords on itself, but better safe than sorry
                 .addPepper(config.passwordPepper)
                 .with(argon2Instance)
 
             if (passwordIsVerified) {
-                ctx.sessionAttribute("user", user)
+                ctx.sessionAttribute("user", userDAO.toUser())
                 ctx.status(200)
             } else {
                 ctx.status(401)
@@ -92,7 +91,7 @@ class AuthenticationController {
                 {
                     val transaction = transaction {
                         addLogger(StdOutSqlLogger)
-                        !User.find { UsersTable.name.lowerCase() like it.lowercase() }.any()
+                        !UserDAO.find { UsersTable.name.lowerCase() like it.lowercase() }.any()
                     }
                     transaction
                 },
@@ -115,9 +114,9 @@ class AuthenticationController {
         val username = usernameValidator.get()
         val password = passwordValidator.get()
 
-        val user = transaction {
+        val userDAO = transaction {
             addLogger(StdOutSqlLogger)
-            return@transaction User.new {
+            return@transaction UserDAO.new {
                 this.name = username
                 this.password = Password.hash(password)
                     .addSalt("${this.id}${this.name}") // argon2id salts the passwords on itself, but better safe than sorry
@@ -140,7 +139,7 @@ class AuthenticationController {
         val diffTime: Long = waitTime - (end - start)
         if (diffTime > 0) Thread.sleep(diffTime)
 
-        ctx.sessionAttribute("user", user)
+        ctx.sessionAttribute("user", userDAO)
         ctx.status(200)
     }
 

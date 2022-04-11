@@ -11,8 +11,8 @@ content = @`
     <a class="ui green button">Buttons also work :D</a>
     <p>${config.name}</p>
     <div class="ui segment">
-        <p>The first user is: ${page.firstUser.name}, they registered
-            on ${page.firstUser.registrationDate.toLocalDate().toString()}</p>
+        <p>The first user is: ${page.firstUserDAO.name}, they registered
+            on ${page.firstUserDAO.registrationDate.toLocalDate().toString()}</p>
     </div>
 `
 )

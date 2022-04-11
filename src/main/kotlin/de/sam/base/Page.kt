@@ -1,7 +1,7 @@
 package de.sam.base
 
-import de.sam.base.database.DatabaseManager
-import de.sam.base.utils.getUser
+import de.sam.base.database.User
+import de.sam.base.utils.currentUser
 import io.javalin.http.Context
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -14,7 +14,7 @@ abstract class Page(private val ctx: Context) {
     abstract var templateName: String
     private val createdNanoTime = System.nanoTime()
 
-    var user: DatabaseManager.User? = ctx.getUser()
+    var user: User? = ctx.currentUser
 
     //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
