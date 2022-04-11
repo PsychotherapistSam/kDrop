@@ -21,19 +21,8 @@ class DatabaseManager {
         transaction {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
+            // create users table
             SchemaUtils.create(UsersTable)
-
-            // create default user if not exists
-            /*if (UsersTable.select { UsersTable.name eq "Samuel" }.count() == 0) {
-                User.new {
-                    name = "Samuel"
-                    password = "supersecretpassword"
-                    roles = "0,1"
-                    hidden = false
-                    preferences = "{\"language\":\"en\"}"
-                    registrationDate = DateTime.now()
-                }
-            }*/
         }
     }
 }
