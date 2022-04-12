@@ -17,7 +17,6 @@ import org.joda.time.DateTime
 import java.util.*
 
 class AuthenticationController {
-
     private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
 
     fun loginRequest(ctx: Context) {

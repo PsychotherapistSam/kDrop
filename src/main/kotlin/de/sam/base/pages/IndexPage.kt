@@ -9,8 +9,9 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
+import kotlin.system.measureNanoTime
 
-class IndexPage(ctx: Context) : Page(ctx) {
+class IndexPage : Page() {
 
     companion object {
         lateinit var ROUTE: String
@@ -23,20 +24,21 @@ class IndexPage(ctx: Context) : Page(ctx) {
 
     lateinit var firstUserDAO: UserDAO
 
-    override fun render() {
-        println("rendering $name page, overriding default render()")
+    override fun handle(ctx: Context) {
+        pageDiff = measureNanoTime {
+            println("rendering $name page, overriding default render()")
 
-        transaction {
-            addLogger(StdOutSqlLogger)
+            transaction {
+                addLogger(StdOutSqlLogger)
 
-            logTimeSpent("Getting first user") {
-                firstUserDAO = UserDAO.all()
-                    .orderBy(UsersTable.registrationDate to SortOrder.ASC)
-                    .limit(1)
-                    .first()
+                logTimeSpent("Getting first user") {
+                    firstUserDAO = UserDAO.all()
+                        .orderBy(UsersTable.registrationDate to SortOrder.ASC)
+                        .limit(1)
+                        .first()
+                }
             }
         }
-
-        super.render()
+        super.handle(ctx)
     }
 }

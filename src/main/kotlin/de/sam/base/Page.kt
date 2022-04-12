@@ -3,27 +3,44 @@ package de.sam.base
 import de.sam.base.database.User
 import de.sam.base.utils.currentUser
 import io.javalin.http.Context
+import io.javalin.http.Handler
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
 
-abstract class Page(private val ctx: Context) {
+abstract class Page: Handler {
     abstract var name: String
     abstract var title: String
     abstract var pageDescription: String
     abstract var templateName: String
-    private val createdNanoTime = System.nanoTime()
 
-    var user: User? = ctx.currentUser
+    var pageDiff: Long = 0
+    private var templateStartTime: Long? = null // = System.nanoTime()
+    var user: User? = null // = ctx.currentUser
 
     //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
 
     fun getRenderTime(): String {
-        return "${BigDecimal(System.nanoTime() - createdNanoTime).divide(BigDecimal(1000000), 4, RoundingMode.HALF_UP)}ms"
+        val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
+        return nanoToMilli(pageDiff + templateDiff)
     }
 
+    private fun nanoToMilli(time: Long): String {
+        return "${
+            BigDecimal(time)
+                .divide(BigDecimal(1000000), 4, RoundingMode.HALF_UP)
+        }ms"
+    }
+
+    /*
     open fun render() {
+        //  ctx.render(templateName, Collections.singletonMap("page", this))
+    }*/
+
+    override fun handle(ctx: Context) {
+        user = ctx.currentUser
+        templateStartTime = System.nanoTime()
         ctx.render(templateName, Collections.singletonMap("page", this))
     }
 }

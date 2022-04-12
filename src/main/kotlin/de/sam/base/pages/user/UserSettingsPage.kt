@@ -1,9 +1,8 @@
 package de.sam.base.pages.user
 
 import de.sam.base.Page
-import io.javalin.http.Context
 
-class UserSettingsPage(ctx: Context) : Page(ctx) {
+class UserSettingsPage : Page() {
     companion object {
         lateinit var ROUTE: String
     }

@@ -10,36 +10,83 @@ import io.javalin.plugin.rendering.template.JavalinJte
 import java.nio.file.Path
 import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserSettingsPage
+import de.sam.base.users.UserRoles
+import de.sam.base.utils.currentUser
 import de.sam.base.utils.session.Session
 import io.javalin.core.util.RouteOverviewPlugin
+import io.javalin.http.HttpResponseException
+import io.javalin.http.UnauthorizedResponse
 
 class WebServer {
     fun start() {
-        val app = Javalin.create {
-            // it.enableWebjars()
-            it.sessionHandler { Session.fileSessionHandler() }
-            it.registerPlugin(RouteOverviewPlugin("/routes"));
+        val app = Javalin.create { javalinConfig ->
+            // javalinConfig.enableWebjars()
+            javalinConfig.sessionHandler { Session.fileSessionHandler() }
+            javalinConfig.registerPlugin(RouteOverviewPlugin("/routes"));
             JavalinJte.configure(createTemplateEngine())
+
+            javalinConfig.accessManager { handler, ctx, routeRoles ->
+                if (routeRoles.isNotEmpty()) {
+                    if (ctx.currentUser != null) {
+                        val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
+                        val minReqiredRole = routeRoles.minOf { (it as UserRoles).powerLevel }
+                        if (maxUserRole < minReqiredRole) {
+                            val minRole = routeRoles.map { it as UserRoles }.minByOrNull { it.powerLevel }
+                            // val minRoleName = (routeRoles.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
+                            throw UnauthorizedResponse(
+                                "You are not authorized to access this resource.",
+                                hashMapOf("minimumRole" to minRole!!.name)
+                            ) //You need to be at least $minRole")
+                        }
+/*                    // check if ctx.currentUser.roles has any role in routeRoles
+                    if (!routeRoles.any { ctx.currentUser!!.roles.contains(it) }) {
+                        throw UnauthorizedResponse("You are not authorized to access this resource")
+                    }*/
+                    } else {
+                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
+                    }
+                }
+                handler.handle(ctx)
+            }
         }.start(config.port)
 
+
+        app.events {
+            it.handlerAdded { metaInfo ->
+                if (metaInfo.handler is Page) {
+                    // set route variable dynamically (cursed)
+                    val routeField = metaInfo.handler.javaClass.getField("ROUTE")
+                    if (routeField != null) {
+                        routeField.set(String, metaInfo.path)
+                    }
+                }
+            }
+        }
+
+        app.exception(HttpResponseException::class.java) { e, ctx ->
+            ErrorPage(e).handle(ctx)
+        }
+
         app.routes {
-            // well this works... although its very ugly
-            get(IndexPage.apply { ROUTE = "/" }.ROUTE) { IndexPage(it).render() }
-            get(UserLoginPage.apply { ROUTE = "/login" }.ROUTE) { UserLoginPage(it).render() }
-            get(UserSettingsPage.apply { ROUTE = "/user/settings" }.ROUTE) { UserSettingsPage(it).render() }
+            get("/", IndexPage())
+            get("/login", UserLoginPage())
+            path("/user") {
+                get("/settings", UserSettingsPage(), UserRoles.USER)
+            }
         }
 
         // https://stackoverflow.com/a/7260540
         app.routes {
-            path("api/v1") {
-                path("session") {
+            path("/api/v1") {
+                path("/session") {
                     post(AuthenticationController()::loginRequest)
                     delete(AuthenticationController()::logoutRequest)
                     // crud
                 }
-                path("users") {
+                path("/users") {
                     // crud stuff
                     post(AuthenticationController()::registrationRequest)
                 }
