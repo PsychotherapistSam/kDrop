@@ -61,7 +61,7 @@
                                 </div>
                                 <div class="divider"></div>
                             @endif
-                            <a class="item" id="logout_button">
+                            <a class="logout item">
                                 <i class="sign out triangle icon"></i>
                                 Sign Out
                             </a>
@@ -120,7 +120,7 @@
                         </div>
                         <div class="ui fitted divider"></div>
                     @endif
-                    <a class="item" id="logout_button">
+                    <a class="logout item">
                         <i class="sign out triangle icon"></i>
                         Sign Out
                     </a>
@@ -215,7 +215,7 @@
     });
     $(".ui.vertical.menu").toggle();
 
-    $("#logout_button").click(function () {
+    $(".logout.item").click(function () {
         $.ajax({
             url: "/api/v1/session",
             type: "DELETE",
