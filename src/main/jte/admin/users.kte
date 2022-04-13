@@ -25,14 +25,12 @@ content = @`
             <tbody>
             @for(user in page.users)
                 <tr>
-                    @if(user.roles.contains(UserRoles.ADMIN))
-                        <td>
+                    <td>
+                        @if(user.roles.contains(UserRoles.ADMIN))
                             <div class="ui red horizontal label">Admin</div>
-                            ${user.name}
-                        </td>
-                    @else
-                        <td>${user.name}</td>
-                    @endif
+                        @endif
+                        <a href="/admin/users/${user.id.toString()}">${user.name}</a>
+                    </td>
                     <td>${user.registrationDate.toString()}</td>
                     <td>N/A</td>
                     <td>@if(user.roles.contains(UserRoles.PREMIUM))

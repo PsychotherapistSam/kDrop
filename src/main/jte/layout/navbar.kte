@@ -4,6 +4,7 @@
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.pages.user.UserSettingsPage
 @import de.sam.base.pages.admin.AdminIndexPage
+@import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
 
@@ -49,12 +50,12 @@
                                     Administration
                                 </div>
                                 <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
-                                    <i class="terminal icon"></i>
-                                    Console
+                                    <i class="shield icon"></i>
+                                    Overview
                                 </a>
-                                <a class="@if(page.name == "users") active @endif item" href="/admin/users">
+                                <a class="@if(page is AdminUsersPage) active @endif item" href="${AdminUsersPage.ROUTE}">
                                     <i class="users icon"></i>
-                                    View Users
+                                    Users
                                 </a>
                                 <div class="item">
                                     <i class="exclamation triangle icon"></i>
@@ -108,12 +109,12 @@
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
                         <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
-                            <i class="terminal icon"></i>
-                            Console
+                            <i class="shield icon"></i>
+                            Overview
                         </a>
-                        <a class="@if(page.name == "users") active @endif item" href="/admin/users">
+                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminUsersPage.ROUTE}">
                             <i class="users icon"></i>
-                            View Users
+                            Users
                         </a>
                         <div class="item">
                             <i class="exclamation triangle icon"></i>
