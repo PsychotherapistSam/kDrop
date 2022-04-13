@@ -10,7 +10,7 @@ import java.io.Serializable
 import java.util.*
 
 class User(
-    var id: EntityID<UUID>,
+    var id: UUID,
     var name: String,
     var roles: List<UserRoles>,
     var preferences: String,
@@ -62,7 +62,7 @@ class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 
 fun UserDAO.toUser(): User {
     return User(
-        this.id,
+        this.id.value,
         this.name,
         roles.split(",").map { it.toInt() }.map { UserRoles.values()[it] },
         this.preferences,
