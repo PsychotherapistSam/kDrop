@@ -1,0 +1,102 @@
+@import de.sam.base.pages.admin.AdminIndexPage
+@import de.sam.base.config.Configuration.Companion.config
+
+@param page: AdminIndexPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <div class="ui basic fitted segment">
+        <h1>${page.name}</h1>
+        @template.layout.admin.navbar(page=page)
+
+        <div class="ui three column stackable grid">
+            <div class="ui column">
+                <a class="ui fluid card" href="/admin/reports">
+                    <div class="content">
+                        <div class="center aligned header">
+                            <i class="circle icon"></i>
+                            Arbitrary Content
+                        </div>
+                        <div class="center aligned description">
+                            <div class="ui statistic">
+                                <div class="value">
+                                    0
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="ui column">
+                <a class="ui fluid card" href="/admin/reports">
+                    <div class="content">
+                        <div class="center aligned header">
+                            <i class="users icon"></i>
+                            Users
+                        </div>
+                        <div class="center aligned description">
+                            <div class="ui statistic">
+                                <div class="value">
+                                    ${page.userCount}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="ui column">
+                <a class="ui fluid card" href="/admin/reports">
+                    <div class="content">
+                        <div class="center aligned header">
+                            <i class="attention icon"></i>
+                            Reports
+                        </div>
+                        <div class="center aligned description">
+                            <div class="ui negative statistic">
+                                <div class="value">
+                                    5
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <h4 class="ui horizontal divider header">
+            <i class="tag icon"></i>
+            Description
+        </h4>
+        <p>Doggie treats are good for all times of the year. Proven to be eaten by 99.9% of all dogs
+            worldwide.
+        </p>
+        <h4 class="ui horizontal divider header">
+            <i class="bar chart icon"></i>
+            Specifications
+        </h4>
+        <table class="ui definition table">
+            <tbody>
+            <tr>
+                <td class="two wide column">Size</td>
+                <td>1" x 2"</td>
+            </tr>
+            <tr>
+                <td>Weight</td>
+                <td>6 ounces</td>
+            </tr>
+            <tr>
+                <td>Color</td>
+                <td>Yellowish</td>
+            </tr>
+            <tr>
+                <td>Odor</td>
+                <td>Not Much Usually</td>
+            </tr>
+            </tbody>
+        </table>
+
+
+    </div>
+`
+)

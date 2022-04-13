@@ -1,0 +1,17 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.admin.AdminIndexPage
+@import de.sam.base.pages.admin.AdminUsersPage
+
+@param page: Page
+
+<div class="ui secondary pointing menu">
+    <a class="@if(page is AdminIndexPage) active @endif item " href="${AdminIndexPage.ROUTE}">
+        Overview
+    </a>
+    <a class="@if(page is AdminUsersPage) active @endif item " href="${AdminUsersPage.ROUTE}">
+        Users
+    </a>
+    <a class="item">
+        Friends
+    </a>
+</div>

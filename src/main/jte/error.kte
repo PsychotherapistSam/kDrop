@@ -14,7 +14,7 @@ content = @`
                 <div class="ui large negative center aligned floating message">
                     <div class="content">
                         <div class="header">
-                            ${page.title}
+                            ${page.name}
                         </div>
                         <p>
                             ${page.e.message}

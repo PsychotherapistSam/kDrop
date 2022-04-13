@@ -10,6 +10,7 @@ import java.io.Serializable
 import java.util.*
 
 class User(
+    var id: EntityID<UUID>,
     var name: String,
     var roles: List<UserRoles>,
     var preferences: String,
@@ -47,7 +48,7 @@ object UsersTable : UUIDTable("t_users") {
     val registrationDate = datetime("registration_date")
 }
 
-class UserDAO(id: EntityID<UUID>) : java.io.Serializable, UUIDEntity(id) {
+class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     companion object : UUIDEntityClass<UserDAO>(UsersTable)
 
     var name by UsersTable.name
@@ -61,6 +62,7 @@ class UserDAO(id: EntityID<UUID>) : java.io.Serializable, UUIDEntity(id) {
 
 fun UserDAO.toUser(): User {
     return User(
+        this.id,
         this.name,
         roles.split(",").map { it.toInt() }.map { UserRoles.values()[it] },
         this.preferences,

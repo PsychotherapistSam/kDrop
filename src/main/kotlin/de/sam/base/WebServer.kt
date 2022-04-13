@@ -11,6 +11,8 @@ import java.nio.file.Path
 import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.pages.ErrorPage
+import de.sam.base.pages.admin.AdminIndexPage
+import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserSettingsPage
 import de.sam.base.users.UserRoles
@@ -71,10 +73,14 @@ class WebServer {
         }
 
         app.routes {
-            get("/", IndexPage())
+            get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
             path("/user") {
                 get("/settings", UserSettingsPage(), UserRoles.USER)
+            }
+            path("/admin") {
+                get("/", AdminIndexPage(), UserRoles.ADMIN)
+                get("/users", AdminUsersPage(), UserRoles.ADMIN)
             }
         }
 

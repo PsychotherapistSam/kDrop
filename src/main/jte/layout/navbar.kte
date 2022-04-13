@@ -3,6 +3,7 @@
 @import de.sam.base.pages.IndexPage
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.pages.user.UserSettingsPage
+@import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
 
@@ -47,10 +48,10 @@
                                 <div class="header">
                                     Administration
                                 </div>
-                                <div class="item">
+                                <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
                                     <i class="terminal icon"></i>
                                     Console
-                                </div>
+                                </a>
                                 <a class="@if(page.name == "users") active @endif item" href="/admin/users">
                                     <i class="users icon"></i>
                                     View Users
@@ -106,10 +107,10 @@
                     </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
-                        <div class="item">
+                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
                             <i class="terminal icon"></i>
                             Console
-                        </div>
+                        </a>
                         <a class="@if(page.name == "users") active @endif item" href="/admin/users">
                             <i class="users icon"></i>
                             View Users
