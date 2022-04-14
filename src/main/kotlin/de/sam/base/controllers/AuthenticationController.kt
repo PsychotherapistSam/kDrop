@@ -138,7 +138,7 @@ class AuthenticationController {
         val diffTime: Long = waitTime - (end - start)
         if (diffTime > 0) Thread.sleep(diffTime)
 
-        ctx.sessionAttribute("user", userDAO)
+        ctx.currentUser = userDAO.toUser()
         ctx.status(200)
     }
 

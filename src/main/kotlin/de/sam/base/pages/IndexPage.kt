@@ -18,7 +18,9 @@ class IndexPage : Page() {
     }
 
     override var name: String = "Index"
-    override var title: String = "Index"
+    override var title: String
+        get() = name
+        set(value) {}
     override var pageDescription: String = "Index of the homepage"
     override var templateName: String = "index.kte"
 

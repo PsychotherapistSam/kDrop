@@ -7,7 +7,11 @@ import io.javalin.http.HttpResponseException
 class ErrorPage(val e: HttpResponseException) : Page() {
 
     override var name: String = "Error ${e.status}"
-    override var title: String = name
-    override var pageDescription: String = name
+    override var title: String
+        get() = name
+        set(value) {}
+    override var pageDescription: String
+        get() = name
+        set(value) {}
     override var templateName: String = "error.kte"
 }

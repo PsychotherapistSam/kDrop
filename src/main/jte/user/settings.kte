@@ -1,14 +1,11 @@
 @import de.sam.base.pages.user.UserSettingsPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param page: UserSettingsPage
+@param p: UserSettingsPage
 
 @template.layout.page(
-page = page,
+p = p,
 content = @`
-    <div class="ui basic fitted segment">
-        <h1>${page.name}</h1>
-
-    </div>
+    <h1>${p.name}</h1>
 `
 )

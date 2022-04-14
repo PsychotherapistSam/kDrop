@@ -2,15 +2,16 @@
 @import de.sam.base.database.User
 @import de.sam.base.pages.IndexPage
 @import de.sam.base.pages.user.UserLoginPage
+@import de.sam.base.pages.user.UserRegistrationPage
 @import de.sam.base.pages.user.UserSettingsPage
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
 
-@param page: Page
+@param p: Page
 
-!{val user: User? = page.user}
+!{val currentUser: User? = p.currentUser}
 
 <!--Start: Nav  -->
 <div class="ui medium borderless menu">
@@ -18,13 +19,13 @@
         <!--Start: Desktop Nav-->
         <div class="computer only row">
             <a class="header item" href="/">${config.name}</a>
-            <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Home</a>
-            <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
-            <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+            <a class="@if(p is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Home</a>
+            <a class="@if(p.name == "placeholder") active @endif item" href="#">Placeholder</a>
+            <a class="@if(p.name == "placeholder") active @endif item" href="#">Placeholder</a>
 
             <div class="right menu">
-                @if(user != null)
-                    !{val highestRole = user.getHighestRole()}
+                @if(currentUser != null)
+                    !{val highestRole = currentUser.getHighestRole()}
 
                     @if(highestRole.powerLevel > 1)
                         <a class="disabled vertically fitted item">
@@ -35,12 +36,12 @@
                     @endif
 
                     <div class="ui dropdown item">
-                        ${user.name}<i class="dropdown icon"></i>
+                        ${currentUser.name}<i class="dropdown icon"></i>
                         <div class="menu">
                             <div class="header">
-                                Signed in as ${user.name}
+                                Signed in as ${currentUser.name}
                             </div>
-                            <a class="@if(page is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
+                            <a class="@if(p is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
                                 <i class="settings icon"></i>
                                 Settings
                             </a>
@@ -49,11 +50,11 @@
                                 <div class="header">
                                     Administration
                                 </div>
-                                <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
+                                <a class="@if(p is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
                                     <i class="shield icon"></i>
                                     Overview
                                 </a>
-                                <a class="@if(page is AdminUsersPage) active @endif item" href="${AdminUsersPage.ROUTE}">
+                                <a class="@if(p is AdminUsersPage) active @endif item" href="${AdminUsersPage.ROUTE}">
                                     <i class="users icon"></i>
                                     Users
                                 </a>
@@ -70,8 +71,8 @@
                         </div>
                     </div>
                 @else
-                    <a class="@if(page is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
-                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
+                    <a class="@if(p is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
+                    <a class="@if(p is UserLoginPage) active @endif item" href="${UserRegistrationPage.ROUTE}">Register</a>
                 @endif
             </div>
         </div>
@@ -88,31 +89,31 @@
                 </a>
             </div>
             <div class="ui vertical fluid menu">
-                <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Index</a>
-                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
-                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+                <a class="@if(p is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Index</a>
+                <a class="@if(p.name == "placeholder") active @endif item" href="#">Placeholder</a>
+                <a class="@if(p.name == "placeholder") active @endif item" href="#">Placeholder</a>
 
                 <div class="ui fitted divider"></div>
 
-                @if(user != null)
-                    !{val highestRole = user.getHighestRole()}
+                @if(currentUser != null)
+                    !{val highestRole = currentUser.getHighestRole()}
                     <div class="ui item">
-                        ${user.name}
+                        ${currentUser.name}
                         <div class="ui ${highestRole.color} label">
                             ${highestRole.name}
                         </div>
                     </div>
-                    <a class="@if(page is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
+                    <a class="@if(p is UserSettingsPage) active @endif item" href="${UserSettingsPage.ROUTE}">
                         <i class="settings icon"></i>
                         Settings
                     </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
-                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
+                        <a class="@if(p is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
                             <i class="shield icon"></i>
                             Overview
                         </a>
-                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminUsersPage.ROUTE}">
+                        <a class="@if(p is AdminIndexPage) active @endif item" href="${AdminUsersPage.ROUTE}">
                             <i class="users icon"></i>
                             Users
                         </a>
@@ -127,8 +128,8 @@
                         Sign Out
                     </a>
                 @else
-                    <a class="@if(page is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
-                    <a class="@if(page.name == "registration") active @endif disabled item">Register</a>
+                    <a class="@if(p is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
+                    <a class="@if(p is UserRegistrationPage) active @endif item" href="${UserRegistrationPage.ROUTE}">Register</a>
                 @endif
                 <!-- <div class="ui fluid popup bottom left transition visible">
                <div class="ui four column relaxed equal height divided grid">
@@ -173,8 +174,8 @@
             <!--
     <div class="ui vertical accordion borderless fluid menu">
     <a class="ui item"></a>
-        <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Posts</a>
-        <a class="@if(page.name == "placeholder") active @endif item" href="#">Videos</a>
+        <a class="@if(p.name == "index") active @endif item" href="${IndexPage.ROUTE}">Posts</a>
+        <a class="@if(p.name == "placeholder") active @endif item" href="#">Videos</a>
       <div class="item">
         <div class="title">
           Sam<i class="dropdown icon"></i>

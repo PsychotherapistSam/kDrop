@@ -2,30 +2,28 @@
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param page: ErrorPage
+@param p: ErrorPage
 
 @template.layout.page(
-page = page,
+p = p,
 content = @`
-    <div class="ui basic fitted segment">
-        <br>
-        <div class="ui grid">
-            <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
-                <div class="ui large negative center aligned floating message">
-                    <div class="content">
-                        <div class="header">
-                            ${page.name}
-                        </div>
-                        <p>
-                            ${page.e.message}
-                            @if(page.e.status == 401)
-                                You can log in <a href="${UserLoginPage.ROUTE}">here</a>.
-                            @endif
-                        </p>
+    <br>
+    <div class="ui grid">
+        <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
+            <div class="ui large negative center aligned floating message">
+                <div class="content">
+                    <div class="header">
+                        ${p.name}
                     </div>
+                    <p>
+                        ${p.e.message}
+                        @if(p.e.status == 401 && p.currentUser == null)
+                            You can log in <a href="${UserLoginPage.ROUTE}">here</a>.
+                        @endif
+                    </p>
                 </div>
-
             </div>
+
         </div>
     </div>
 `

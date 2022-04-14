@@ -18,7 +18,9 @@ class AdminUsersPage : Page() {
 
     override var name: String = "Users"
     override var title: String = "Admin - Users"
-    override var pageDescription: String = name
+    override var pageDescription: String
+        get() = name
+        set(value) {}
     override var templateName: String = "admin/users.kte"
 
     var users = listOf<User>()

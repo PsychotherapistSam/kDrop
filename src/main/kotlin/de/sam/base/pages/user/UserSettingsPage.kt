@@ -8,7 +8,9 @@ class UserSettingsPage : Page() {
     }
 
     override var name: String = "Settings"
-    override var title: String = name
+    override var title: String
+        get() = name
+        set(value) {}
     override var pageDescription: String = "User Settings"
     override var templateName: String = "user/settings.kte"
 }

@@ -1,7 +1,7 @@
 @import de.sam.base.Page
 @import de.sam.base.config.Configuration.Companion.config
 
-@param page: Page
+@param p: Page
 
 <footer>
     <div class="ui basic secondary segment">
@@ -15,7 +15,7 @@
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">Privacy Policy</a>
-                            <a class="item" href="/about">${page.getRenderTime()}</a>
+                            <a class="item" href="/about">${p.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>
@@ -27,7 +27,7 @@
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">Privacy Policy</a>
-                            <a class="item" href="/about">${page.getRenderTime()}</a>
+                            <a class="item" href="/about">${p.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>

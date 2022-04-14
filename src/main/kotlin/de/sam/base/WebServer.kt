@@ -12,24 +12,32 @@ import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.admin.AdminIndexPage
+import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.UserLoginPage
+import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.pages.user.UserSettingsPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
 import de.sam.base.utils.session.Session
 import io.javalin.core.util.RouteOverviewPlugin
+import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
 import io.javalin.http.UnauthorizedResponse
+import java.util.*
 
 class WebServer {
     fun start() {
         val app = Javalin.create { javalinConfig ->
             // javalinConfig.enableWebjars()
-            javalinConfig.sessionHandler { Session.fileSessionHandler() }
-            javalinConfig.registerPlugin(RouteOverviewPlugin("/routes"));
-            JavalinJte.configure(createTemplateEngine())
 
+            // register jte.gg template renderer
+            JavalinJte.configure(createTemplateEngine())
+            // for userId validation
+            JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
+
+            javalinConfig.sessionHandler { Session.fileSessionHandler() }
+            javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN));
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 if (routeRoles.isNotEmpty()) {
                     if (ctx.currentUser != null) {
@@ -53,8 +61,9 @@ class WebServer {
                 }
                 handler.handle(ctx)
             }
-        }.start(config.port)
 
+
+        }.start(config.port)
 
         app.events {
             it.handlerAdded { metaInfo ->
@@ -75,12 +84,19 @@ class WebServer {
         app.routes {
             get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
+            get("/registration", UserRegistrationPage())
             path("/user") {
                 get("/settings", UserSettingsPage(), UserRoles.USER)
             }
             path("/admin") {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
-                get("/users", AdminUsersPage(), UserRoles.ADMIN)
+                path("/users") {
+                    get("/", AdminUsersPage(), UserRoles.ADMIN)
+                    path("/{userId}"){
+                        get("/", AdminUserViewPage(), UserRoles.ADMIN)
+                        get("/edit", AdminUserViewPage(), UserRoles.ADMIN)
+                    }
+                }
             }
         }
 

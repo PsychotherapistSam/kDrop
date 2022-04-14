@@ -16,7 +16,9 @@ class AdminIndexPage : Page() {
 
     override var name: String = "Admin Overview"
     override var title: String = "Admin - Overview"
-    override var pageDescription: String = name
+    override var pageDescription: String
+        get() = name
+        set(value) {}
     override var templateName: String = "admin/index.kte"
 
     var userCount = 0

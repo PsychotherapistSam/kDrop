@@ -1,0 +1,49 @@
+@import de.sam.base.pages.admin.AdminUserViewPage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.users.UserRoles
+
+@param p: AdminUserViewPage
+
+@template.layout.page(
+p = p,
+content = @`
+    <h1>${p.name}</h1>
+
+    @template.layout.admin.navbar(p=p)
+
+    <div class="ui right floated basic fitted segment">
+        <div class="ui right floated basic fitted segment">
+            <div class="ui compact stackable buttons">
+                <a class="ui secondary button" href="./edit">Edit</a>
+                <div class="ui orange button" id="ban_user">Ban</div>
+                <div class="ui negative button" id="delete_user">Delete</div>
+            </div>
+        </div>
+    </div>
+    <div class="ui left floated basic fitted segment">
+        <div class="ui relaxed list">
+            <div class="item">
+                <i class="large user middle aligned icon"></i>
+                <div class="content">
+                    <div class="header">Username:</div>
+                    <div class="description">${p.selectedUser!!.name}</div>
+                </div>
+            </div>
+            <div class="item">
+                <i class="large clock middle aligned icon"></i>
+                <div class="content">
+                    <div class="header">Registration Date:</div>
+                    <div class="description">${p.selectedUser!!.registrationDate.toString()}</div>
+                </div>
+            </div>
+            <div class="item">
+                <i class="large group middle aligned icon"></i>
+                <div class="content">
+                    <div class="header">Roles:</div>
+                    <div class="description">${p.selectedUser!!.roles.toString()}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+`
+)

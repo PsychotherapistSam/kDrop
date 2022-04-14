@@ -2,76 +2,74 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 
-@param page: AdminUsersPage
+@param p: AdminUsersPage
 
 @template.layout.page(
-page = page,
+p = p,
 content = @`
-    <div class="ui basic fitted segment">
-        <h1>${page.name}</h1>
+    <h1>${p.name}</h1>
 
-        @template.layout.admin.navbar(page=page)
+    @template.layout.admin.navbar(p=p)
 
-        <table class="ui compact celled striped table">
-            <thead>
+    <table class="ui compact celled striped table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Registration Date</th>
+            <th>E-mail address</th>
+            <th>Premium Plan</th>
+            <th>Edit</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(user in p.users)
             <tr>
-                <th>Name</th>
-                <th>Registration Date</th>
-                <th>E-mail address</th>
-                <th>Premium Plan</th>
-                <th>Edit</th>
+                <td>
+                    @if(user.roles.contains(UserRoles.ADMIN))
+                        <div class="ui red horizontal label">Admin</div>
+                    @endif
+                    <a href="/admin/users/${user.id.toString()}/">${user.name}</a>
+                </td>
+                <td>${user.registrationDate.toString()}</td>
+                <td>N/A</td>
+                <td>@if(user.roles.contains(UserRoles.PREMIUM))
+                        Yes
+                    @else
+                        No
+                    @endif
+                </td>
+                <td>
+                    <a href="/admin/users/${user.id.toString()}/edit">Edit</a>
+                </td>
             </tr>
-            </thead>
-            <tbody>
-            @for(user in page.users)
-                <tr>
-                    <td>
-                        @if(user.roles.contains(UserRoles.ADMIN))
-                            <div class="ui red horizontal label">Admin</div>
-                        @endif
-                        <a href="/admin/users/${user.id.toString()}">${user.name}</a>
-                    </td>
-                    <td>${user.registrationDate.toString()}</td>
-                    <td>N/A</td>
-                    <td>@if(user.roles.contains(UserRoles.PREMIUM))
-                            Yes
-                        @else
-                            No
-                        @endif
-                    </td>
-                    <td>
-                        <a href="/admin/users/${user.id.toString()}/edit">Edit</a>
-                    </td>
-                </tr>
-            @endfor
-            </tbody>
-            <tfoot class="full-width">
-            <tr>
-                <th colspan="5">
-                    <div class="ui right floated small secondary labeled icon button">
-                        <i class="user icon"></i> Add User
+        @endfor
+        </tbody>
+        <tfoot class="full-width">
+        <tr>
+            <th colspan="5">
+                <div class="ui right floated small secondary labeled icon button">
+                    <i class="user icon"></i> Add User
+                </div>
+                <div class="ui tiny pagination menu">
+                    <a class="active item">
+                        1
+                    </a>
+                    <div class="disabled item">
+                        ...
                     </div>
-                    <div class="ui tiny pagination menu">
-                        <a class="active item">
-                            1
-                        </a>
-                        <div class="disabled item">
-                            ...
-                        </div>
-                        <a class="item">
-                            10
-                        </a>
-                        <a class="item">
-                            11
-                        </a>
-                        <a class="item">
-                            12
-                        </a>
-                    </div>
-                </th>
-            </tr>
-            </tfoot>
-        </table>
-    </div>
+                    <a class="item">
+                        10
+                    </a>
+                    <a class="item">
+                        11
+                    </a>
+                    <a class="item">
+                        12
+                    </a>
+                </div>
+            </th>
+        </tr>
+        </tfoot>
+    </table>
 `
 )
