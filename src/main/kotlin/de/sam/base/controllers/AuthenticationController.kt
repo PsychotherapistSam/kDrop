@@ -7,8 +7,11 @@ import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
+import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
+import de.sam.base.utils.isLoggedIn
 import io.javalin.http.Context
+import io.javalin.http.ForbiddenResponse
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.lowerCase
@@ -20,7 +23,7 @@ class AuthenticationController {
     private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
 
     fun loginRequest(ctx: Context) {
-        if (ctx.currentUser != null) {
+        if (ctx.isLoggedIn) {
             ctx.status(200)
             return
         }
@@ -62,11 +65,13 @@ class AuthenticationController {
                 .with(argon2Instance)
 
             if (passwordIsVerified) {
-                ctx.sessionAttribute("user", userDAO.toUser())
+                ctx.currentUser = userDAO.toUser()
                 ctx.status(200)
             } else {
                 ctx.status(401)
             }
+        } else {
+            ctx.status(401)
         }
 
         // each request is going to take at least 2s to avoid guessing if a user exists -> checking if the password is actually getting hashed
@@ -80,6 +85,12 @@ class AuthenticationController {
     }
 
     fun registrationRequest(ctx: Context) {
+        if (ctx.isLoggedIn && ctx.currentUser!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
+            throw ForbiddenResponse("You are already registered.")
+        } else if (!ctx.isLoggedIn && !config.allowUserRegistration) {
+            throw ForbiddenResponse("User registration is currently disabled.")
+        }
+
         val start = System.currentTimeMillis()
 
         val usernameValidator = ctx.formParamAsClass<String>("username")
@@ -101,7 +112,6 @@ class AuthenticationController {
             .check({ it.isNotBlank() }, "Password is required")
             .check({ it.length <= 128 }, "Password is too long")
             .check({ it.length >= 3 }, "Password is too short")
-
 
         val errors = usernameValidator.errors() + passwordValidator.errors()
         if (errors.isNotEmpty()) {

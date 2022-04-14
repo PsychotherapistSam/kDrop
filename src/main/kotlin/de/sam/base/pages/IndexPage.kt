@@ -12,7 +12,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.measureNanoTime
 
 class IndexPage : Page() {
-
     companion object {
         lateinit var ROUTE: String
     }

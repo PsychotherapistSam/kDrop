@@ -10,6 +10,7 @@ import io.javalin.plugin.rendering.template.JavalinJte
 import java.nio.file.Path
 import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.controllers.UserController
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserViewPage
@@ -19,6 +20,7 @@ import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.pages.user.UserSettingsPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
+import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.session.Session
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
@@ -40,7 +42,7 @@ class WebServer {
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN));
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 if (routeRoles.isNotEmpty()) {
-                    if (ctx.currentUser != null) {
+                    if (ctx.isLoggedIn) {
                         val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
                         val minReqiredRole = routeRoles.minOf { (it as UserRoles).powerLevel }
                         if (maxUserRole < minReqiredRole) {
@@ -61,8 +63,6 @@ class WebServer {
                 }
                 handler.handle(ctx)
             }
-
-
         }.start(config.port)
 
         app.events {
@@ -92,7 +92,9 @@ class WebServer {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
                 path("/users") {
                     get("/", AdminUsersPage(), UserRoles.ADMIN)
-                    path("/{userId}"){
+
+                    before("/{userId}*", UserController()::getUserParameter)
+                    path("/{userId}") {
                         get("/", AdminUserViewPage(), UserRoles.ADMIN)
                         get("/edit", AdminUserViewPage(), UserRoles.ADMIN)
                     }
@@ -111,6 +113,12 @@ class WebServer {
                 path("/users") {
                     // crud stuff
                     post(AuthenticationController()::registrationRequest)
+                    before("/{userId}*", UserController()::getUserParameter)
+                    path("/{userId}") {
+                        delete("/", UserController()::deleteUser)
+                        // get(UserController()::getUser)
+                        // put(UserController()::updateUser)
+                    }
                 }
             }
         }

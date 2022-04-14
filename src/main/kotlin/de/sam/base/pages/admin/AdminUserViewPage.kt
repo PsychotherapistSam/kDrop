@@ -25,26 +25,10 @@ class AdminUserViewPage : Page() {
     var selectedUser: User? = null
 
     override fun handle(ctx: Context) {
-        pageDiff = measureNanoTime {
-            ctx.pathParamAsClass<UUID>("userId")
-                .check({
-                    transaction {
-                        logTimeSpent("Getting user by id") {
-                            val userDao = UserDAO.findById(it)
-                            if (userDao != null) {
-                                selectedUser = userDao.toUser()
-                                return@transaction true
-                            } else {
-                                return@transaction false
-                            }
-                        }
-                    }
-                }, "User ID is not valid")
-                .get()
-
-            name = "User: ${selectedUser?.name}"
-            title = "User: ${selectedUser?.name}"
-        }
+        pageDiff = ctx.attribute<Long>("userQueryTime") ?: 0L
+        selectedUser = ctx.attribute<User>("userId")
+        name = "User: ${selectedUser?.name}"
+        title = "User: ${selectedUser?.name}"
         super.handle(ctx)
     }
 }

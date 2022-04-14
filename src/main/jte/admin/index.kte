@@ -2,13 +2,13 @@
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param p: AdminIndexPage
+@param page: AdminIndexPage
 
 @template.layout.page(
-p = p,
+page = page,
 content = @`
-    <h1>${p.name}</h1>
-    @template.layout.admin.navbar(p=p)
+    <h1>${page.name}</h1>
+    @template.layout.admin.navbar(page=page)
 
     <div class="ui three column stackable grid">
         <div class="ui column">
@@ -38,7 +38,7 @@ content = @`
                     <div class="center aligned description">
                         <div class="ui statistic">
                             <div class="value">
-                                ${p.userCount}
+                                ${page.userCount}
                             </div>
                         </div>
                     </div>

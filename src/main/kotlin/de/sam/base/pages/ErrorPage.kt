@@ -14,4 +14,9 @@ class ErrorPage(val e: HttpResponseException) : Page() {
         get() = name
         set(value) {}
     override var templateName: String = "error.kte"
+
+    override fun handle(ctx: Context) {
+        ctx.status(e.status)
+        super.handle(ctx)
+    }
 }

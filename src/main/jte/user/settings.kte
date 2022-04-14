@@ -1,11 +1,11 @@
 @import de.sam.base.pages.user.UserSettingsPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param p: UserSettingsPage
+@param page: UserSettingsPage
 
 @template.layout.page(
-p = p,
+page = page,
 content = @`
-    <h1>${p.name}</h1>
+    <h1>${page.name}</h1>
 `
 )

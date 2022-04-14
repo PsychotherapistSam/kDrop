@@ -1,16 +1,16 @@
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.config.Configuration.Companion.config
 
-@param p: UserLoginPage
+@param page: UserLoginPage
 
 @template.layout.page(
-p = p,
+page = page,
 content = @`
     <br>
     <div class="ui grid">
         <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
             <div class="ui center aligned basic fitted segment">
-                <h1>${p.name}</h1>
+                <h1>${page.name}</h1>
             </div>
             <form class="ui form" action="/api/v1/session" method="post" id="login-form">
                 <div class="field">

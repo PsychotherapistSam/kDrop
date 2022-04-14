@@ -16,9 +16,17 @@ class User(
     var preferences: String,
     var registrationDate: DateTime
 ) : Serializable {
+
+    fun getHighestRolePowerLevel(): Int = roles.maxOf { it.powerLevel }
+
     fun getHighestRole(): UserRoles {
         return roles.maxByOrNull { it.powerLevel }!! // users should not not have a role
     }
+
+    fun hasRolePowerLevel(role: UserRoles): Boolean {
+        return role.powerLevel <= getHighestRolePowerLevel()
+    }
+
 
     fun hasRole(role: UserRoles): Boolean {
         return roles.contains(role)

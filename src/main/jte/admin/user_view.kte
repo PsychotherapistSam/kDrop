@@ -2,20 +2,20 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 
-@param p: AdminUserViewPage
+@param page: AdminUserViewPage
 
 @template.layout.page(
-p = p,
+page = page,
 content = @`
-    <h1>${p.name}</h1>
+    <h1>${page.name}</h1>
 
-    @template.layout.admin.navbar(p=p)
+    @template.layout.admin.navbar(page=page)
 
     <div class="ui right floated basic fitted segment">
         <div class="ui right floated basic fitted segment">
             <div class="ui compact stackable buttons">
                 <a class="ui secondary button" href="./edit">Edit</a>
-                <div class="ui orange button" id="ban_user">Ban</div>
+                <div class="ui disabled orange button" id="ban_user">Ban</div>
                 <div class="ui negative button" id="delete_user">Delete</div>
             </div>
         </div>
@@ -26,24 +26,63 @@ content = @`
                 <i class="large user middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Username:</div>
-                    <div class="description">${p.selectedUser!!.name}</div>
+                    <div class="description">${page.selectedUser!!.name}</div>
                 </div>
             </div>
             <div class="item">
                 <i class="large clock middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Registration Date:</div>
-                    <div class="description">${p.selectedUser!!.registrationDate.toString()}</div>
+                    <div class="description">${page.selectedUser!!.registrationDate.toString()}</div>
                 </div>
             </div>
             <div class="item">
                 <i class="large group middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Roles:</div>
-                    <div class="description">${p.selectedUser!!.roles.toString()}</div>
+                    <div class="description">${page.selectedUser!!.roles.toString()}</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        /*$("#ban_user").click(function () {
+            $.ajax({
+                url: "/api/v1/session",
+                type: "DELETE",
+                success: function () {
+                    window.location.href = "/";
+                },
+            });
+        });*/
+        $("#delete_user").click(function () {
+            $('body').modal({
+                title: 'User Deletion',
+                class: 'tiny',
+                content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt>${page.selectedUser!!.name}</tt>?',
+                actions: [{
+                    text: 'Yes, permanently delete ${page.selectedUser!!.name}',
+                    class: 'negative'
+                }, {
+                    text: 'No, cancel',
+                    class: 'secondary',
+                }],
+                onDeny: function () {
+                    $.ajax({
+                        url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                        type: "DELETE",
+                        success: function () {
+                            $('body')
+                                .toast({
+                                    message: 'User deleted'
+                                })
+                            ;
+                        },
+                    });
+                }
+            }).modal('show');
+        });
+    </script>
 `
 )

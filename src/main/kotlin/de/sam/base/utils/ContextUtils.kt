@@ -7,3 +7,7 @@ import io.javalin.http.Context
 var Context.currentUser: User?
     get() = this.sessionAttribute("user")
     set(user) = this.sessionAttribute("user", user)
+
+var Context.isLoggedIn: Boolean
+    get() = this.currentUser != null
+    set(value) = throw UnsupportedOperationException("Cannot set isLoggedIn")

@@ -2,14 +2,14 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 
-@param p: AdminUsersPage
+@param page: AdminUsersPage
 
 @template.layout.page(
-p = p,
+page = page,
 content = @`
-    <h1>${p.name}</h1>
+    <h1>${page.name}</h1>
 
-    @template.layout.admin.navbar(p=p)
+    @template.layout.admin.navbar(page=page)
 
     <table class="ui compact celled striped table">
         <thead>
@@ -22,7 +22,7 @@ content = @`
         </tr>
         </thead>
         <tbody>
-        @for(user in p.users)
+        @for(user in page.users)
             <tr>
                 <td>
                     @if(user.roles.contains(UserRoles.ADMIN))

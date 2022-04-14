@@ -2,6 +2,7 @@ package de.sam.base
 
 import de.sam.base.database.User
 import de.sam.base.utils.currentUser
+import de.sam.base.utils.isLoggedIn
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import java.math.BigDecimal
