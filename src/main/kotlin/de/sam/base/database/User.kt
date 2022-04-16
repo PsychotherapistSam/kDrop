@@ -12,6 +12,7 @@ import java.util.*
 class User(
     var id: UUID,
     var name: String,
+    var password: String,
     var roles: List<UserRoles>,
     var preferences: String,
     var registrationDate: DateTime
@@ -26,7 +27,6 @@ class User(
     fun hasRolePowerLevel(role: UserRoles): Boolean {
         return role.powerLevel <= getHighestRolePowerLevel()
     }
-
 
     fun hasRole(role: UserRoles): Boolean {
         return roles.contains(role)
@@ -72,6 +72,7 @@ fun UserDAO.toUser(): User {
     return User(
         this.id.value,
         this.name,
+        this.password,
         roles.split(",").map { it.toInt() }.map { UserRoles.values()[it] },
         this.preferences,
         this.registrationDate
