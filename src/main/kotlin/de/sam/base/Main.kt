@@ -11,7 +11,6 @@ fun main(args: Array<String>) {
         configuration.saveToFile(configFile)
         println("created config yeee")
     }
-
     configuration.loadFromFile(configFile)
 
     DatabaseManager().start()

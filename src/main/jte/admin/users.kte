@@ -7,8 +7,6 @@
 @template.layout.page(
 page = page,
 content = @`
-    <h1>${page.name}</h1>
-
     @template.layout.admin.navbar(page=page)
 
     <table class="ui compact celled striped table">

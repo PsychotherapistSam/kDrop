@@ -4,7 +4,6 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.User
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
@@ -36,94 +35,27 @@ class AuthenticationController {
 
         // hide discrepancy on whether an account exists or not to prevent account enumeration
         prolongAtLeast(2000) {
-            //   val start = System.currentTimeMillis()
-
-            var user: User? = null
-            val usernameValidator = ctx.formParamAsClass<String>("username")
-                .check({ it.isNotBlank() }, "Username is required")
-                .check({ it.length <= 20 }, "Username is too long")
-                .check({ it.length >= 3 }, "Username is too short")
-                .check(
-                    {
-                        transaction {
-                            addLogger(StdOutSqlLogger)
-                            val userDao = UserDAO.find { UsersTable.name.lowerCase() like it.lowercase() }.firstOrNull()
-                            if (userDao != null) {
-                                user = userDao.toUser()
-                                return@transaction true
-                            }
-                            return@transaction false
-                        }
-                    },
-                    "Invalid username or password" // to protect against enumeration, we don't reveal if the account exists or not
-                )
-
-            if (usernameValidator.errors().isNotEmpty()) {
+            val usernameValidation = validateUsername(ctx.formParam("username"))
+            val usernameErrors = usernameValidation.first
+            val user = usernameValidation.second
+            if (usernameErrors.isNotEmpty()) {
                 ctx.status(HttpCode.FORBIDDEN)
-                ctx.json(usernameValidator.errors()["username"]!!.map { it.message })
+                ctx.json(usernameErrors.map { it.message })
             } else {
-                val passwordValidator = ctx.formParamAsClass<String>("password")
-                    .check({ it.isNotBlank() }, "Password is required")
-                    .check({ it.length <= 128 }, "Password is too long")
-                    .check({ it.length >= 3 }, "Password is too short")
-                    .check(
-                        {
-                            Password.check(it, user!!.password)
-                                .addSalt("${user!!.id}${user!!.name}") // argon2id salts the passwords on itself, but better safe than sorry
-                                .addPepper(config.passwordPepper)
-                                .with(argon2Instance)
-                        },
-                        "Invalid username or password"
-                    )  // to protect against enumeration, we don't reveal if the account exists or not
-
-                if (passwordValidator.errors().isNotEmpty()) {
+                val passwordValidation = validatePassword(user, ctx.formParam("password"))
+                if (passwordValidation.isNotEmpty()) {
                     ctx.status(HttpCode.FORBIDDEN)
-                    ctx.json(passwordValidator.errors()["password"]!!.map { it.message })
+                    ctx.json(passwordValidation.map { it.message })
                 } else {
                     ctx.currentUser = user!!
                     ctx.status(200)
-                    /*val username = usernameValidator.get()
-                    val password = passwordValidator.get()
-
-                    val userDAO = transaction {
-                        addLogger(StdOutSqlLogger)
-                        return@transaction UserDAO
-                            .find { UsersTable.name.lowerCase() eq username.lowercase() }
-                            .limit(1)
-                            .firstOrNull()
-                    }
-
-                    if (userDAO != null) {
-                        val passwordIsVerified = Password.check(password, userDAO.password)
-                            .addSalt("${userDAO.id}${userDAO.name}") // argon2id salts the passwords on itself, but better safe than sorry
-                            .addPepper(config.passwordPepper)
-                            .with(argon2Instance)
-
-                        if (passwordIsVerified) {
-                            ctx.currentUser = userDAO.toUser()
-                            ctx.status(200)
-                        } else {
-                            ctx.status(400)
-                        }
-                    } else {
-                        ctx.status(400)
-                    }*/
                 }
             }
-
-            // each request is going to take at least 2s to avoid guessing if a user exists -> checking if the password is actually getting hashed
-/*
-            val end = System.currentTimeMillis()
-
-            val waitTime = 1900L + Random().nextInt(200)
-
-            val diffTime: Long = waitTime - (end - start)
-            if (diffTime > 0) Thread.sleep(diffTime)*/
         }
     }
 
     @OptIn(ExperimentalContracts::class)
-    public inline fun prolongAtLeast(ms: Long, randomTime: Long = 200, block: () -> Unit): Unit? {
+    inline fun prolongAtLeast(ms: Long, randomTime: Long = 200, block: () -> Unit): Unit? {
         contract {
             callsInPlace(block, InvocationKind.EXACTLY_ONCE)
         }
@@ -149,65 +81,38 @@ class AuthenticationController {
             ctx.status(HttpCode.FORBIDDEN)
         } else {
             prolongAtLeast(2000) {
+                val username = ctx.formParam("username")
+                val usernameErrors = validateUsername(username, false).first
 
-                val usernameValidator = ctx.formParamAsClass<String>("username")
-                    .check({ it.isNotBlank() }, "Username is required")
-                    .check({ it.length <= 20 }, "Username is too long")
-                    .check({ it.length >= 3 }, "Username is too short")
-                    .check(
-                        {
-                            transaction {
-                                addLogger(StdOutSqlLogger)
-                                !UserDAO.find { UsersTable.name.lowerCase() like it.lowercase() }.any()
-                            }
-                        },
-                        "Username is already taken"
-                    ) // kinda scuffed but I'll take it - it stays like this for now
-
-                val passwordValidator = ctx.formParamAsClass<String>("password")
-                    .check({ it.isNotBlank() }, "Password is required")
-                    .check({ it.length <= 128 }, "Password is too long")
-                    .check({ it.length >= 3 }, "Password is too short")
+                val password = ctx.formParam("password")
+                val passwordErrors = validatePassword(null, password)
 
                 val errors = arrayListOf<ValidationError<String>>()
 
-                if(usernameValidator.errors()["username"] != null)
-                    errors.addAll(usernameValidator.errors()["username"]!!)
-                if(passwordValidator.errors()["password"] != null)
-                    errors.addAll(passwordValidator.errors()["password"]!!)
+                if (usernameErrors.isNotEmpty())
+                    errors.addAll(usernameErrors)
+                if (passwordErrors.isNotEmpty())
+                    errors.addAll(passwordErrors)
 
                 if (errors.isNotEmpty()) {
                     ctx.status(HttpCode.FORBIDDEN)
                     ctx.json(errors.map { it.message })
                 } else {
-                    val username = usernameValidator.get()
-                    val password = passwordValidator.get()
-
                     val userDAO = transaction {
                         addLogger(StdOutSqlLogger)
                         return@transaction UserDAO.new {
-                            this.name = username
+                            this.name = username!!
                             this.password = Password.hash(password)
                                 .addSalt("${this.id}${this.name}") // argon2id salts the passwords on itself, but better safe than sorry
                                 .addPepper(config.passwordPepper)
                                 .with(argon2Instance)
                                 .result
-                            this.roles = "0"
+                            this.roles = UserRoles.USER.name
                             this.hidden = false
                             this.preferences = "{}"
                             this.registrationDate = DateTime.now()
                         }
                     }
-
-                    // each request is going to take at least 2s to avoid guessing if a user exists -> checking if the password is actually getting hashed
-
-                    /*        val end = System.currentTimeMillis()
-
-                            val waitTime = 1900L + Random().nextInt(200)
-
-                            val diffTime: Long = waitTime - (end - start)
-                            if (diffTime > 0) Thread.sleep(diffTime)*/
-
                     ctx.currentUser = userDAO.toUser()
                     ctx.status(200)
                 }

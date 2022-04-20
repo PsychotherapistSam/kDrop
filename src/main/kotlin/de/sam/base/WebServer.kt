@@ -13,6 +13,7 @@ import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.UserController
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.admin.AdminIndexPage
+import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.UserLoginPage
@@ -96,7 +97,7 @@ class WebServer {
                     before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
                         get("/", AdminUserViewPage(), UserRoles.ADMIN)
-                        get("/edit", AdminUserViewPage(), UserRoles.ADMIN)
+                        get("/edit", AdminUserEditPage(), UserRoles.ADMIN)
                     }
                 }
             }
@@ -117,7 +118,7 @@ class WebServer {
                     path("/{userId}") {
                         delete("/", UserController()::deleteUser)
                         // get(UserController()::getUser)
-                        // put(UserController()::updateUser)
+                        put(UserController()::updateUser)
                     }
                 }
             }

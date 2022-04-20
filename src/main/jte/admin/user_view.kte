@@ -1,5 +1,6 @@
 @import de.sam.base.pages.admin.AdminUserViewPage
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 
 @param page: AdminUserViewPage
@@ -7,8 +8,6 @@
 @template.layout.page(
 page = page,
 content = @`
-    <h1>${page.name}</h1>
-
     @template.layout.admin.navbar(page=page)
 
     <div class="ui right floated basic fitted segment">
@@ -78,6 +77,7 @@ content = @`
                                     message: 'User deleted'
                                 })
                             ;
+                            window.location.href = '${AdminUsersPage.ROUTE}';
                         },
                     });
                 }

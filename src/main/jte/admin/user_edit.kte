@@ -1,0 +1,112 @@
+@import de.sam.base.pages.admin.AdminUserEditPage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.users.UserRoles
+
+@param page: AdminUserEditPage
+
+@template.layout.page(
+page = page,
+content = @`
+    @template.layout.admin.navbar(page=page)
+
+    <h4 class="ui horizontal divider header">
+        <i class="user icon"></i>
+        Profile
+    </h4>
+    <div class="ui basic fitted segment">
+        <form class="ui form" method="PUT" id="profile-form">
+            <!-- error or success class -->
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" value="${page.selectedUser!!.name}"
+                       placeholder="Username"
+                       tabindex="0">
+            </div>
+            <div class="field">
+                <label for="roles">Roles</label>
+                <div class="ui fluid multiple search clearable  selection dropdown">
+                    <input type="hidden" name="roles" tabindex="1"
+                           value="${page.selectedUser!!.roles.map { it.name }.joinToString(",")}">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Role</div>
+                    <div class="menu">
+                        @for(role in UserRoles.values().sortedBy { it.powerLevel }.reversed())
+                            <div class="item" data-value="${role.name}">
+                                <div class="ui ${role.color} empty circular label"></div>
+                                ${role.title}
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            </div>
+            <input type="submit" class="ui secondary compact button" value="Save" tabindex="2">
+            <div class="ui success message">
+                <div class="header"></div>
+            </div>
+            <div class="ui error message">
+                <div class="header"></div>
+                <p></p>
+            </div>
+        </form>
+    </div>
+    <h4 class="ui horizontal divider header">
+        <i class="key chart icon"></i>
+        Password
+    </h4>
+    <div class="ui basic fitted segment">
+        <form class="ui form" action="/api/v1/users/userId/settings" method="put" id="password-form">
+            <!-- error or success class -->
+            <div class="field">
+                <label for="password">New Password</label>
+                <input type="password" name="password" id="password" value="" placeholder="Password"
+                       tabindex="4">
+            </div>
+            <input type="submit" class="ui secondary compact button" value="Save" tabindex="2">
+            <div class="ui compact secondary right floated button">Generate password reset link</div>
+            <div class="ui success message">
+                <div class="header"></div>
+            </div>
+            <div class="ui error message">
+                <div class="header"></div>
+                <p></p>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(".ui.dropdown").dropdown();
+
+        $("#profile-form").submit(function (event) {
+            event.preventDefault();
+            const form = $(this);
+            const method = form.attr('method');
+            const data = form.serialize();
+
+            // add loading indicator to form
+            form.addClass('loading');
+
+            $.ajax({
+                type: method,
+                url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                data: data
+            }).always(function () {
+                form.removeClass('loading');
+            }).done(function () {
+                form.removeClass("error")
+                form.addClass("success")
+                form.find('.ui.success.message .header').html('Saved user details');
+            }).fail(function (data) {
+                form.addClass("error")
+                form.removeClass("success")
+                if (data.status === 403 && data.responseJSON) {
+                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                    form.find('.ui.error.message p').html(data.responseJSON[0]);
+                } else {
+                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                    form.find('.ui.error.message p').html('Error Code: ' + data.status);
+                }
+            });
+        });
+    </script>
+`
+)

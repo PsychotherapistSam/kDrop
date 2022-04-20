@@ -19,13 +19,12 @@ content = @`
                 </div>
                 <div class="field">
                     <label for="password">Password</label>
-                    <input type="password" name="password" id="password" placeholder="Password"
-                           tabindex="2">
+                    <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
                 </div>
                 <div class="ui negative hidden message">
                 </div>
                 <input type="submit" class="ui secondary compact button" value="Log In" tabindex="3">
-                <a class="ui right floated compact button" href="/password_reset/" tabindex="4">Forgot
+                <a class="ui right floated compact button" href="#" tabindex="4">Forgot
                     password?</a>
             </form>
         </div>
@@ -52,7 +51,7 @@ content = @`
                 window.location.href = '/';
             }).fail(function (data) {
                 if (data.status === 403) {
-                    if(data.responseJSON) {
+                    if (data.responseJSON) {
                         $('.ui.negative.message')
                             .removeClass("hidden")
                             .html(data.responseJSON[0]);

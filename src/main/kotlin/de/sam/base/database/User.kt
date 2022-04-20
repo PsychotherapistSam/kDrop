@@ -73,7 +73,7 @@ fun UserDAO.toUser(): User {
         this.id.value,
         this.name,
         this.password,
-        roles.split(",").map { it.toInt() }.map { UserRoles.values()[it] },
+        roles.split(",").map { UserRoles.valueOf(it) },
         this.preferences,
         this.registrationDate
     )

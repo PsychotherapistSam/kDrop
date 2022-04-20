@@ -1,6 +1,8 @@
 @import de.sam.base.Page
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
+@import de.sam.base.pages.admin.AdminUserViewPage
+@import de.sam.base.pages.admin.AdminUserEditPage
 
 @param page: Page
 
@@ -8,8 +10,9 @@
     <a class="@if(page is AdminIndexPage) active @endif item " href="${AdminIndexPage.ROUTE}">
         Overview
     </a>
-    <a class="@if(page is AdminUsersPage) active @endif item " href="${AdminUsersPage.ROUTE}">
-        Users
+    <a class="@if(page is AdminUsersPage || page is AdminUserViewPage || page is AdminUserEditPage) active @endif item "
+       href="${AdminUsersPage.ROUTE}">
+        Users@if(page is AdminUserViewPage || page is AdminUserEditPage) @endif
     </a>
     <a class="item">
         Friends
