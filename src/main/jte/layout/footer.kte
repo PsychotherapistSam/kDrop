@@ -33,6 +33,58 @@
                 </div>
             </div>
         </div>
+        <!--<style>
+            :root {
+                --darkBG: #1b1c1d;
+            }
+
+            body.inverted {
+                background-color: var(--darkBG);
+            }
+        </style>
+
+        <button class="ui button icon basic" id="darkmode">
+            <i class="moon icon"></i>
+        </button>
+
+        <script>
+            function toggleDarkMode () {
+                // add fomantic's inverted class to all ui elements
+                $('body').find('.ui').addClass('inverted');
+                // add custom inverted class to body
+                $('body').addClass('inverted');
+
+                // simple toggle icon change
+                $("#darkmode > i").removeClass('moon');
+                $("#darkmode > i").addClass('sun');
+
+                return;
+            }
+
+            function toggleLightMode() {
+                // remove fomantic's inverted from all ui elements
+                $('body').find('.ui').removeClass('inverted');
+                // remove custom inverted class to body
+                $('body').removeClass('inverted');
+
+                // change button icon
+                $("#darkmode > i").removeClass('sun')
+                $("#darkmode > i").addClass('moon');
+
+                return;
+            }
+
+            toggleDarkMode();
+
+            $('#darkmode').click(function () {
+                if (true) {
+                    toggleLightMode();
+                } else {
+                    toggleDarkMode();
+                }
+            });
+        </script>-->
+
     </div>
 </footer>
 

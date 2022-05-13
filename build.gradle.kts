@@ -18,7 +18,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation("io.javalin:javalin:4.4.0")
+    implementation("io.javalin:javalin:4.5.0")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:1.7.36")
     // https://mvnrepository.com/artifact/gg.jte/jte
@@ -28,7 +28,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.3.3")
+    implementation("org.postgresql:postgresql:42.3.4")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml

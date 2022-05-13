@@ -54,7 +54,7 @@ content = @`
         Password
     </h4>
     <div class="ui basic fitted segment">
-        <form class="ui form" action="/api/v1/users/userId/settings" method="put" id="password-form">
+        <form class="ui form" method="PUT" id="password-form">
             <!-- error or success class -->
             <div class="field">
                 <label for="password">New Password</label>
@@ -77,6 +77,38 @@ content = @`
         $(".ui.dropdown").dropdown();
 
         $("#profile-form").submit(function (event) {
+            event.preventDefault();
+            const form = $(this);
+            const method = form.attr('method');
+            const data = form.serialize();
+
+            // add loading indicator to form
+            form.addClass('loading');
+
+            $.ajax({
+                type: method,
+                url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                data: data
+            }).always(function () {
+                form.removeClass('loading');
+            }).done(function () {
+                form.removeClass("error")
+                form.addClass("success")
+                form.find('.ui.success.message .header').html('Saved user details');
+            }).fail(function (data) {
+                form.addClass("error")
+                form.removeClass("success")
+                if (data.status === 403 && data.responseJSON) {
+                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                    form.find('.ui.error.message p').html(data.responseJSON[0]);
+                } else {
+                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                    form.find('.ui.error.message p').html('Error Code: ' + data.status);
+                }
+            });
+        });
+
+        $("#password-form").submit(function (event) {
             event.preventDefault();
             const form = $(this);
             const method = form.attr('method');

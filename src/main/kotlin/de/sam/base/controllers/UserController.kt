@@ -12,9 +12,7 @@ import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
 import io.javalin.core.validation.ValidationError
 import io.javalin.core.validation.Validator
-import io.javalin.http.Context
-import io.javalin.http.HttpCode
-import io.javalin.http.UnauthorizedResponse
+import io.javalin.http.*
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.logTimeSpent
@@ -27,42 +25,50 @@ import kotlin.system.measureNanoTime
 class UserController {
 
     fun updateUser(ctx: Context) {
-        val selectedUser = ctx.attribute<User>("userId")!!
-
-        if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
-            throw UnauthorizedResponse("You are not allowed to delete this user")
-        }
-
-        val username = ctx.formParam("username")
-        if (username != null && selectedUser.name.lowercase() != username.lowercase()) {
-            val usernameErrors = validateUsername(username, false).first
-            if (usernameErrors.isNotEmpty()) {
-                ctx.status(HttpCode.FORBIDDEN)
-                ctx.json(usernameErrors.map { it.message })
-                return
-            }
-        }
-        var comaSeperatedRoles: String? = null
-        if (ctx.formParam("roles") != null) {
-            // map either null, comma seperated list to enum list
-            val roles = ctx.formParamAsClass<String>("roles")
-                .check({ it.isNotBlank() }, "Roles must not be empty")
-                .check({
-                    it.split(",").all { splitRole -> splitRole in UserRoles.values().map { role -> role.name } }
-                }, "Invalid roles")
-                .get()
-                .split(",")
-                .map { UserRoles.valueOf(it) }
-            if (roles != selectedUser.roles) {
-                comaSeperatedRoles = roles.joinToString(",") { it.name }
-            }
-        }
+        val selectedUser = ctx.attribute<User>("requestUserParameter")!!
+        /*if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
+            throw UnauthorizedResponse("You are not allowed to update this user")
+        }*/
 
         transaction {
-            val user = UserDAO.findById(selectedUser.id)
-            if (user != null) {
-                if (username != null) user.name = username
-                if (comaSeperatedRoles != null) user.roles = comaSeperatedRoles
+            val user = UserDAO.findById(selectedUser.id) ?: throw NotFoundResponse("User not found")
+            ctx.formParamMap().forEach { (key, value) ->
+                when (key) {
+                    "username" -> {
+                        val newName = value.first()
+                        if (selectedUser.name.lowercase() != newName.lowercase()) {
+                            val usernameErrors = validateUsername(newName, false).first
+                            if (usernameErrors.isNotEmpty())
+                                throw BadRequestResponse(usernameErrors.joinToString("\n") { it.message })
+                            user.name = newName
+                        }
+                    }
+                    "password" -> {
+                        val newPassword = value.first()
+                        if (newPassword.isNotEmpty()) {
+                            val passwordErrors = validatePassword(null, newPassword)
+                            if (passwordErrors.isNotEmpty())
+                                throw BadRequestResponse(passwordErrors.joinToString("\n") { it.message })
+                            user.password = Password.hash(newPassword)
+                                .addSalt("${selectedUser.id}") // argon2id salts the passwords on itself, but better safe than sorry
+                                .addPepper(Configuration.config.passwordPepper)
+                                .with(argon2Instance)
+                                .result
+                        }
+                    }
+                    "roles" -> {
+                        if (ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
+                            // map either null, comma seperated list to enum list1
+                            val roleValidationErrors = validateRoles(value.first())
+                            if (roleValidationErrors.isNotEmpty())
+                                throw BadRequestResponse(roleValidationErrors.joinToString("\n") { it.message })
+                            val roles = value.first().split(",").map { UserRoles.valueOf(it) }
+                            if (roles != selectedUser.roles) {
+                                user.roles = roles.joinToString(",") { it.name }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -90,7 +96,7 @@ class UserController {
                         logTimeSpent("Getting user by id") {
                             val userDao = UserDAO.findById(it)
                             if (userDao != null) {
-                                ctx.attribute("userId", userDao.toUser())
+                                ctx.attribute("requestUserParameter", userDao.toUser())
                                 return@transaction true
                             } else {
                                 return@transaction false
@@ -160,11 +166,22 @@ fun validatePassword(user: User? = null, password: String?): List<ValidationErro
                     true
                 } else {
                     Password.check(it, user!!.password)
-                        .addSalt("${user.id}${user.name}") // argon2id salts the passwords on itself, but better safe than sorry
+                        .addSalt("${user.id}") // argon2id salts the passwords on itself, but better safe than sorry
                         .addPepper(Configuration.config.passwordPepper)
                         .with(argon2Instance)
                 }
             },
             "Invalid username or password"
         ).errors().getOrElse(fieldName) { arrayListOf() }
+}
+
+fun validateRoles(roles: String): List<ValidationError<String>> {
+    val fieldName = "role"
+    return Validator.create(String::class.java, roles, fieldName)
+        .check({ it.isNotBlank() }, "Roles must not be empty")
+        .check({
+            it.split(",")
+                .all { splitRole -> splitRole in UserRoles.values().map { role -> role.name } }
+        }, "Invalid roles")
+        .errors().getOrElse(fieldName) { arrayListOf() }
 }

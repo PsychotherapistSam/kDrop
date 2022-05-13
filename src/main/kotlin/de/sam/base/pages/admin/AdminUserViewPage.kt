@@ -26,7 +26,7 @@ class AdminUserViewPage : Page() {
 
     override fun handle(ctx: Context) {
         pageDiff = ctx.attribute<Long>("userQueryTime") ?: 0L
-        selectedUser = ctx.attribute<User>("userId")
+        selectedUser = ctx.attribute<User>("requestUserParameter")
         name = "User: ${selectedUser?.name}"
         title = "User: ${selectedUser?.name}"
         super.handle(ctx)

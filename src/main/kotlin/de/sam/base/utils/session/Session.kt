@@ -6,7 +6,6 @@ import org.eclipse.jetty.server.session.SessionHandler
 import java.io.File
 
 object Session {
-
     fun fileSessionHandler() = SessionHandler().apply {
         httpOnly = false
         sessionCache = DefaultSessionCache(this).apply {

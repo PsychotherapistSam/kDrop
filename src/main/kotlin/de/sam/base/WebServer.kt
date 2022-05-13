@@ -43,24 +43,40 @@ class WebServer {
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN));
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 if (routeRoles.isNotEmpty()) {
-                    if (ctx.isLoggedIn) {
-                        val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
-                        val minReqiredRole = routeRoles.minOf { (it as UserRoles).powerLevel }
-                        if (maxUserRole < minReqiredRole) {
-                            val minRole = routeRoles.map { it as UserRoles }.minByOrNull { it.powerLevel }
-                            // val minRoleName = (routeRoles.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
+                    if (!ctx.isLoggedIn) {
+                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
+                    }
+
+                    val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
+                    val minReqiredRole = routeRoles
+                        .map { it as UserRoles }
+                        //.filter { !it.hidden }
+                        .minOf { it.powerLevel }
+
+                    val reachesRoleRequirement = maxUserRole >= minReqiredRole
+
+                    if (routeRoles.contains(UserRoles.SELF) && ctx.pathParam("userId") != null) {
+                        if (ctx.currentUser!!.id != UUID.fromString(ctx.pathParam("userId")) && !reachesRoleRequirement) {
+                            // you can't access other users' resources if "self" is set
                             throw UnauthorizedResponse(
-                                "You are not authorized to access this resource.",
-                                hashMapOf("minimumRole" to minRole!!.name)
-                            ) //You need to be at least $minRole")
+                                "You are not authorized to access this resource."
+                            )
                         }
+                    }
+
+                    if (!reachesRoleRequirement) {
+                        val minRole = routeRoles.map { it as UserRoles }.minByOrNull { it.powerLevel }
+                        // val minRoleName = (routeRoles.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
+
+                        throw UnauthorizedResponse(
+                            "You are not authorized to access this resource.",
+                            hashMapOf("minimumRole" to minRole!!.name)
+                        ) //You need to be at least $minRole")
+                    }
 /*                    // check if ctx.currentUser.roles has any role in routeRoles
                     if (!routeRoles.any { ctx.currentUser!!.roles.contains(it) }) {
                         throw UnauthorizedResponse("You are not authorized to access this resource")
                     }*/
-                    } else {
-                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
-                    }
                 }
                 handler.handle(ctx)
             }
@@ -116,9 +132,9 @@ class WebServer {
                     post(AuthenticationController()::registrationRequest)
                     before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
-                        delete("/", UserController()::deleteUser)
+                        delete("/", UserController()::deleteUser, UserRoles.SELF, UserRoles.ADMIN)
                         // get(UserController()::getUser)
-                        put(UserController()::updateUser)
+                        put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                     }
                 }
             }

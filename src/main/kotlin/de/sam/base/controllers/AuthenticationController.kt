@@ -103,7 +103,7 @@ class AuthenticationController {
                         return@transaction UserDAO.new {
                             this.name = username!!
                             this.password = Password.hash(password)
-                                .addSalt("${this.id}${this.name}") // argon2id salts the passwords on itself, but better safe than sorry
+                                .addSalt("${this.id}") // argon2id salts the passwords on itself, but better safe than sorry
                                 .addPepper(config.passwordPepper)
                                 .with(argon2Instance)
                                 .result
