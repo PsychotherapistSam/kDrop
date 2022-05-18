@@ -20,8 +20,7 @@ import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.users.UserRoles
-import de.sam.base.utils.currentUser
-import de.sam.base.utils.isLoggedIn
+import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.session.Session
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
@@ -42,43 +41,7 @@ class WebServer {
             javalinConfig.sessionHandler { Session.fileSessionHandler() }
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN));
             javalinConfig.accessManager { handler, ctx, routeRoles ->
-                if (routeRoles.isNotEmpty()) {
-                    if (!ctx.isLoggedIn) {
-                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
-                    }
-
-                    val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
-                    val minReqiredRole = routeRoles
-                        .map { it as UserRoles }
-                        //.filter { !it.hidden }
-                        .minOf { it.powerLevel }
-
-                    val reachesRoleRequirement = maxUserRole >= minReqiredRole
-
-                    if (routeRoles.contains(UserRoles.SELF) && ctx.pathParam("userId") != null) {
-                        if (ctx.currentUser!!.id != UUID.fromString(ctx.pathParam("userId")) && !reachesRoleRequirement) {
-                            // you can't access other users' resources if "self" is set
-                            throw UnauthorizedResponse(
-                                "You are not authorized to access this resource."
-                            )
-                        }
-                    }
-
-                    if (!reachesRoleRequirement) {
-                        val minRole = routeRoles.map { it as UserRoles }.minByOrNull { it.powerLevel }
-                        // val minRoleName = (routeRoles.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
-
-                        throw UnauthorizedResponse(
-                            "You are not authorized to access this resource.",
-                            hashMapOf("minimumRole" to minRole!!.name)
-                        ) //You need to be at least $minRole")
-                    }
-/*                    // check if ctx.currentUser.roles has any role in routeRoles
-                    if (!routeRoles.any { ctx.currentUser!!.roles.contains(it) }) {
-                        throw UnauthorizedResponse("You are not authorized to access this resource")
-                    }*/
-                }
-                handler.handle(ctx)
+                CustomAccessManager().manage(handler, ctx, routeRoles)
             }
         }.start(config.port)
 
@@ -95,7 +58,7 @@ class WebServer {
         }
 
         app.exception(HttpResponseException::class.java) { e, ctx ->
-            if(ctx.header("Accept")?.contains("application/json") == true ) {
+            if (ctx.header("Accept")?.contains("application/json") == true) {
                 ctx.status(e.status)
                 ctx.json(arrayOf(e.message))
             } else {
