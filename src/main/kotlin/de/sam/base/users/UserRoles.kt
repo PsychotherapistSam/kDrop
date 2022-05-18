@@ -8,6 +8,7 @@ enum class UserRoles(
     var color: String,
     var hidden: Boolean = false
 ) : RouteRole {
+    // self is handled differntly in the accessManager, checks if the user requesting is also the user being accessed
     SELF("self", 1, "", true),
     USER("User", 1, "white"),
     PREMIUM("Premium", 10, "purple"),

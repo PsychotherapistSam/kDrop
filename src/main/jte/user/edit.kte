@@ -1,14 +1,33 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.user.UserEditPage
 @import de.sam.base.pages.admin.AdminUserEditPage
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
+@import de.sam.base.database.User
 
-@param page: AdminUserEditPage
+@param page: Page
+
+!{val viewedByAdmin = page is AdminUserEditPage}
+!{var selectedUser: User?}
+
+@if(viewedByAdmin)
+    !{selectedUser = (page as AdminUserEditPage).selectedUser}
+@else
+    !{selectedUser = (page as UserEditPage).currentUser}
+@endif
 
 @template.layout.page(
 page = page,
 content = @`
-    @template.layout.admin.navbar(page=page)
-
+    @if(viewedByAdmin)
+        @template.layout.admin.navbar(page=page)
+    @else
+        <h1>Account Settings
+            @if(page.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN))
+                <a class="ui compact secondary right floated button" href="/admin/users/${page.currentUser!!.id.toString()}/edit">View as Admin</a>
+            @endif
+        </h1>
+    @endif
     <h4 class="ui horizontal divider header">
         <i class="user icon"></i>
         Profile
@@ -18,27 +37,29 @@ content = @`
             <!-- error or success class -->
             <div class="field">
                 <label for="username">Username</label>
-                <input type="text" name="username" id="username" value="${page.selectedUser!!.name}"
+                <input type="text" name="username" id="username" value="${selectedUser!!.name}"
                        placeholder="Username"
                        tabindex="0">
             </div>
-            <div class="field">
-                <label for="roles">Roles</label>
-                <div class="ui fluid multiple search clearable  selection dropdown">
-                    <input type="hidden" name="roles" tabindex="1"
-                           value="${page.selectedUser!!.roles.map { it.name }.joinToString(",")}">
-                    <i class="dropdown icon"></i>
-                    <div class="default text">Select Role</div>
-                    <div class="menu">
-                        @for(role in UserRoles.values().sortedBy { it.powerLevel }.reversed())
-                            <div class="item" data-value="${role.name}">
-                                <div class="ui ${role.color} empty circular label"></div>
-                                ${role.title}
-                            </div>
-                        @endfor
+            @if(viewedByAdmin)
+                <div class="field">
+                    <label for="roles">Roles</label>
+                    <div class="ui fluid multiple search clearable  selection dropdown">
+                        <input type="hidden" name="roles" tabindex="1"
+                               value="${selectedUser!!.roles.map { it.name }.joinToString(",")}">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select Role</div>
+                        <div class="menu">
+                            @for(role in UserRoles.values().sortedBy { it.powerLevel }.reversed())
+                                <div class="item" data-value="${role.name}">
+                                    <div class="ui ${role.color} empty circular label"></div>
+                                    ${role.title}
+                                </div>
+                            @endfor
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
             <input type="submit" class="ui secondary compact button" value="Save" tabindex="2">
             <div class="ui success message">
                 <div class="header"></div>
@@ -62,7 +83,9 @@ content = @`
                        tabindex="4">
             </div>
             <input type="submit" class="ui secondary compact button" value="Save" tabindex="2">
-            <div class="ui compact secondary right floated button">Generate password reset link</div>
+            @if(viewedByAdmin)
+                <div class="ui compact secondary right floated button">Generate password reset link</div>
+            @endif
             <div class="ui success message">
                 <div class="header"></div>
             </div>
@@ -87,7 +110,10 @@ content = @`
 
             $.ajax({
                 type: method,
-                url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                headers: {
+                    'Accept': 'application/json',
+                },
+                url: "/api/v1/users/${selectedUser!!.id.toString()}",
                 data: data
             }).always(function () {
                 form.removeClass('loading');
@@ -98,8 +124,8 @@ content = @`
             }).fail(function (data) {
                 form.addClass("error")
                 form.removeClass("success")
-                if (data.status === 403 && data.responseJSON) {
-                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                if (data.responseJSON) {
+                    form.find('.ui.error.message .header').html('Error saving user details');
                     form.find('.ui.error.message p').html(data.responseJSON[0]);
                 } else {
                     form.find('.ui.error.message .header').html('Action ' + data.statusText);
@@ -119,7 +145,10 @@ content = @`
 
             $.ajax({
                 type: method,
-                url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                headers: {
+                    'Accept': 'application/json',
+                },
+                url: "/api/v1/users/${selectedUser!!.id.toString()}",
                 data: data
             }).always(function () {
                 form.removeClass('loading');
@@ -130,8 +159,8 @@ content = @`
             }).fail(function (data) {
                 form.addClass("error")
                 form.removeClass("success")
-                if (data.status === 403 && data.responseJSON) {
-                    form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                if (data.responseJSON) {
+                    form.find('.ui.error.message .header').html('Error saving user details');
                     form.find('.ui.error.message p').html(data.responseJSON[0]);
                 } else {
                     form.find('.ui.error.message .header').html('Action ' + data.statusText);

@@ -30,6 +30,8 @@ class UserController {
             throw UnauthorizedResponse("You are not allowed to update this user")
         }*/
 
+        val isSelf = ctx.currentUser!!.id == selectedUser.id
+
         transaction {
             val user = UserDAO.findById(selectedUser.id) ?: throw NotFoundResponse("User not found")
             ctx.formParamMap().forEach { (key, value) ->
@@ -39,29 +41,27 @@ class UserController {
                         if (selectedUser.name.lowercase() != newName.lowercase()) {
                             val usernameErrors = validateUsername(newName, false).first
                             if (usernameErrors.isNotEmpty())
-                                throw BadRequestResponse(usernameErrors.joinToString("\n") { it.message })
+                                throw BadRequestResponse(usernameErrors.first().message) //.joinToString("\n") { it.message }
                             user.name = newName
                         }
                     }
                     "password" -> {
                         val newPassword = value.first()
-                        if (newPassword.isNotEmpty()) {
-                            val passwordErrors = validatePassword(null, newPassword)
-                            if (passwordErrors.isNotEmpty())
-                                throw BadRequestResponse(passwordErrors.joinToString("\n") { it.message })
-                            user.password = Password.hash(newPassword)
-                                .addSalt("${selectedUser.id}") // argon2id salts the passwords on itself, but better safe than sorry
-                                .addPepper(Configuration.config.passwordPepper)
-                                .with(argon2Instance)
-                                .result
-                        }
+                        val passwordErrors = validatePassword(null, newPassword)
+                        if (passwordErrors.isNotEmpty())
+                            throw BadRequestResponse(passwordErrors.first().message) //.joinToString("\n") { it.message })
+                        user.password = Password.hash(newPassword)
+                            .addSalt("${selectedUser.id}") // argon2id salts the passwords on itself, but better safe than sorry
+                            .addPepper(Configuration.config.passwordPepper)
+                            .with(argon2Instance)
+                            .result
                     }
                     "roles" -> {
                         if (ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
                             // map either null, comma seperated list to enum list1
                             val roleValidationErrors = validateRoles(value.first())
                             if (roleValidationErrors.isNotEmpty())
-                                throw BadRequestResponse(roleValidationErrors.joinToString("\n") { it.message })
+                                throw BadRequestResponse(roleValidationErrors.first().message) //.joinToString("\n") { it.message })
                             val roles = value.first().split(",").map { UserRoles.valueOf(it) }
                             if (roles != selectedUser.roles) {
                                 user.roles = roles.joinToString(",") { it.name }
@@ -69,14 +69,16 @@ class UserController {
                         }
                     }
                 }
+                // updates the user in the current session (e.g. updating username etc), but only when it is not done by an admin
+                if (isSelf) {
+                    ctx.currentUser = user.toUser()
+                }
             }
         }
-
-        println(ctx.body())
     }
 
     fun deleteUser(ctx: Context) {
-        val selectedUser = ctx.attribute<User>("userId")!!
+        val selectedUser = ctx.attribute<User>("requestUserParameter")!!
 
         if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
             throw UnauthorizedResponse("You are not allowed to delete this user")

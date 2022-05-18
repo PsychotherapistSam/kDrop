@@ -12,7 +12,7 @@ content = @`
             <div class="ui center aligned basic fitted segment">
                 <h1>${page.name}</h1>
             </div>
-            <form class="ui form" action="/api/v1/users" method="post" id="login-form">
+            <form class="ui form" action="/api/v1/users" method="post" id="registration-form">
                 <div class="field">
                     <label for="username">Username</label>
                     <input type="text" name="username" id="username" value="" placeholder="Username" tabindex="1">
@@ -23,14 +23,12 @@ content = @`
                 </div>
                 <div class="ui negative hidden message">
                 </div>
-                <input type="submit" class="ui secondary compact button" value="Log In" tabindex="3">
-                <a class="ui right floated compact button" href="#" tabindex="4">Forgot
-                    password?</a>
+                <input type="submit" class="ui secondary compact button" value="Register" tabindex="3">
             </form>
         </div>
     </div>
     <script>
-        $("#login-form").submit(function (event) {
+        $("#registration-form").submit(function (event) {
             event.preventDefault();
             const form = $(this);
             const url = form.attr('action');

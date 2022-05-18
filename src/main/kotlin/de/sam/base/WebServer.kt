@@ -14,11 +14,11 @@ import de.sam.base.controllers.UserController
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
+import de.sam.base.pages.user.UserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
-import de.sam.base.pages.user.UserSettingsPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
 import de.sam.base.utils.isLoggedIn
@@ -95,7 +95,12 @@ class WebServer {
         }
 
         app.exception(HttpResponseException::class.java) { e, ctx ->
-            ErrorPage(e).handle(ctx)
+            if(ctx.header("Accept")?.contains("application/json") == true ) {
+                ctx.status(e.status)
+                ctx.json(arrayOf(e.message))
+            } else {
+                ErrorPage(e).handle(ctx)
+            }
         }
 
         app.routes {
@@ -103,7 +108,7 @@ class WebServer {
             get("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())
             path("/user") {
-                get("/settings", UserSettingsPage(), UserRoles.USER)
+                get("/settings", UserEditPage(), UserRoles.USER)
             }
             path("/admin") {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
