@@ -9,9 +9,11 @@ page = page,
 content = @`
     @template.layout.admin.navbar(page=page)
 
-    <div class="ui three column stackable grid">
+    <div class="ui three column stackable grid"
+         hx-target="body"
+         hx-push-url="true">
         <div class="ui column">
-            <a class="ui fluid card" href="/admin/reports">
+            <a class="ui fluid card" hx-get="/admin/reports">
                 <div class="content">
                     <div class="center aligned header">
                         <i class="circle icon"></i>
@@ -28,7 +30,7 @@ content = @`
             </a>
         </div>
         <div class="ui column">
-            <a class="ui fluid card" href="${AdminUsersPage.ROUTE}">
+            <a class="ui fluid card" hx-get="${AdminUsersPage.ROUTE}">
                 <div class="content">
                     <div class="center aligned header">
                         <i class="users icon"></i>
@@ -45,7 +47,7 @@ content = @`
             </a>
         </div>
         <div class="ui column">
-            <a class="ui fluid card" href="/admin/reports">
+            <a class="ui fluid card" hx-get="/admin/reports">
                 <div class="content">
                     <div class="center aligned header">
                         <i class="attention icon"></i>

@@ -17,6 +17,7 @@ class Configuration {
     var passwordPepper: String = UUID.randomUUID().toString()
     var database = Database()
     var allowUserRegistration: Boolean = false
+    var devEnvironment = true
 
     class Database {
         var host: String = "localhost"

@@ -4,12 +4,13 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.database.User
 import de.sam.base.database.UserDAO
-import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUser
 import de.sam.base.utils.isLoggedIn
+import de.sam.base.utils.prolongAtLeast
 import io.javalin.core.validation.ValidationError
 import io.javalin.http.Context
 import io.javalin.http.HttpCode
@@ -28,49 +29,25 @@ class AuthenticationController {
     private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
 
     fun loginRequest(ctx: Context) {
-        if (ctx.isLoggedIn) {
-            ctx.status(200)
-            return
-        }
-
         // hide discrepancy on whether an account exists or not to prevent account enumeration
         prolongAtLeast(2000) {
-            val usernameValidation = validateUsername(ctx.formParam("username"))
-            val usernameErrors = usernameValidation.first
-            val user = usernameValidation.second
-            if (usernameErrors.isNotEmpty()) {
-                ctx.status(HttpCode.FORBIDDEN)
-                ctx.json(usernameErrors.map { it.message })
-            } else {
-                val passwordValidation = validatePassword(user, ctx.formParam("password"))
-                if (passwordValidation.isNotEmpty()) {
-                    ctx.status(HttpCode.FORBIDDEN)
-                    ctx.json(passwordValidation.map { it.message })
-                } else {
-                    ctx.currentUser = user!!
-                    ctx.status(200)
-                }
+            if (ctx.isLoggedIn) {
+                ctx.status(200)
+                return@prolongAtLeast
             }
+
+            val attempt = validateLoginAttempt(ctx.formParam("username"), ctx.formParam("password"))
+            // first = user, second = errors
+            if (attempt.second.isNotEmpty()) {
+                ctx.status(HttpCode.FORBIDDEN)
+                ctx.json(attempt.second)
+                return@prolongAtLeast
+            }
+
+            ctx.status(HttpCode.OK)
+            ctx.currentUser = attempt.first
         }
     }
-
-    @OptIn(ExperimentalContracts::class)
-    inline fun prolongAtLeast(ms: Long, randomTime: Long = 200, block: () -> Unit): Unit? {
-        contract {
-            callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-        }
-        var test: Unit? = null
-        val executionTime = measureTimeMillis {
-            test = block()
-        }
-
-        val waitTime = ms - (randomTime / 2) + Random().nextInt(200)
-
-        val timeDiff: Long = waitTime - executionTime
-        if (timeDiff > 0) Thread.sleep(timeDiff)
-        return test
-    }
-
 
     fun registrationRequest(ctx: Context) {
         if (ctx.isLoggedIn && ctx.currentUser!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
@@ -123,4 +100,19 @@ class AuthenticationController {
     fun logoutRequest(ctx: Context) {
         ctx.req.session.invalidate()
     }
+}
+
+fun validateLoginAttempt(username: String?, password: String?): Pair<User?, List<String>> {
+    val usernameValidation = validateUsername(username)
+    val usernameErrors = usernameValidation.first
+    val user = usernameValidation.second
+    if (usernameErrors.isNotEmpty()) {
+        return Pair(null, usernameErrors.map { it.message }) // don't bother with password validation
+    }
+
+    val passwordValidation = validatePassword(user, password)
+    if (passwordValidation.isNotEmpty()) {
+        return Pair(null, passwordValidation.map { it.message })
+    }
+    return Pair(user, listOf())
 }

@@ -69,6 +69,7 @@ class WebServer {
         app.routes {
             get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
+            post("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())
             path("/user") {
                 get("/settings", UserEditPage(), UserRoles.USER)
@@ -112,7 +113,7 @@ class WebServer {
     // https://github.com/casid/jte-javalin-tutorial/blob/d75d550cd6cd1dd33fcf461047851409e18a0525/src/main/java/app/App.java#L51
     private fun createTemplateEngine(): TemplateEngine {
         return if (false) {
-            val codeResolver = DirectoryCodeResolver(Path.of("src", "de.sam.base.main", "jte"))
+            val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
             TemplateEngine.create(codeResolver, ContentType.Html)
         } else {
             return TemplateEngine.createPrecompiled(ContentType.Html)

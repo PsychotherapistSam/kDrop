@@ -23,6 +23,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
     <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.7.0/dist/htmx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.5/dist/_hyperscript_web.min.js"></script>
 
 </head>
 <body>
@@ -33,6 +35,16 @@
             ${content}
         </div>
     </div>
+    <script>
+        // https://htmx.org/docs/#modifying_swapping_behavior_with_events
+        document.body.addEventListener('htmx:beforeSwap', function (evt) {
+            if (evt.detail.xhr.status === 404 ||
+                evt.detail.xhr.status === 401) {
+                evt.detail.shouldSwap = true;
+                evt.detail.isError = false;
+            }
+        });
+    </script>
 </div>
 
 @template.layout.footer(page)

@@ -1,5 +1,6 @@
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.displayLoader
 
 @param page: UserLoginPage
 
@@ -12,55 +13,37 @@ content = @`
             <div class="ui center aligned basic fitted segment">
                 <h1>${page.name}</h1>
             </div>
-            <form class="ui form" action="/api/v1/session" method="post" id="login-form">
+            <!-- xhr:loadstart and xhr:loadend do not work on edge/chrome, but do on firefox. this is better anyway. -->
+            <form class="ui form" _="${displayLoader}">
                 <div class="field">
                     <label for="username">Username</label>
-                    <input type="text" name="username" id="username" value="" placeholder="Username" tabindex="1">
+                    <input type="text" name="username" id="username" value="${page.lastTryUsername}"
+                           placeholder="Username" tabindex="1">
                 </div>
                 <div class="field">
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" placeholder="Password"
                            tabindex="2">
                 </div>
-                <div class="ui negative hidden message">
-                </div>
-                <input type="submit" class="ui secondary compact button" value="Log In" tabindex="3">
+                @if(page.errors.isNotEmpty())
+                    <div class="ui negative message">
+                        <ul class="list">
+                            @for(error in page.errors)
+                                <li>${error}</li>
+                            @endfor
+                        </ul>
+                    </div>
+                @endif
+                <button hx-post="${UserLoginPage.ROUTE}"
+                        hx-target="body"
+                        class="ui secondary compact button"
+                        tabindex="3">Log in
+                </button>
                 <a class="ui right floated compact button" href="/password_reset/" tabindex="4">Forgot
                     password?</a>
             </form>
         </div>
     </div>
-    <script>
-        $("#login-form").submit(function (event) {
-            event.preventDefault();
-            const form = $(this);
-            const url = form.attr('action');
-            const data = form.serialize();
-
-            // add loading indicator to form
-            form.addClass('loading');
-
-            $.ajax({
-                type: 'POST',
-                url: url,
-                data: data
-            }).always(function () {
-                form.removeClass('loading');
-            }).done(function () {
-                $('.ui.negative.message')
-                    .addClass("hidden")
-                window.location.href = '/';
-            }).fail(function (data) {
-                if (data.status === 403) {
-                    if(data.responseJSON) {
-                        $('.ui.negative.message')
-                            .removeClass("hidden")
-                            .html(data.responseJSON[0]);
-                    }
-                }
-            });
-        });
-    </script>
 `
 )
 
