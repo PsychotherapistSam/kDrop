@@ -90,7 +90,11 @@ class AuthenticationController {
                             this.registrationDate = DateTime.now()
                         }
                     }
-                    ctx.currentUser = userDAO.toUser()
+
+                    // only set the session when it is not requested to leave it out.
+                    if (ctx.header("No-Session") == null) {
+                        ctx.currentUser = userDAO.toUser()
+                    }
                     ctx.status(200)
                 }
             }

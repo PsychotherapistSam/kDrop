@@ -4,7 +4,7 @@ import de.sam.base.Page
 import de.sam.base.database.User
 import io.javalin.http.Context
 
-class AdminUserEditPage() : Page() {
+class AdminUserEditPage : Page() {
     companion object {
         lateinit var ROUTE: String
     }

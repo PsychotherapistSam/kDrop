@@ -226,7 +226,8 @@
     </div>
 </div>
 <!--End: Nav  -->
-<script> <!-- nonce -->
+<!-- nonce -->
+<script>
     $(".ui.dropdown").dropdown();
     $(".ui.toggle.button").click(function () {
         $(".ui.vertical.menu").fadeToggle();

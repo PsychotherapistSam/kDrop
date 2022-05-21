@@ -13,5 +13,4 @@ class UserEditPage : Page() {
         get() = name
         set(value) {}
     override var templateName: String = "user/edit.kte"
-
 }

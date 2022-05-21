@@ -44,6 +44,7 @@ class UserLoginPage : Page() {
                 ctx.currentUser = attempt.first
                 ctx.hxRedirect("/")
                 //ctx.redirect("/")
+                return@prolongAtLeast
             }
         }
         super.handle(ctx)

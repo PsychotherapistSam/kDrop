@@ -1,6 +1,7 @@
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
+@import de.sam.base.pages.displayLoader
 
 @param page: AdminUsersPage
 
@@ -8,6 +9,17 @@
 page = page,
 content = @`
     @template.layout.admin.navbar(page=page)
+    <!--
+    <div class="ui search" _="on htmx:beforeRequest add .loading to me
+           on htmx:beforeOnLoad remove .loading from me">
+        <div class="ui icon input">
+            <input class="prompt" type="search" name="search" placeholder="Search..." hx-post="/search"
+                hx-trigger="keyup changed delay:500ms, search" hx-target="#search-results"
+                hx-indicator=".loading">
+            <i class="search icon"></i>
+        </div>
+        <div class="results"></div>
+    </div>-->
 
     <table class="ui compact celled striped table">
         <thead>
@@ -37,7 +49,31 @@ content = @`
                     @endif
                 </td>
                 <td>
-                    <a href="/admin/users/${user.id.toString()}/edit">Edit</a>
+                    <div class="ui compact icon buttons">
+                        <div class="ui secondary button" hx-target="body" hx-push-url="true"
+                             hx-get="/admin/users/${user.id.toString()}/edit"
+                             hx-confirm="Are you sure you wish to delete your account?"><i
+                                    class="align pen icon"></i></div>
+                        <div class="ui orange button">
+                            <i class="align ban icon"></i>
+                        </div>
+                        <div class="ui red button"
+                             _="on click call deleteUser('${user.name}', '${user.id.toString()}')">
+                            <i class="align trash icon"></i>
+                        </div>
+                    </div>
+                    <!--<div class="ui secondary compact buttons">
+                        <a class="ui button" hx-target="body" hx-push-url="true"
+                           hx-get="/admin/users/${user.id.toString()}/edit"><i class="pen icon"></i> Edit</a>
+                        <div class="ui simple compact floating dropdown icon button">
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <div class="red item"><i class="ban icon"></i> Ban User</div>
+                                <div class="item"><i class="delete icon"></i> Delete User</div>
+                            </div>
+                        </div>
+                    </div>-->
+                    <!--<a href="/admin/users/${user.id.toString()}/edit">Edit</a>-->
                 </td>
             </tr>
         @endfor
@@ -45,7 +81,8 @@ content = @`
         <tfoot class="full-width">
         <tr>
             <th colspan="5">
-                <div class="ui right floated small secondary labeled icon button">
+                <div class="ui right floated small secondary labeled compact icon button"
+                     _="on click call addUserModal()">
                     <i class="user icon"></i> Add User
                 </div>
                 <div class="ui tiny pagination menu">
@@ -69,5 +106,72 @@ content = @`
         </tr>
         </tfoot>
     </table>
+    <div class="ui tiny modal" id="userCreationModal">
+        <div class="header">User Creation</div>
+        <div class="content">
+            <form class="ui form" id="userCreationForm">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" placeholder="Username" tabindex="1">
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+            <button class="ui compact green approve button"
+                    _="on click add .loading">
+                Create
+            </button>
+            <button class="ui compact secondary deny button">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        function deleteUser(name, userId) {
+            $('body').modal({
+                title: 'Delete User',
+                content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt><span class="ui large red text">' + name + '</span></tt>?',
+                class: 'tiny',
+                actions: [{
+                    text: 'Yes, permanently delete ' + name,
+                    class: 'red approve '
+                }, {
+                    text: 'No, cancel',
+                    class: 'secondary deny',
+                }],
+                onApprove: function () {
+                    $.ajax({
+                        url: "/api/v1/users/" + userId,
+                        type: "DELETE",
+                        success: function () {
+                            window.location.href = '${AdminUsersPage.ROUTE}';
+                        },
+                    });
+                }
+            }).modal('show');
+        }
+
+        function addUserModal() {
+            $('#userCreationModal').modal({
+                onApprove: function () {
+                    $.ajax({
+                        url: "/api/v1/users",
+                        type: "POST",
+                        headers: {
+                            'No-Session': 'true'
+                        },
+                        data: $('#userCreationForm').serialize(),
+                        success: function () {
+                            window.location.href = '${AdminUsersPage.ROUTE}';
+                        },
+                    });
+                    return false;
+                }
+            }).modal('show');
+        }
+    </script>
 `
 )
