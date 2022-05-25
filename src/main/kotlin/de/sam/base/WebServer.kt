@@ -112,11 +112,15 @@ class WebServer {
 
     // https://github.com/casid/jte-javalin-tutorial/blob/d75d550cd6cd1dd33fcf461047851409e18a0525/src/main/java/app/App.java#L51
     private fun createTemplateEngine(): TemplateEngine {
-        return if (false) {
+        if (false) {
             val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
-            TemplateEngine.create(codeResolver, ContentType.Html)
+            return TemplateEngine
+                .create(codeResolver, ContentType.Html)
+
         } else {
-            return TemplateEngine.createPrecompiled(ContentType.Html)
+            val templateEngine = TemplateEngine.createPrecompiled(ContentType.Html)
+            templateEngine.setTrimControlStructures(true)
+            return templateEngine
         }
     }
 }

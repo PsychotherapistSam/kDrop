@@ -8,6 +8,7 @@ import de.sam.base.database.toUser
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.*
 import kotlin.system.measureNanoTime
 
 class AdminUsersPage : Page() {
@@ -36,6 +37,12 @@ class AdminUsersPage : Page() {
                 }
             }
         }
+
+        if (ctx.queryParam("table") != null) {
+            ctx.render("components/usersTable.kte", Collections.singletonMap("users", users))
+            return
+        }
+
         super.handle(ctx)
     }
 }

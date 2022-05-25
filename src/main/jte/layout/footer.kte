@@ -3,6 +3,8 @@
 
 @param page: Page
 
+!{var latestCommit = "f67ba92d"}
+
 <footer>
     <div class="ui basic secondary segment">
         <div class="ui container">
@@ -14,7 +16,7 @@
                     <div class="right aligned column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
-                            <a class="item" href="#">Privacy Policy</a>
+                            <a class="item" href="#">${latestCommit}</a>
                             <a class="item" href="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
@@ -26,7 +28,7 @@
                     <div class="column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
-                            <a class="item" href="#">Privacy Policy</a>
+                            <a class="item" href="#">${latestCommit}</a>
                             <a class="item" href="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
