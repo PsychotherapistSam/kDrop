@@ -24,22 +24,43 @@ class AdminUsersPage : Page() {
     override var templateName: String = "admin/users.kte"
 
     var users = listOf<User>()
+    var currenTablePage = 0
+    val maxTablePageSize = 10
+    var searchQuery = ""
+
     override fun handle(ctx: Context) {
+        searchQuery = ctx.queryParam("search") ?: ""
+        currenTablePage = ctx.queryParam("page")?.toInt() ?: 0
+
         pageDiff = measureNanoTime {
             transaction {
                 addLogger(StdOutSqlLogger)
                 logTimeSpent("Getting user list") {
-                    users = UserDAO
-                        .all()
+
+                    val userData = if (searchQuery != null) {
+                        UserDAO.find { UsersTable.name.lowerCase().like("%$searchQuery%".lowercase()) }
+                    } else {
+                        UserDAO.all()
+                    }
+
+                    users = userData
                         .orderBy(UsersTable.registrationDate to SortOrder.ASC)
-                        .limit(10, 0)
+                        .limit(maxTablePageSize, maxTablePageSize * currenTablePage)
                         .map { it.toUser() }
                 }
             }
         }
 
         if (ctx.queryParam("table") != null) {
-            ctx.render("components/usersTable.kte", Collections.singletonMap("users", users))
+            ctx.render(
+                "components/usersTable.kte",
+                mapOf(
+                    "users" to users,
+                    "currentPage" to currenTablePage,
+                    "pageSize" to maxTablePageSize,
+                    "searchQuery" to searchQuery
+                )
+            )
             return
         }
 

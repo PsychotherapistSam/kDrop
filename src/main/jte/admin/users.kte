@@ -9,36 +9,6 @@
 page = page,
 content = @`
     @template.layout.admin.navbar(page=page)
-
-    <%--Search and Refresh--%>
-    <%-- http://localhost:7070/admin/users?table --%>
-    <div class="ui two column grid">
-        <div class="left aligned column">
-            <div class="ui search" _="on htmx:beforeRequest add .loading to me
-           on htmx:beforeOnLoad remove .loading from me">
-                <div class="ui icon input">
-                    <input class="prompt" type="search" name="search" id="search" placeholder="Search..."
-                           hx-get="${AdminUsersPage.ROUTE}?table"
-                           hx-trigger="keyup changed delay:500ms"
-                           hx-target="#usersTable">
-                    <i class="search icon"></i>
-                </div>
-                <div class="results"></div>
-            </div>
-        </div>
-        <div class="right aligned column">
-            <div class="ui right floated secondary compact icon button"
-                 id="refreshButton"
-                 hx-get="${AdminUsersPage.ROUTE}?table"
-                 hx-trigger="click, refreshTable from:body"
-                 hx-target="#usersTable"
-                 _="${displayLoader}">
-                <i class="refresh icon"></i>
-            </div>
-        </div>
-    </div>
-    <div id="usersTable" class="ui fitted basic segment">
-        @template.components.usersTable(users = page.users)
-    </div>
+    @template.components.usersTable(users = page.users, page.currenTablePage, page.maxTablePageSize, page.searchQuery)
 `
 )

@@ -1,54 +1,95 @@
 @import de.sam.base.database.User
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.admin.AdminUsersPage
+@import de.sam.base.pages.displayLoader
 
 @param users: List<User>
+@param currentPage: Int
+@param pageSize: Int
+@param searchQuery: String = ""
+@param totalPages: Int = 99999
 
-
-<table class="ui compact celled striped table">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Registration Date</th>
-        <th>E-mail address</th>
-        <th>Premium Plan</th>
-        <th>Edit</th>
-    </tr>
-    </thead>
-    <tbody>
-    @for(user in users)
-        <tr>
-            <td>
-                @if(user.roles.contains(UserRoles.ADMIN))
-                    <div class="ui red horizontal label">Admin</div>
-                @endif
-                <a href="/admin/users/${user.id.toString()}/">${user.name}</a>
-            </td>
-            <td>${user.registrationDate.toString()}</td>
-            <td>N/A</td>
-            <td>@if(user.roles.contains(UserRoles.PREMIUM))
-                    Yes
-                @else
-                    No
-                @endif
-            </td>
-            <td>
-                <div class="ui small compact icon buttons">
-                    <div class="ui secondary button"
-                         hx-target="body"
-                         hx-push-url="true"
-                         hx-get="/admin/users/${user.id.toString()}/edit">
-                        <i class="align pen icon"></i>
-                    </div>
-                    <div class="ui orange button">
-                        <i class="align ban icon"></i>
-                    </div>
-                    <div class="ui red button"
-                         _="on click call deleteUser('${user.name}', '${user.id.toString()}')">
-                        <i class="align trash icon"></i>
-                    </div>
+<div id="usersTableComponent" class="ui fitted basic segment">
+    <%--Search and Refresh--%>
+    <%-- http://localhost:7070/admin/users?table --%>
+    <div class="ui two column grid">
+        <div class="left aligned column">
+            <div class="ui search" _="on htmx:beforeRequest add .loading to me
+           on htmx:beforeOnLoad remove .loading from me">
+                <div class="ui icon input">
+                    <input type="hidden" name="table" value="yeet">
+                    <input class="prompt" type="search" name="search" id="search" placeholder="Username..."
+                           value="${searchQuery}"
+                           hx-get="${AdminUsersPage.ROUTE}"
+                           hx-params="table,search"
+                           hx-trigger="keyup changed delay:200ms"
+                           hx-target="#usersTableComponent">
+                    <i class="search icon"></i>
                 </div>
-                <!--<div class="ui secondary compact buttons">
+                <div class="results"></div>
+            </div>
+        </div>
+        <div class="right aligned column">
+            <div class="ui right floated secondary compact icon button"
+                 id="refreshButton"
+                 hx-get="${AdminUsersPage.ROUTE}?table=undefined&page=${currentPage}"
+                 hx-trigger="click, refreshTable from:body"
+                 hx-target="#usersTableComponent"
+                 _="${displayLoader}">
+                <i class="refresh icon"></i>
+            </div>
+        </div>
+    </div>
+
+    @if(users.isNotEmpty())
+        <div id="usersTableComponent" class="ui basic fitted segment">
+            <table class="ui compact celled striped table"
+                   hx-target="body"
+                   hx-push-url="true">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Registration Date</th>
+                    <th>E-mail address</th>
+                    <th>Premium Plan</th>
+                    <th>Edit</th>
+                </tr>
+                </thead>
+                <tbody>
+                @for(user in users)
+                    <tr>
+                        <td>
+                            @if(user.roles.contains(UserRoles.ADMIN))
+                                <div class="ui red horizontal label">Admin</div>
+                            @endif
+                            <a href="/admin/users/${user.id.toString()}/"
+                               hx-get="/admin/users/${user.id.toString()}/">${user.name}</a>
+                        </td>
+                        <td>${user.registrationDate.toString()}</td>
+                        <td>N/A</td>
+                        <td>@if(user.roles.contains(UserRoles.PREMIUM))
+                                Yes
+                            @else
+                                No
+                            @endif
+                        </td>
+                        <td>
+                            <div class="ui small compact icon buttons">
+                                <div class="ui secondary button"
+                                     hx-target="body"
+                                     hx-push-url="true"
+                                     hx-get="/admin/users/${user.id.toString()}/edit">
+                                    <i class="align pen icon"></i>
+                                </div>
+                                <div class="ui orange button">
+                                    <i class="align ban icon"></i>
+                                </div>
+                                <div class="ui red button"
+                                     _="on click call deleteUser('${user.name}', '${user.id.toString()}')">
+                                    <i class="align trash icon"></i>
+                                </div>
+                            </div>
+                            <!--<div class="ui secondary compact buttons">
                         <a class="ui button" hx-target="body" hx-push-url="true"
                            hx-get="/admin/users/${user.id.toString()}/edit"><i class="pen icon"></i> Edit</a>
                         <div class="ui simple compact floating dropdown icon button">
@@ -59,106 +100,131 @@
                             </div>
                         </div>
                     </div>-->
-                <!--<a href="/admin/users/${user.id.toString()}/edit">Edit</a>-->
-            </td>
-        </tr>
-    @endfor
-    </tbody>
-    <tfoot class="full-width">
-    <tr>
-        <th colspan="5">
-            <div class="ui right floated small secondary labeled compact icon button"
-                 _="on click call addUserModal()">
-                <i class="user icon"></i> Add User
+                            <!--<a href="/admin/users/${user.id.toString()}/edit">Edit</a>-->
+                        </td>
+                    </tr>
+                @endfor
+
+
+                </tbody>
+                <tfoot class="full-width">
+                <tr>
+                    <th colspan="5">
+                        <div class="ui right floated secondary labeled compact icon button"
+                             _="on click call addUserModal()">
+                            <i class="user icon"></i> Add User
+                        </div>
+                        <%-- check if pagination should even be visible--%>
+                        <div class="ui compact secondary buttons">
+                            <div class="ui  button">
+                                Previous
+                            </div>
+                            @for(i in 0..2)
+                                <div class="ui @if(currentPage == i) active @endif button"
+                                     hx-get="${AdminUsersPage.ROUTE}?page=${i}"
+                                     hx-params="table,search"
+                                     hx-include="[name='search']"
+                                     hx-target="#usersTableComponent">
+                                    ${i + 1}
+                                </div>
+                            @endfor
+                            <div class="ui button">
+                                Next
+                            </div>
+                        </div>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    @else
+        <div class="ui placeholder segment">
+            <div class="ui icon header">
+                <i class="search icon"></i>
+                We don't have any users matching your query
             </div>
-            <div class="ui tiny pagination menu">
-                <a class="active item">
-                    1
-                </a>
-                <div class="disabled item">
-                    ...
+            <div class="inline">
+                <div class="ui secondary button"
+                     _="on click call addUserModal()">
+                    Add User
                 </div>
-                <a class="item">
-                    10
-                </a>
-                <a class="item">
-                    11
-                </a>
-                <a class="item">
-                    12
-                </a>
+                <div class="ui button"
+                     _="on click set value of #input to ''">
+                    Clear Query
+                </div>
             </div>
-        </th>
-    </tr>
-    </tfoot>
-</table>
-<div class="ui tiny modal" id="userCreationModal">
-    <div class="header">User Creation</div>
-    <div class="content">
-        <form class="ui form" id="userCreationForm">
-            <div class="field">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" placeholder="Username" tabindex="1">
-            </div>
-            <div class="field">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
-            </div>
-        </form>
+        </div>
+    @endif
+
+    <div class="ui tiny modal" id="userCreationModal">
+        <div class="header">User Creation</div>
+        <div class="content">
+            <form class="ui form" id="userCreationForm">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" id="username" placeholder="Username" tabindex="1">
+                </div>
+                <div class="field">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
+                </div>
+            </form>
+        </div>
+        <div class="actions">
+            <button class="ui compact green approve button"
+                    _="on click add .loading">
+                Create
+            </button>
+            <button class="ui compact secondary deny button">Cancel</button>
+        </div>
     </div>
-    <div class="actions">
-        <button class="ui compact green approve button"
-                _="on click add .loading">
-            Create
-        </button>
-        <button class="ui compact secondary deny button">Cancel</button>
-    </div>
+
+    <script>
+        function deleteUser(name, userId) {
+            $('body').modal({
+                title: 'Delete User',
+                content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt><span class="ui large red text">' + name + '</span></tt>?',
+                class: 'tiny',
+                actions: [{
+                    text: 'Yes, permanently delete ' + name,
+                    class: 'compact red approve '
+                }, {
+                    text: 'No, cancel',
+                    class: 'compact secondary deny',
+                }],
+                onApprove: function () {
+                    $.ajax({
+                        url: "/api/v1/users/" + userId,
+                        type: "DELETE",
+                        success: function () {
+                            htmx.trigger("#refreshButton", "refreshTable");
+                            // window.location.href = '${AdminUsersPage.ROUTE}';
+                        },
+                    });
+                }
+            }).modal('show');
+        }
+
+        function addUserModal() {
+            $('#userCreationModal').modal({
+                onApprove: function () {
+                    $.ajax({
+                        url: "/api/v1/users",
+                        type: "POST",
+                        headers: {
+                            'No-Session': 'true'
+                        },
+                        data: $('#userCreationForm').serialize(),
+                        success: function () {
+                            $('#userCreationModal').modal('hide');
+                            $('#userCreationModal').remove();
+                            htmx.trigger("#refreshButton", "refreshTable");
+                            //window.location.href = '${AdminUsersPage.ROUTE}';
+                        },
+                    });
+                    return false;
+                }
+            }).modal('show');
+        }
+    </script>
 </div>
-
-<script>
-    function deleteUser(name, userId) {
-        $('body').modal({
-            title: 'Delete User',
-            content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt><span class="ui large red text">' + name + '</span></tt>?',
-            class: 'tiny',
-            actions: [{
-                text: 'Yes, permanently delete ' + name,
-                class: 'red approve '
-            }, {
-                text: 'No, cancel',
-                class: 'secondary deny',
-            }],
-            onApprove: function () {
-                $.ajax({
-                    url: "/api/v1/users/" + userId,
-                    type: "DELETE",
-                    success: function () {
-                        htmx.trigger("#refreshButton", "refreshTable");
-                        // window.location.href = '${AdminUsersPage.ROUTE}';
-                    },
-                });
-            }
-        }).modal('show');
-    }
-
-    function addUserModal() {
-        $('#userCreationModal').modal({
-            onApprove: function () {
-                $.ajax({
-                    url: "/api/v1/users",
-                    type: "POST",
-                    headers: {
-                        'No-Session': 'true'
-                    },
-                    data: $('#userCreationForm').serialize(),
-                    success: function () {
-                        $('#userCreationModal').modal('hide');
-                        htmx.trigger("#refreshButton", "refreshTable");
-                        //window.location.href = '${AdminUsersPage.ROUTE}';
-                    },
-                });
-                return false;
-            }
-        }).modal('show');
-    }
-</script>

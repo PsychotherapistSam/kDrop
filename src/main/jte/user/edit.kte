@@ -24,7 +24,9 @@ content = @`
     @else
         <h1>Account Settings
             @if(page.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN))
-                <a class="ui compact secondary right floated button" href="/admin/users/${page.currentUser!!.id.toString()}/edit">View as Admin</a>
+                <a class="ui compact secondary right floated button"
+                   href="/admin/users/${page.currentUser!!.id.toString()}/edit"
+                   hx-get="/admin/users/${page.currentUser!!.id.toString()}/edit">View as Admin</a>
             @endif
         </h1>
     @endif

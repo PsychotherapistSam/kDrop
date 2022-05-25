@@ -14,14 +14,14 @@
 !{val currentUser: User? = page.currentUser}
 
 <!--Start: Nav  -->
-<div class="ui medium borderless menu">
+<div class="ui medium borderless menu"
+     hx-target="body"
+     hx-push-url="true">
     <div class="ui container grid">
         <!--Start: Desktop Nav-->
-        <div class="computer only row"
-             hx-target="body"
-             hx-push-url="true">
-            <a class="header item" hx-get="/">${config.name}</a>
-            <a class="@if(page is IndexPage) active @endif item" hx-get="${IndexPage.ROUTE}">Home</a>
+        <div class="computer only row">
+            <a class="header item" href="/" hx-get="/">${config.name}</a>
+            <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}" hx-get="${IndexPage.ROUTE}">Home</a>
 
             <div class="right menu">
                 @if(currentUser != null)
@@ -42,7 +42,7 @@
                                 Signed in as ${currentUser.name}
                             </div>
                             <a class="@if(page is UserEditPage) active @endif item"
-                               hx-get="${UserEditPage.ROUTE}">
+                               href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
                                 <i class="settings icon"></i>
                                 Settings
                             </a>
@@ -52,12 +52,12 @@
                                     Administration
                                 </div>
                                 <a class="@if(page is AdminIndexPage) active @endif item"
-                                   hx-get="${AdminIndexPage.ROUTE}">
+                                   href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
                                     <i class="shield icon"></i>
                                     Overview
                                 </a>
                                 <a class="@if(page is AdminUsersPage) active @endif item"
-                                   hx-get="${AdminUsersPage.ROUTE}">
+                                   href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
                                     <i class="users icon"></i>
                                     Users
                                 </a>
@@ -75,10 +75,10 @@
                     </div>
                 @else
                     <a class="@if(page is UserLoginPage) active @endif item"
-                       hx-get="${UserLoginPage.ROUTE}">Login</a>
+                       href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
                     @if(config.allowUserRegistration)
                         <a class="@if(page is UserRegistrationPage) active @endif item"
-                           hx-get="${UserRegistrationPage.ROUTE}">Register</a>
+                           href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
                     @else
                         <a class="disabled item" href="${UserRegistrationPage.ROUTE}">Register</a>
                     @endif
@@ -89,7 +89,7 @@
 
         <!--Start: Mobile Nav-->
         <div class="tablet mobile only row">
-            <a class="header item" href="/">${config.name}</a>
+            <a class="header item" href="/" hx-get="/">${config.name}</a>
             <div class="right menu">
                 <a class="menu item">
                     <div class="ui basic icon toggle button">
@@ -98,9 +98,8 @@
                 </a>
             </div>
             <div class="ui vertical fluid menu">
-                <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}">Index</a>
-                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
-                <a class="@if(page.name == "placeholder") active @endif item" href="#">Placeholder</a>
+                <a class="@if(page is IndexPage) active @endif item"
+                   href="${IndexPage.ROUTE}" hx-get="${IndexPage.ROUTE}">Index</a>
 
                 <div class="ui fitted divider"></div>
 
@@ -112,17 +111,20 @@
                             ${highestRole.name}
                         </div>
                     </div>
-                    <a class="@if(page is UserEditPage) active @endif item" href="${UserEditPage.ROUTE}">
+                    <a class="@if(page is UserEditPage) active @endif item"
+                       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
                         <i class="settings icon"></i>
                         Settings
                     </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
-                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminIndexPage.ROUTE}">
+                        <a class="@if(page is AdminIndexPage) active @endif item"
+                           href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
                             <i class="shield icon"></i>
                             Overview
                         </a>
-                        <a class="@if(page is AdminIndexPage) active @endif item" href="${AdminUsersPage.ROUTE}">
+                        <a class="@if(page is AdminIndexPage) active @endif item"
+                           href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
                             <i class="users icon"></i>
                             Users
                         </a>
@@ -137,10 +139,11 @@
                         Sign Out
                     </a>
                 @else
-                    <a class="@if(page is UserLoginPage) active @endif item" href="${UserLoginPage.ROUTE}">Login</a>
+                    <a class="@if(page is UserLoginPage) active @endif item"
+                       href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
                     @if(config.allowUserRegistration)
                         <a class="@if(page is UserRegistrationPage) active @endif item"
-                           href="${UserRegistrationPage.ROUTE}">Register</a>
+                           href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
                     @else
                         <a class="disabled item">Register</a>
                     @endif

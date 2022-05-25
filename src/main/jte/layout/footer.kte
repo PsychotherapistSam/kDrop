@@ -3,10 +3,12 @@
 
 @param page: Page
 
-!{var latestCommit = "f67ba92d"}
+!{val latestCommit = "f67ba92d"}
 
 <footer>
-    <div class="ui basic secondary segment">
+    <div class="ui basic secondary segment"
+         hx-target="body"
+         hx-push-url="true">
         <div class="ui container">
             <div class="ui stackable grid">
                 <div class="two column computer tablet only row">
@@ -17,7 +19,7 @@
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">${latestCommit}</a>
-                            <a class="item" href="/about">${page.getRenderTime()}</a>
+                            <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>
@@ -29,7 +31,7 @@
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item" href="#">${latestCommit}</a>
-                            <a class="item" href="/about">${page.getRenderTime()}</a>
+                            <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>
@@ -45,49 +47,50 @@
             }
         </style>
 
-        <button class="ui button icon basic" id="darkmode">
-            <i class="moon icon"></i>
-        </button>
+        <button class=" ui button icon basic" id="darkmode">
+                            <i class="moon icon"></i>
+                            </button>
 
-        <script>
-            function toggleDarkMode () {
-                // add fomantic's inverted class to all ui elements
-                $('body').find('.ui').addClass('inverted');
-                // add custom inverted class to body
-                $('body').addClass('inverted');
+                            <script>
+                                function toggleDarkMode() {
+                                    // add fomantic's inverted class to all ui elements
+                                    $('body').find('.ui').addClass('inverted');
+                                    // add custom inverted class to body
+                                    $('body').addClass('inverted');
 
-                // simple toggle icon change
-                $("#darkmode > i").removeClass('moon');
-                $("#darkmode > i").addClass('sun');
+                                    // simple toggle icon change
+                                    $("#darkmode > i").removeClass('moon');
+                                    $("#darkmode > i").addClass('sun');
 
-                return;
-            }
+                                    return;
+                                }
 
-            function toggleLightMode() {
-                // remove fomantic's inverted from all ui elements
-                $('body').find('.ui').removeClass('inverted');
-                // remove custom inverted class to body
-                $('body').removeClass('inverted');
+                                function toggleLightMode() {
+                                    // remove fomantic's inverted from all ui elements
+                                    $('body').find('.ui').removeClass('inverted');
+                                    // remove custom inverted class to body
+                                    $('body').removeClass('inverted');
 
-                // change button icon
-                $("#darkmode > i").removeClass('sun')
-                $("#darkmode > i").addClass('moon');
+                                    // change button icon
+                                    $("#darkmode > i").removeClass('sun')
+                                    $("#darkmode > i").addClass('moon');
 
-                return;
-            }
+                                    return;
+                                }
 
-            toggleDarkMode();
+                                toggleDarkMode();
 
-            $('#darkmode').click(function () {
-                if (true) {
-                    toggleLightMode();
-                } else {
-                    toggleDarkMode();
-                }
-            });
-        </script>-->
+                                $('#darkmode').click(function () {
+                                    if (true) {
+                                        toggleLightMode();
+                                    } else {
+                                        toggleDarkMode();
+                                    }
+                                });
+                            </script>
+                            -->
 
-    </div>
+                        </div>
 </footer>
 
 <style>

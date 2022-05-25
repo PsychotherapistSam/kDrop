@@ -9,11 +9,12 @@
 <div class="ui secondary pointing menu"
      hx-target="body"
      hx-push-url="true">
-    <a class="@if(page is AdminIndexPage) active @endif item " hx-get="${AdminIndexPage.ROUTE}">
+    <a class="@if(page is AdminIndexPage) active @endif item "
+       href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
         Overview
     </a>
     <a class="@if(page is AdminUsersPage || page is AdminUserViewPage || page is AdminUserEditPage) active @endif item "
-       hx-get="${AdminUsersPage.ROUTE}">
+       href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
         Users@if(page is AdminUserViewPage || page is AdminUserEditPage) @endif
     </a>
     <a class="item">
