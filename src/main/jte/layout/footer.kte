@@ -3,7 +3,7 @@
 
 @param page: Page
 
-!{val latestCommit = "f67ba92d"}
+!{val latestCommit = "7e838632"}
 
 <footer>
     <div class="ui basic secondary segment"

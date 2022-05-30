@@ -3,6 +3,7 @@
 
 @param page: Page
 @param content: Content
+@param extraContent: Content? = null
 @param footer: Content? = null
 
 <!DOCTYPE html>
@@ -48,6 +49,8 @@
 </div>
 
 @template.layout.footer(page)
+
+${extraContent}
 
 </body>
 </html>

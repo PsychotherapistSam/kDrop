@@ -8,6 +8,7 @@
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.user.UserFilesPage
 
 @param page: Page
 
@@ -45,6 +46,11 @@
                                href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
                                 <i class="settings icon"></i>
                                 Settings
+                            </a>
+                            <a class="@if(page is UserFilesPage) active @endif item"
+                               href="${UserFilesPage.ROUTE}">
+                                <i class="folder icon"></i>
+                                My Files
                             </a>
                             <div class="divider"></div>
                             @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)

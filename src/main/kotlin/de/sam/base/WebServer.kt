@@ -17,6 +17,7 @@ import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.user.UserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
+import de.sam.base.pages.user.UserFilesPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.users.UserRoles
@@ -51,7 +52,12 @@ class WebServer {
                     // set route variable dynamically (cursed)
                     val routeField = metaInfo.handler.javaClass.getField("ROUTE")
                     if (routeField != null) {
-                        routeField.set(String, metaInfo.path)
+                        val value = routeField.get(String)
+                        if (value == null || value.toString().isEmpty()) {
+                            routeField.set(String, metaInfo.path)
+                        } else {
+                            println("Route already set: ${metaInfo.path}, not overwriting")
+                        }
                     }
                 }
             }
@@ -73,6 +79,12 @@ class WebServer {
             get("/registration", UserRegistrationPage())
             path("/user") {
                 get("/settings", UserEditPage(), UserRoles.USER)
+                path("/files") {
+                    get("/", UserFilesPage(), UserRoles.USER)
+                    path("/{fileId}") {
+                        get("/", UserFilesPage(), UserRoles.USER)
+                    }
+                }
             }
             path("/admin") {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
