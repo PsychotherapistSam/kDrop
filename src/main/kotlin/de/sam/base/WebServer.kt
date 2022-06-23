@@ -26,11 +26,38 @@ import de.sam.base.utils.session.Session
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
-import io.javalin.http.UnauthorizedResponse
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class WebServer {
     fun start() {
+        transaction {
+         /*   val fileOne = FileDAO.new {
+                this.name = "test"
+                this.path = "/test"
+                this.parent = null
+                this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                this.size = 0
+                this.password = null
+                this.private = false
+                this.created = DateTime.now()
+                this.isFolder = true
+            }
+
+            val fileTwo = FileDAO.new {
+                this.name = "test2"
+                this.path = "/test/test2"
+                this.parent = fileOne
+                this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                this.size = 240841
+                this.password = null
+                this.private = false
+                this.created = DateTime.now()
+                this.isFolder = false
+            }*/
+        }
+
+
         val app = Javalin.create { javalinConfig ->
             // javalinConfig.enableWebjars()
 

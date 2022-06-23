@@ -12,7 +12,22 @@ content = @`
     <script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
     <h1>Your Files</h1>
     <div class="ui breadcrumb">
-        <div class="divider">/</div>
+        @if(page.parent != null)
+            !{val splitPath = page.parent!!.path.split("/")}
+            @for(path in splitPath)
+                @if(splitPath.indexOf(path) != 0)
+                    <div class="divider">
+                        /
+                    </div>
+                @endif
+                <a class="section">${path}</a>
+            @endfor
+        @else
+            <div class="divider">
+                /
+            </div>
+        @endif
+
     </div>
     <table class="ui unstackable table" id="fileTable">
         <thead>
@@ -35,17 +50,17 @@ content = @`
                     </div>
                 </td>
                 <td>
-                    <a href="${UserFilesPage.ROUTE}${file.name}">
-                        @if(file.isDirectory)
+                    <a href="${UserFilesPage.ROUTE}${file.id.toString()}">
+                        @if(file.isFolder)
                             <i class="folder outline icon"></i>
-
                         @else
                             <i class="file outline icon"></i>
-                        @endif${file.name}
+                        @endif
+                        ${file.name}
                     </a>
                 </td>
                 <td class="right aligned collapsing">${file.size}</td>
-                <td class="right aligned collapsing">${file.lastModified}</td>
+                <td class="right aligned collapsing">${file.created.toString()}</td>
             </tr>
         @endfor
         </tbody>

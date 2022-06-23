@@ -23,6 +23,7 @@ class DatabaseManager {
             addLogger(StdOutSqlLogger)
             // create users table
             SchemaUtils.create(UsersTable)
+            SchemaUtils.create(FilesTable)
         }
     }
 }

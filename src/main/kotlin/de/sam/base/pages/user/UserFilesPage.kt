@@ -1,9 +1,11 @@
 package de.sam.base.pages.user
 
 import de.sam.base.Page
-import de.sam.base.files.KFile
+import de.sam.base.database.*
+import de.sam.base.utils.currentUser
 import io.javalin.http.Context
-import java.io.File
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
 
@@ -19,37 +21,58 @@ class UserFilesPage : Page() {
         set(value) {}
     override var templateName: String = "user/files.kte"
 
-    val files = arrayListOf<KFile>()
+    //   val files = arrayListOf<KFile>()
 
-    val filesIndex = arrayListOf<KFile>()
+    // val filesIndex = arrayListOf<KFile>()
+
 
     init {
-        fun addFile(file: File) {
-            filesIndex.add(file.toKFile())
-            if (file.isDirectory) {
-                file.listFiles().forEach {
-                    addFile(it)
-                }
-            }
-        }
+        /* fun addFile(file: File) {
+             filesIndex.add(file.toKFile())
+             if (file.isDirectory) {
+                 file.listFiles().forEach {
+                     addFile(it)
+                 }
+             }
+         }
 
-        addFile(File("./"))
+         addFile(File("./"))*/
+
+
     }
+
+    var parent: FileDAO? = null
+    var files = listOf<File>()
 
     override fun handle(ctx: Context) {
         pageDiff = measureNanoTime {
-            files.clear()
-            if (ctx.pathParamMap().containsKey("fileId")) {
-                val fileName = ctx.pathParam("fileId")
-                files.addAll(filesIndex.filter { it.parent == fileName })
-            } else {
-                files.addAll(filesIndex.filter { it.parent == "." })
+            val parentFileId =
+                if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
+
+            transaction {
+                val user = UserDAO.findById(ctx.currentUser!!.id)
+                if (user != null) {
+                    parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
+
+                    files = FileDAO
+                        .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
+                        .map { it.toFile() }
+                }
             }
+
+            //TODO: add option of only refreshing the table (this would also fix the bug I had beforehand witwh the context menu not working when I only replace the table and not everything else)
+            /*    files.clear()
+                if (ctx.pathParamMap().containsKey("fileId")) {
+                    val fileName = ctx.pathParam("fileId")
+                    files.addAll(filesIndex.filter { it.parent == fileName })
+                } else {
+                    files.addAll(filesIndex.filter { it.parent == "." })
+                }*/
         }
         super.handle(ctx)
     }
 }
-
+/*
 private fun File.toKFile(): KFile {
     return KFile(
         id = UUID.randomUUID(),
@@ -61,3 +84,4 @@ private fun File.toKFile(): KFile {
         children = this.listFiles().let { files -> files.orEmpty().map { b -> b.name } }
     )
 }
+*/
