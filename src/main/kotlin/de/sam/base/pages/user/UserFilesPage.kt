@@ -44,7 +44,11 @@ class UserFilesPage : Page() {
     var parent: FileDAO? = null
     var files = listOf<File>()
 
+    var breadcrumbs = arrayListOf<File>()
+
     override fun handle(ctx: Context) {
+        breadcrumbs.clear()
+
         pageDiff = measureNanoTime {
             val parentFileId =
                 if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
@@ -53,6 +57,19 @@ class UserFilesPage : Page() {
                 val user = UserDAO.findById(ctx.currentUser!!.id)
                 if (user != null) {
                     parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
+
+                    // recursive list parents for breadcrumb
+                    var breadcrumb = parent
+                    while (breadcrumb != null) {
+                        breadcrumbs.add(breadcrumb.toFile())
+                        if (breadcrumb.parent != null) {
+                            breadcrumb = breadcrumb.parent
+                        } else {
+                            breadcrumb = null
+                        }
+                    }
+
+                    breadcrumbs.reverse()
 
                     files = FileDAO
                         .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }

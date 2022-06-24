@@ -3,7 +3,6 @@
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.displayLoader
 
-
 @param page: UserFilesPage
 
 @template.layout.page(
@@ -11,22 +10,40 @@ page = page,
 content = @`
     <script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
     <h1>Your Files</h1>
-    <div class="ui breadcrumb">
-        @if(page.parent != null)
-            !{val splitPath = page.parent!!.path.split("/")}
-            @for(path in splitPath)
-                @if(splitPath.indexOf(path) != 0)
-                    <div class="divider">
-                        /
-                    </div>
-                @endif
-                <a class="section">${path}</a>
+    <div class="ui breadcrumb"
+         hx-target="body"
+         hx-push-url="true">
+        <div class="divider">
+            /
+        </div>
+        <a class="section" href="${UserFilesPage.ROUTE}"
+           hx-get="${UserFilesPage.ROUTE}">Home</a>
+
+        @if(page.breadcrumbs.isNotEmpty())
+            @for(breadcrumb in page.breadcrumbs)
+                <div class="divider">
+                    /
+                </div>
+                <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}"
+                   hx-get="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}">${breadcrumb.name}</a>
             @endfor
         @else
-            <div class="divider">
-                /
-            </div>
         @endif
+        <%--        @if(page.parent != null)--%>
+        <%--            !{val splitPath = page.parent!!.path.split("/")}--%>
+        <%--            @for(path in splitPath)--%>
+        <%--                @if(splitPath.indexOf(path) != 0)--%>
+        <%--                    <div class="divider">--%>
+        <%--                        /--%>
+        <%--                    </div>--%>
+        <%--                @endif--%>
+        <%--                <a class="section">${path}</a>--%>
+        <%--            @endfor--%>
+        <%--        @else--%>
+        <%--            <div class="divider">--%>
+        <%--                /--%>
+        <%--            </div>--%>
+        <%--        @endif--%>
 
     </div>
     <table class="ui unstackable table" id="fileTable">
@@ -41,7 +58,9 @@ content = @`
         <th>Size</th>
         <th>Modified</th>
         </thead>
-        <tbody id="fileTableBody">
+        <tbody id="fileTableBody"
+               hx-target="body"
+               hx-push-url="true">
         @for(file in page.files)
             <tr class="context-clickable" data-id="${file.id.toString()}">
                 <td class="collapsing">
@@ -50,7 +69,8 @@ content = @`
                     </div>
                 </td>
                 <td>
-                    <a href="${UserFilesPage.ROUTE}${file.id.toString()}">
+                    <a href="${UserFilesPage.ROUTE}${file.id.toString()}"
+                       hx-get="${UserFilesPage.ROUTE}${file.id.toString()}">
                         @if(file.isFolder)
                             <i class="folder outline icon"></i>
                         @else
