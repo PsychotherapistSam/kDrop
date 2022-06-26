@@ -62,13 +62,10 @@ class UserFilesPage : Page() {
                     var breadcrumb = parent
                     while (breadcrumb != null) {
                         breadcrumbs.add(breadcrumb.toFile())
-                        if (breadcrumb.parent != null) {
-                            breadcrumb = breadcrumb.parent
-                        } else {
-                            breadcrumb = null
-                        }
+                        breadcrumb = breadcrumb.parent
                     }
 
+                    // reverse list because the traversal is backwards
                     breadcrumbs.reverse()
 
                     files = FileDAO
