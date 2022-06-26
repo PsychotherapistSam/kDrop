@@ -76,6 +76,7 @@ class UserFilesPage : Page() {
                         files = FileDAO
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFile() }
+                            .sortedBy { it.name }
 
                     }
                 }

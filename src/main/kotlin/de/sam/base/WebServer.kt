@@ -3,6 +3,9 @@ package de.sam.base
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.UserController
+import de.sam.base.database.FileDAO
+import de.sam.base.database.UserDAO
+import de.sam.base.database.UsersTable
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.IndexPage
 import de.sam.base.pages.admin.AdminIndexPage
@@ -15,6 +18,7 @@ import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
+import de.sam.base.utils.humanReadableByteCountBin
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
 import gg.jte.TemplateEngine
@@ -25,32 +29,41 @@ import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
 import io.javalin.plugin.rendering.template.JavalinJte
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.logTimeSpent
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.DateTime
 import java.nio.file.Path
 import java.util.*
 
 class WebServer {
     fun start() {
         /*transaction {
-            logTimeSpent("adding testfile 3") {
+            addLogger(StdOutSqlLogger)
+            logTimeSpent("adding 5000 testfiles 5") {
+                val owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
                 val fileOne = FileDAO.new {
-                    this.name = "testfolder5 (very large)"
-                    this.path = "/testfolder5 (very large)"
+                    this.name = "testfolder5 (5k files)"
+                    this.path = "/testfolder5 (5k files)"
                     this.parent = null
-                    this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                    this.owner = owner
                     this.size = 0
+                    this.sizeHR = "0 B"
                     this.password = null
                     this.private = false
                     this.created = DateTime.now()
                     this.isFolder = true
                 }
 
-                for (i in 0..1500) {
+                for (i in 0..5000) {
                     FileDAO.new {
                         this.name = "testfile$i.txt"
                         this.path = "/${fileOne.name}/$name"
                         this.parent = fileOne
-                        this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                        this.owner = owner
                         this.size = Random().nextLong(2000000) + 15000
+                        this.sizeHR = humanReadableByteCountBin(this.size)
                         this.password = null
                         this.private = false
                         this.created = DateTime.now()

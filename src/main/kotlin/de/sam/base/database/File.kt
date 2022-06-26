@@ -16,6 +16,7 @@ class File(
     var parent: File?,
     var owner: User,
     var size: Long,
+    var sizeHR: String,
     var password: String?,
     var private: Boolean,
     var created: DateTime,
@@ -31,6 +32,7 @@ object FilesTable : UUIDTable("t_files") {
     val parent = reference("parent", FilesTable).nullable()
     val owner = reference("owner", UsersTable)
     val size = long("size")
+    val sizeHR = varchar("size_hr", 128)
     val password = varchar("password", 256).nullable()
     val private = bool("private")
     val created = datetime("created")
@@ -46,6 +48,7 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     var parent by FileDAO optionalReferencedOn FilesTable.parent
     var owner by UserDAO referencedOn FilesTable.owner
     var size by FilesTable.size
+    var sizeHR by FilesTable.sizeHR
     var password by FilesTable.password
     var private by FilesTable.private
     var created by FilesTable.created
@@ -61,6 +64,7 @@ fun FileDAO.toFile(): File {
         this.parent?.toFile(),
         this.owner.toUser(),
         this.size,
+        this.sizeHR,
         this.password,
         this.private,
         this.created,

@@ -1,6 +1,7 @@
 @import de.sam.base.database.File
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.utils.toRecentTimeString
+@import de.sam.base.utils.humanReadableByteCountBin
 
 @param files: List<File>
 
@@ -37,7 +38,7 @@
                         ${file.name}
                     </a>
                 </td>
-                <td class="right aligned collapsing">${file.size}</td>
+                <td class="right aligned collapsing">${file.sizeHR}</td>
                 <td class="right aligned collapsing"
                     data-tooltip="${file.created.toString()}" data-inverted="">${file.created.toRecentTimeString()}</td>
             </tr>
