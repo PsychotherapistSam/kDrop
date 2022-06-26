@@ -3,12 +3,14 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.database.*
 import de.sam.base.utils.currentUser
+import de.sam.base.utils.file.FilenameComparator
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
+
 
 class UserFilesPage : Page() {
     companion object {
@@ -22,28 +24,7 @@ class UserFilesPage : Page() {
         set(value) {}
     override var templateName: String = "user/files.kte"
 
-    //   val files = arrayListOf<KFile>()
-
-    // val filesIndex = arrayListOf<KFile>()
-
-
-    init {
-        /* fun addFile(file: File) {
-             filesIndex.add(file.toKFile())
-             if (file.isDirectory) {
-                 file.listFiles().forEach {
-                     addFile(it)
-                 }
-             }
-         }
-
-         addFile(File("./"))*/
-
-
-    }
-
     var parent: FileDAO? = null
-
     var files = listOf<File>()
     var breadcrumbs = arrayListOf<File>()
 
@@ -72,24 +53,19 @@ class UserFilesPage : Page() {
                         breadcrumbs.reverse()
                     }
 
+                    val filenameComparator = FilenameComparator()
+
                     logTimeSpent("getting the file list") {
                         files = FileDAO
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFile() }
-                            .sortedBy { it.name }
-
+                            //.sortedBy { it.name }
+                            .sortedWith { a, b ->
+                                filenameComparator.compare(a.name, b.name)
+                            }
                     }
                 }
             }
-
-            //TODO: add option of only refreshing the table (this would also fix the bug I had beforehand witwh the context menu not working when I only replace the table and not everything else)
-            /*    files.clear()
-                if (ctx.pathParamMap().containsKey("fileId")) {
-                    val fileName = ctx.pathParam("fileId")
-                    files.addAll(filesIndex.filter { it.parent == fileName })
-                } else {
-                    files.addAll(filesIndex.filter { it.parent == "." })
-                }*/
         }
         super.handle(ctx)
     }
