@@ -8,9 +8,27 @@
 @template.layout.page(
 page = page,
 content = @`
-    <h1>Your Files</h1>
-    @template.components.fileList(breadcrumbs = page.breadcrumbs, files = page.files)
+    !{val currentIsFolder = page.parent == null || page.parent!!.isFolder}
+
+    @if(!currentIsFolder && page.parent != null)
+        <h1>${page.parent!!.name}</h1>
+    @else
+        <h1>Your Files</h1>
+    @endif
+
+    @template.components.files.breadcrumbElement(breadcrumbs  = page.breadcrumbs)
+
+    @if(currentIsFolder)
+        @template.components.files.fileList( files = page.files)
+    @else
+        <div class="ui basic segment">
+            <div class="ui huge fluid icon button">
+                <i class="ui download icon"></i>
+                Download
+            </div>
+        </div>
+    @endif
 `,
 extraContent = @`
-    @template.components.fileListContextMenu()
+    @template.components.files.fileListContextMenu()
 `)

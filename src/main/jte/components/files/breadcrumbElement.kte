@@ -1,0 +1,39 @@
+@import de.sam.base.database.File
+@import de.sam.base.pages.user.UserFilesPage
+
+@param breadcrumbs: ArrayList<File>
+
+<div class="ui breadcrumb">
+    <div class="divider">
+        /
+    </div>
+    <a class="section" href="${UserFilesPage.ROUTE}">Home</a>
+
+    @if(breadcrumbs.isNotEmpty())
+        @for(breadcrumb in breadcrumbs)
+            <div class="divider">
+                /
+            </div>
+            <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}">
+                ${breadcrumb.name}
+            </a>
+        @endfor
+    @else
+    @endif
+    <%--        @if(page.parent != null)--%>
+    <%--            !{val splitPath = page.parent!!.path.split("/")}--%>
+    <%--            @for(path in splitPath)--%>
+    <%--                @if(splitPath.indexOf(path) != 0)--%>
+    <%--                    <div class="divider">--%>
+    <%--                        /--%>
+    <%--                    </div>--%>
+    <%--                @endif--%>
+    <%--                <a class="section">${path}</a>--%>
+    <%--            @endfor--%>
+    <%--        @else--%>
+    <%--            <div class="divider">--%>
+    <%--                /--%>
+    <%--            </div>--%>
+    <%--        @endif--%>
+
+</div>

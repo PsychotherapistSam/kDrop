@@ -36,6 +36,7 @@ content = @`
                 @endif
                 <button hx-post="${UserLoginPage.ROUTE}"
                         hx-target="body"
+                        hx-push-url="/"
                         class="ui secondary compact button"
                         tabindex="3">Log in
                 </button>
