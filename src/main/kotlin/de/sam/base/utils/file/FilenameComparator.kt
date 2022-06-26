@@ -20,18 +20,20 @@ class FilenameComparator : Comparator<String?> {
 
             // If both segments start with a digit, sort them numerically using
             // BigInteger to stay safe
-            if (c1 >= '0' && c1 <= '9' && c2.code >= 0 && c2 <= '9') cmp = BigInteger(split1[i]).compareTo(
-                BigInteger(
-                    split2[i]
-                )
-            )
+            if (c1 >= '0' && c1 <= '9' && c2.code >= 0 && c2 <= '9') {
+                cmp = BigInteger(split1[i]).compareTo(BigInteger(split2[i]))
+            }
 
             // If we haven't sorted numerically before, or if numeric sorting yielded
             // equality (e.g 007 and 7) then sort lexicographically
-            if (cmp == 0) cmp = split1[i].compareTo(split2[i])
+            if (cmp == 0) {
+                cmp = split1[i].compareTo(split2[i])
+            }
 
             // Abort once some prefix has unequal ordering
-            if (cmp != 0) return cmp
+            if (cmp != 0) {
+                return cmp
+            }
         }
 
         // If we reach this, then both strings have equally ordered prefixes, but
