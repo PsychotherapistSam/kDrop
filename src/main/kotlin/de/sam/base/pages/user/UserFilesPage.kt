@@ -5,6 +5,7 @@ import de.sam.base.database.*
 import de.sam.base.utils.currentUser
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
@@ -42,8 +43,8 @@ class UserFilesPage : Page() {
     }
 
     var parent: FileDAO? = null
-    var files = listOf<File>()
 
+    var files = listOf<File>()
     var breadcrumbs = arrayListOf<File>()
 
     override fun handle(ctx: Context) {
@@ -56,21 +57,27 @@ class UserFilesPage : Page() {
             transaction {
                 val user = UserDAO.findById(ctx.currentUser!!.id)
                 if (user != null) {
-                    parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
+                    logTimeSpent("finding the parent") {
+                        parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
+                    }
+                    logTimeSpent("the breadcrumb traversal") {
+                        // recursive list parents for breadcrumb
+                        var breadcrumb = parent
+                        while (breadcrumb != null) {
+                            breadcrumbs.add(breadcrumb.toFile())
+                            breadcrumb = breadcrumb.parent
+                        }
 
-                    // recursive list parents for breadcrumb
-                    var breadcrumb = parent
-                    while (breadcrumb != null) {
-                        breadcrumbs.add(breadcrumb.toFile())
-                        breadcrumb = breadcrumb.parent
+                        // reverse list because the traversal is backwards
+                        breadcrumbs.reverse()
                     }
 
-                    // reverse list because the traversal is backwards
-                    breadcrumbs.reverse()
+                    logTimeSpent("getting the file list") {
+                        files = FileDAO
+                            .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
+                            .map { it.toFile() }
 
-                    files = FileDAO
-                        .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
-                        .map { it.toFile() }
+                    }
                 }
             }
 
@@ -86,6 +93,7 @@ class UserFilesPage : Page() {
         super.handle(ctx)
     }
 }
+
 /*
 private fun File.toKFile(): KFile {
     return KFile(

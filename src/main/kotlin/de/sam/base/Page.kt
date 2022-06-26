@@ -27,6 +27,10 @@ abstract class Page: Handler {
         return nanoToMilli(pageDiff + templateDiff)
     }
 
+    fun getPageDiff(): String {
+        return nanoToMilli(pageDiff)
+    }
+
     private fun nanoToMilli(time: Long): String {
         return "${
             BigDecimal(time)

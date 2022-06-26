@@ -1,61 +1,64 @@
 package de.sam.base
 
-import de.sam.base.controllers.AuthenticationController
-import de.sam.base.pages.IndexPage
-import gg.jte.ContentType
-import gg.jte.TemplateEngine
-import gg.jte.resolve.DirectoryCodeResolver
-import io.javalin.Javalin
-import io.javalin.plugin.rendering.template.JavalinJte
-import java.nio.file.Path
-import io.javalin.apibuilder.ApiBuilder.*
 import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.UserController
 import de.sam.base.pages.ErrorPage
+import de.sam.base.pages.IndexPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
-import de.sam.base.pages.user.UserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
+import de.sam.base.pages.user.UserEditPage
 import de.sam.base.pages.user.UserFilesPage
 import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.session.Session
+import gg.jte.ContentType
+import gg.jte.TemplateEngine
+import gg.jte.resolve.DirectoryCodeResolver
+import io.javalin.Javalin
+import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
-import org.jetbrains.exposed.sql.transactions.transaction
+import io.javalin.plugin.rendering.template.JavalinJte
+import java.nio.file.Path
 import java.util.*
 
 class WebServer {
     fun start() {
-        transaction {
-         /*   val fileOne = FileDAO.new {
-                this.name = "test"
-                this.path = "/test"
-                this.parent = null
-                this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
-                this.size = 0
-                this.password = null
-                this.private = false
-                this.created = DateTime.now()
-                this.isFolder = true
-            }
+        /*transaction {
+            logTimeSpent("adding testfile 3") {
+                val fileOne = FileDAO.new {
+                    this.name = "testfolder5 (very large)"
+                    this.path = "/testfolder5 (very large)"
+                    this.parent = null
+                    this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                    this.size = 0
+                    this.password = null
+                    this.private = false
+                    this.created = DateTime.now()
+                    this.isFolder = true
+                }
 
-            val fileTwo = FileDAO.new {
-                this.name = "test2"
-                this.path = "/test/test2"
-                this.parent = fileOne
-                this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
-                this.size = 240841
-                this.password = null
-                this.private = false
-                this.created = DateTime.now()
-                this.isFolder = false
-            }*/
-        }
+                for (i in 0..1500) {
+                    FileDAO.new {
+                        this.name = "testfile$i.txt"
+                        this.path = "/${fileOne.name}/$name"
+                        this.parent = fileOne
+                        this.owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
+                        this.size = Random().nextLong(2000000) + 15000
+                        this.password = null
+                        this.private = false
+                        this.created = DateTime.now()
+                        this.isFolder = false
+                    }
+                }
+            }
+        }*/
 
 
         val app = Javalin.create { javalinConfig ->
