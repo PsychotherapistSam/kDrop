@@ -1,7 +1,7 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.database.User
+import de.sam.base.database.UserDTO
 import io.javalin.http.Context
 
 class AdminUserEditPage : Page() {
@@ -16,13 +16,13 @@ class AdminUserEditPage : Page() {
         set(value) {}
     override var templateName: String = "user/edit.kte"
 
-    var selectedUser: User? = null
+    var selectedUserDTO: UserDTO? = null
 
     override fun handle(ctx: Context) {
         pageDiff = ctx.attribute<Long>("userQueryTime") ?: 0L
-        selectedUser = ctx.attribute<User>("requestUserParameter")
-        name = "User: ${selectedUser?.name}"
-        title = "User: ${selectedUser?.name}"
+        selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")
+        name = "User: ${selectedUserDTO?.name}"
+        title = "User: ${selectedUserDTO?.name}"
         super.handle(ctx)
     }
 }

@@ -4,11 +4,11 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.User
+import de.sam.base.database.UserDTO
 import de.sam.base.database.UserDAO
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
-import de.sam.base.utils.currentUser
+import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
 import io.javalin.core.validation.ValidationError
@@ -16,14 +16,8 @@ import io.javalin.http.Context
 import io.javalin.http.HttpCode
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
-import java.util.*
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.system.measureTimeMillis
 
 class AuthenticationController {
     private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
@@ -45,12 +39,12 @@ class AuthenticationController {
             }
 
             ctx.status(HttpCode.OK)
-            ctx.currentUser = attempt.first
+            ctx.currentUserDTO = attempt.first
         }
     }
 
     fun registrationRequest(ctx: Context) {
-        if (ctx.isLoggedIn && ctx.currentUser!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
+        if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
             ctx.json("You are already registered.")
             ctx.status(HttpCode.FORBIDDEN)
         } else if (!ctx.isLoggedIn && !config.allowUserRegistration) {
@@ -93,7 +87,7 @@ class AuthenticationController {
 
                     // only set the session when it is not requested to leave it out.
                     if (ctx.header("No-Session") == null) {
-                        ctx.currentUser = userDAO.toUser()
+                        ctx.currentUserDTO = userDAO.toUser()
                     }
                     ctx.status(200)
                 }
@@ -106,7 +100,7 @@ class AuthenticationController {
     }
 }
 
-fun validateLoginAttempt(username: String?, password: String?): Pair<User?, List<String>> {
+fun validateLoginAttempt(username: String?, password: String?): Pair<UserDTO?, List<String>> {
     val usernameValidation = validateUsername(username)
     val usernameErrors = usernameValidation.first
     val user = usernameValidation.second

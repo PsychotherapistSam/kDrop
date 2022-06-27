@@ -9,7 +9,8 @@ import org.joda.time.DateTime
 import java.io.Serializable
 import java.util.*
 
-class User(
+// The UserDTO exists to be a serializable object for the session persistance.
+class UserDTO(
     var id: UUID,
     var name: String,
     var password: String,
@@ -68,8 +69,8 @@ class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 }
 
 
-fun UserDAO.toUser(): User {
-    return User(
+fun UserDAO.toUser(): UserDTO {
+    return UserDTO(
         this.id.value,
         this.name,
         this.password,

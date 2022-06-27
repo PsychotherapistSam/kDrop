@@ -1,6 +1,5 @@
 package de.sam.base.database
 
-import de.sam.base.users.UserRoles
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -14,7 +13,7 @@ class File(
     var name: String,
     var path: String,
     var parent: File?,
-    var owner: User,
+    var owner: UserDTO,
     var size: Long,
     var sizeHR: String,
     var password: String?,

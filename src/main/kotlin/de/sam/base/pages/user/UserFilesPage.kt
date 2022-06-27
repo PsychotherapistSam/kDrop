@@ -2,7 +2,7 @@ package de.sam.base.pages.user
 
 import de.sam.base.Page
 import de.sam.base.database.*
-import de.sam.base.utils.currentUser
+import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.FilenameComparator
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.and
@@ -36,7 +36,9 @@ class UserFilesPage : Page() {
                 if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
 
             transaction {
-                val user = UserDAO.findById(ctx.currentUser!!.id)
+                val user = logTimeSpent("finding the current user by id in the database") {
+                    return@logTimeSpent UserDAO.findById(ctx.currentUserDTO!!.id)
+                }
                 if (user != null) {
                     logTimeSpent("finding the parent") {
                         parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null

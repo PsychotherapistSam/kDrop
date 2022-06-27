@@ -2,7 +2,7 @@ package de.sam.base.pages.user
 
 import de.sam.base.Page
 import de.sam.base.controllers.validateLoginAttempt
-import de.sam.base.utils.currentUser
+import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
 import io.javalin.http.Context
@@ -41,7 +41,7 @@ class UserLoginPage : Page() {
                     return@prolongAtLeast
                 }
 
-                ctx.currentUser = attempt.first
+                ctx.currentUserDTO = attempt.first
                 ctx.hxRedirect("/")
                 //ctx.redirect("/")
                 return@prolongAtLeast

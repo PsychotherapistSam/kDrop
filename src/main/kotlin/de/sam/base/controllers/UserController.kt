@@ -4,12 +4,12 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration
-import de.sam.base.database.User
+import de.sam.base.database.UserDTO
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
-import de.sam.base.utils.currentUser
+import de.sam.base.utils.currentUserDTO
 import io.javalin.core.validation.ValidationError
 import io.javalin.core.validation.Validator
 import io.javalin.http.*
@@ -25,20 +25,20 @@ import kotlin.system.measureNanoTime
 class UserController {
 
     fun updateUser(ctx: Context) {
-        val selectedUser = ctx.attribute<User>("requestUserParameter")!!
+        val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
         /*if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
             throw UnauthorizedResponse("You are not allowed to update this user")
         }*/
 
-        val isSelf = ctx.currentUser!!.id == selectedUser.id
+        val isSelf = ctx.currentUserDTO!!.id == selectedUserDTO.id
 
         transaction {
-            val user = UserDAO.findById(selectedUser.id) ?: throw NotFoundResponse("User not found")
+            val user = UserDAO.findById(selectedUserDTO.id) ?: throw NotFoundResponse("User not found")
             ctx.formParamMap().forEach { (key, value) ->
                 when (key) {
                     "username" -> {
                         val newName = value.first()
-                        if (selectedUser.name.lowercase() != newName.lowercase()) {
+                        if (selectedUserDTO.name.lowercase() != newName.lowercase()) {
                             val usernameErrors = validateUsername(newName, false).first
                             if (usernameErrors.isNotEmpty())
                                 throw BadRequestResponse(usernameErrors.first().message) //.joinToString("\n") { it.message }
@@ -51,19 +51,19 @@ class UserController {
                         if (passwordErrors.isNotEmpty())
                             throw BadRequestResponse(passwordErrors.first().message) //.joinToString("\n") { it.message })
                         user.password = Password.hash(newPassword)
-                            .addSalt("${selectedUser.id}") // argon2id salts the passwords on itself, but better safe than sorry
+                            .addSalt("${selectedUserDTO.id}") // argon2id salts the passwords on itself, but better safe than sorry
                             .addPepper(Configuration.config.passwordPepper)
                             .with(argon2Instance)
                             .result
                     }
                     "roles" -> {
-                        if (ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
+                        if (ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
                             // map either null, comma seperated list to enum list1
                             val roleValidationErrors = validateRoles(value.first())
                             if (roleValidationErrors.isNotEmpty())
                                 throw BadRequestResponse(roleValidationErrors.first().message) //.joinToString("\n") { it.message })
                             val roles = value.first().split(",").map { UserRoles.valueOf(it) }
-                            if (roles != selectedUser.roles) {
+                            if (roles != selectedUserDTO.roles) {
                                 user.roles = roles.joinToString(",") { it.name }
                             }
                         }
@@ -71,21 +71,21 @@ class UserController {
                 }
                 // updates the user in the current session (e.g. updating username etc), but only when it is not done by an admin
                 if (isSelf) {
-                    ctx.currentUser = user.toUser()
+                    ctx.currentUserDTO = user.toUser()
                 }
             }
         }
     }
 
     fun deleteUser(ctx: Context) {
-        val selectedUser = ctx.attribute<User>("requestUserParameter")!!
+        val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
 
-        if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
+        if (ctx.currentUserDTO != selectedUserDTO && !ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
             throw UnauthorizedResponse("You are not allowed to delete this user")
         }
         transaction {
             UserDAO
-                .findById(selectedUser.id)!!
+                .findById(selectedUserDTO.id)!!
                 .delete()
         }
     }
@@ -115,9 +115,9 @@ class UserController {
 fun validateUsername(
     username: String?,
     userHasToExist: Boolean = true
-): Pair<ArrayList<ValidationError<String>>, User?> {
+): Pair<ArrayList<ValidationError<String>>, UserDTO?> {
     val fieldName = "username"
-    var user: User? = null
+    var userDTO: UserDTO? = null
 
     val errors: ArrayList<ValidationError<String>> = ArrayList()
 
@@ -135,7 +135,7 @@ fun validateUsername(
                 .firstOrNull()
         }
         if (userDao != null)
-            user = userDao.toUser()
+            userDTO = userDao.toUser()
 
         validator = if (userHasToExist) {
             Validator.create(String::class.java, username, fieldName)
@@ -150,12 +150,12 @@ fun validateUsername(
         }
     }
 
-    return Pair(errors, user)
+    return Pair(errors, userDTO)
 }
 
 private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
 
-fun validatePassword(user: User? = null, password: String?): List<ValidationError<String>> {
+fun validatePassword(userDTO: UserDTO? = null, password: String?): List<ValidationError<String>> {
     val fieldName = "password"
     return Validator.create(String::class.java, password, fieldName)
         .check({ it.isNotBlank() }, "Password is required")
@@ -164,11 +164,11 @@ fun validatePassword(user: User? = null, password: String?): List<ValidationErro
         .check(
             {
                 // if no user is specified the password will only get checked for basic validity
-                if (user == null) {
+                if (userDTO == null) {
                     true
                 } else {
-                    Password.check(it, user!!.password)
-                        .addSalt("${user.id}") // argon2id salts the passwords on itself, but better safe than sorry
+                    Password.check(it, userDTO!!.password)
+                        .addSalt("${userDTO.id}") // argon2id salts the passwords on itself, but better safe than sorry
                         .addPepper(Configuration.config.passwordPepper)
                         .with(argon2Instance)
                 }

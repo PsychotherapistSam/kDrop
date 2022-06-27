@@ -15,7 +15,7 @@ class CustomAccessManager : AccessManager {
                 throw UnauthorizedResponse("You need to be logged in to access this resource.")
             }
 
-            val maxUserRole = ctx.currentUser!!.roles.maxOf { it.powerLevel }
+            val maxUserRole = ctx.currentUserDTO!!.roles.maxOf { it.powerLevel }
             val minReqiredRole = routeRoles
                 .map { it as UserRoles }
                 //.filter { !it.hidden }
@@ -24,7 +24,7 @@ class CustomAccessManager : AccessManager {
             val reachesRoleRequirement = maxUserRole >= minReqiredRole
 
             if (routeRoles.contains(UserRoles.SELF) && ctx.pathParam("userId") != null) {
-                if (ctx.currentUser!!.id != UUID.fromString(ctx.pathParam("userId")) && !reachesRoleRequirement) {
+                if (ctx.currentUserDTO!!.id != UUID.fromString(ctx.pathParam("userId")) && !reachesRoleRequirement) {
                     // you can't access other users' resources if "self" is set
                     throw UnauthorizedResponse(
                         "You are not authorized to access this resource."

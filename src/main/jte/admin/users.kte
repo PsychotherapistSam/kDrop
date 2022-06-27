@@ -9,6 +9,6 @@
 page = page,
 content = @`
     @template.layout.admin.navbar(page=page)
-    @template.components.usersTable(users = page.users, page.currenTablePage, page.maxTablePageSize, page.searchQuery)
+    @template.components.usersTable(users = page.userDTOs, page.currenTablePage, page.maxTablePageSize, page.searchQuery)
 `
 )

@@ -1,8 +1,7 @@
 package de.sam.base
 
-import de.sam.base.database.User
-import de.sam.base.utils.currentUser
-import de.sam.base.utils.isLoggedIn
+import de.sam.base.database.UserDTO
+import de.sam.base.utils.currentUserDTO
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import java.math.BigDecimal
@@ -17,7 +16,7 @@ abstract class Page: Handler {
 
     var pageDiff: Long = 0
     private var templateStartTime: Long? = null // = System.nanoTime()
-    var currentUser: User? = null // = ctx.currentUser
+    var currentUserDTO: UserDTO? = null // = ctx.currentUser
 
     //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
@@ -44,7 +43,7 @@ abstract class Page: Handler {
     }*/
 
     override fun handle(ctx: Context) {
-        currentUser = ctx.currentUser
+        currentUserDTO = ctx.currentUserDTO
         templateStartTime = System.nanoTime()
         ctx.render(templateName, Collections.singletonMap("page", this))
     }

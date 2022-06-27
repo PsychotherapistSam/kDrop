@@ -1,9 +1,9 @@
-@import de.sam.base.database.User
+@import de.sam.base.database.UserDTO
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.pages.displayLoader
 
-@param users: List<User>
+@param users: List<UserDTO>
 @param currentPage: Int
 @param pageSize: Int
 @param searchQuery: String = ""

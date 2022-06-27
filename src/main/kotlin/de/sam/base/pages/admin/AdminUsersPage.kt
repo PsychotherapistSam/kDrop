@@ -1,14 +1,13 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.database.User
+import de.sam.base.database.UserDTO
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
 import kotlin.system.measureNanoTime
 
 class AdminUsersPage : Page() {
@@ -23,7 +22,7 @@ class AdminUsersPage : Page() {
         set(value) {}
     override var templateName: String = "admin/users.kte"
 
-    var users = listOf<User>()
+    var userDTOs = listOf<UserDTO>()
     var currenTablePage = 0
     val maxTablePageSize = 10
     var searchQuery = ""
@@ -43,7 +42,7 @@ class AdminUsersPage : Page() {
                         UserDAO.all()
                     }
 
-                    users = userData
+                    userDTOs = userData
                         .orderBy(UsersTable.registrationDate to SortOrder.ASC)
                         .limit(maxTablePageSize, maxTablePageSize * currenTablePage)
                         .map { it.toUser() }
@@ -55,7 +54,7 @@ class AdminUsersPage : Page() {
             ctx.render(
                 "components/usersTable.kte",
                 mapOf(
-                    "users" to users,
+                    "users" to userDTOs,
                     "currentPage" to currenTablePage,
                     "pageSize" to maxTablePageSize,
                     "searchQuery" to searchQuery

@@ -25,21 +25,21 @@ content = @`
                 <i class="large user middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Username:</div>
-                    <div class="description">${page.selectedUser!!.name}</div>
+                    <div class="description">${page.selectedUserDTO!!.name}</div>
                 </div>
             </div>
             <div class="item">
                 <i class="large clock middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Registration Date:</div>
-                    <div class="description">${page.selectedUser!!.registrationDate.toString()}</div>
+                    <div class="description">${page.selectedUserDTO!!.registrationDate.toString()}</div>
                 </div>
             </div>
             <div class="item">
                 <i class="large group middle aligned icon"></i>
                 <div class="content">
                     <div class="header">Roles:</div>
-                    <div class="description">${page.selectedUser!!.roles.toString()}</div>
+                    <div class="description">${page.selectedUserDTO!!.roles.toString()}</div>
                 </div>
             </div>
         </div>
@@ -59,9 +59,9 @@ content = @`
             $('body').modal({
                 title: 'User Deletion',
                 class: 'tiny',
-                content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt>${page.selectedUser!!.name}</tt>?',
+                content: 'Deleting the user is irreversible and permanent.<br>Are you sure you want to delete the user <tt>${page.selectedUserDTO!!.name}</tt>?',
                 actions: [{
-                    text: 'Yes, permanently delete ${page.selectedUser!!.name}',
+                    text: 'Yes, permanently delete ${page.selectedUserDTO!!.name}',
                     class: 'negative'
                 }, {
                     text: 'No, cancel',
@@ -69,7 +69,7 @@ content = @`
                 }],
                 onDeny: function () {
                     $.ajax({
-                        url: "/api/v1/users/${page.selectedUser!!.id.toString()}",
+                        url: "/api/v1/users/${page.selectedUserDTO!!.id.toString()}",
                         type: "DELETE",
                         success: function () {
                             $('body')

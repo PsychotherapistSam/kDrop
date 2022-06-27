@@ -3,17 +3,17 @@
 @import de.sam.base.pages.admin.AdminUserEditPage
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
-@import de.sam.base.database.User
+@import de.sam.base.database.UserDTO
 
 @param page: Page
 
 !{val viewedByAdmin = page is AdminUserEditPage}
-!{var selectedUser: User?}
+!{var selectedUserDTO: UserDTO?}
 
 @if(viewedByAdmin)
-    !{selectedUser = (page as AdminUserEditPage).selectedUser}
+    !{selectedUserDTO = (page as AdminUserEditPage).selectedUserDTO}
 @else
-    !{selectedUser = (page as UserEditPage).currentUser}
+    !{selectedUserDTO = (page as UserEditPage).currentUserDTO}
 @endif
 
 @template.layout.page(
@@ -23,10 +23,10 @@ content = @`
         @template.layout.admin.navbar(page=page)
     @else
         <h1>Account Settings
-            @if(page.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN))
+            @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
                 <a class="ui compact secondary right floated button"
-                   href="/admin/users/${page.currentUser!!.id.toString()}/edit"
-                   hx-get="/admin/users/${page.currentUser!!.id.toString()}/edit">View as Admin</a>
+                   href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+                   hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit">View as Admin</a>
             @endif
         </h1>
     @endif
@@ -39,7 +39,7 @@ content = @`
             <!-- error or success class -->
             <div class="field">
                 <label for="username">Username</label>
-                <input type="text" name="username" id="username" value="${selectedUser!!.name}"
+                <input type="text" name="username" id="username" value="${selectedUserDTO!!.name}"
                        placeholder="Username"
                        tabindex="0">
             </div>
@@ -48,7 +48,7 @@ content = @`
                     <label for="roles">Roles</label>
                     <div class="ui fluid multiple search clearable  selection dropdown">
                         <input type="hidden" name="roles" tabindex="1"
-                               value="${selectedUser!!.roles.map { it.name }.joinToString(",")}">
+                               value="${selectedUserDTO!!.roles.map { it.name }.joinToString(",")}">
                         <i class="dropdown icon"></i>
                         <div class="default text">Select Role</div>
                         <div class="menu">
@@ -115,7 +115,7 @@ content = @`
                 headers: {
                     'Accept': 'application/json',
                 },
-                url: "/api/v1/users/${selectedUser!!.id.toString()}",
+                url: "/api/v1/users/${selectedUserDTO!!.id.toString()}",
                 data: data
             }).always(function () {
                 form.removeClass('loading');
@@ -150,7 +150,7 @@ content = @`
                 headers: {
                     'Accept': 'application/json',
                 },
-                url: "/api/v1/users/${selectedUser!!.id.toString()}",
+                url: "/api/v1/users/${selectedUserDTO!!.id.toString()}",
                 data: data
             }).always(function () {
                 form.removeClass('loading');

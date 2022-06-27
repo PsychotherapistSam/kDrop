@@ -1,14 +1,8 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.database.User
-import de.sam.base.database.UserDAO
-import de.sam.base.database.toUser
+import de.sam.base.database.UserDTO
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
-import kotlin.system.measureNanoTime
 
 class AdminUserViewPage : Page() {
     companion object {
@@ -22,13 +16,13 @@ class AdminUserViewPage : Page() {
         set(value) {}
     override var templateName: String = "admin/user_view.kte"
 
-    var selectedUser: User? = null
+    var selectedUserDTO: UserDTO? = null
 
     override fun handle(ctx: Context) {
         pageDiff = ctx.attribute<Long>("userQueryTime") ?: 0L
-        selectedUser = ctx.attribute<User>("requestUserParameter")
-        name = "User: ${selectedUser?.name}"
-        title = "User: ${selectedUser?.name}"
+        selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")
+        name = "User: ${selectedUserDTO?.name}"
+        title = "User: ${selectedUserDTO?.name}"
         super.handle(ctx)
     }
 }
