@@ -26,9 +26,12 @@ class FileController {
             throw BadRequestResponse("File too big, max size is ${humanReadableByteCountBin(maxFileSize)}")
         }
 
+        val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
+
         val files = ctx.uploadedFiles()
         transaction {
             val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
+            val parent = if (parentId != null) FileDAO.findById(parentId) else null
 
             files.forEach {
                 val uploadFolder = File("./upload/")
@@ -39,7 +42,7 @@ class FileController {
                 val file = FileDAO.new {
                     this.name = it.filename
                     this.path = "upload/${this.id}"
-                    this.parent = null
+                    this.parent = parent
                     this.owner = owner
                     this.size = it.size
                     this.sizeHR = humanReadableByteCountBin(it.size)
@@ -50,10 +53,10 @@ class FileController {
                 }
 
                 FileUtil.streamToFile(it.content, "./upload/${file.id}")
+
+                ctx.json(mapOf("id" to file.id.toString()))
             }
         }
-
-        ctx.json(mapOf("status" to "ok"))
     }
 
     fun getFileParameter(ctx: Context) {
@@ -94,5 +97,20 @@ class FileController {
     }
 
     fun deleteFile(ctx: Context) {
+        val file = ctx.attribute<FileDTO>("requestFileParameter")
+        if (file == null || file.owner.id != ctx.currentUserDTO!!.id) {
+            throw NotFoundResponse("File not found")
+        }
+
+        val systemFile = File("./${file.path}")
+        if (systemFile.exists()) {
+            systemFile.delete()
+        }
+        if (!systemFile.exists()) {
+            transaction {
+                FileDAO.find { FilesTable.id eq file.id }.first().delete()
+            }
+        }
+        ctx.json(mapOf("status" to "ok"))
     }
 }

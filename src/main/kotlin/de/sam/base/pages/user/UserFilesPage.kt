@@ -79,6 +79,13 @@ class UserFilesPage : Page() {
                 }
             }
         }
+        if (ctx.queryParam("table") != null) {
+            ctx.render(
+                "components/files/fileListComp.kte",
+                mapOf("fileDTOs" to fileDTOs)
+            )
+            return
+        }
         super.handle(ctx)
     }
 }

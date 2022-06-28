@@ -1,3 +1,6 @@
+<script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
+
+
 <!-- initially hidden right-click menu -->
 <nav id="context-menu" class="context-menu">
     <div class="ui compact vertical menu">
@@ -5,12 +8,8 @@
             <i class="dropdown icon"></i>
             New
             <div class="menu">
-                <a class="item context-item" data-action="new-file">
-                    <i class="file icon"></i>File
-                </a>
                 <a class="item context-item" data-action="new-folder">
                     <i class="folder icon"></i>Folder
-
                 </a>
                 <a class="item context-item" data-action="new-share">
                     <i class="share icon"></i>Share
@@ -191,48 +190,52 @@
         select: true
     });*/
 
+    let ds = null;
 
-    var ds = new DragSelect({
-        selectables: document.getElementsByClassName('context-clickable'),
-        area: document.getElementById('fileTableBody'),
-        draggability: false, // implement this instead: https://interactjs.io/docs/
-        keyboardDrag: false,
-        //selectedClass: 'selected'
-    });
-    // fired once the user releases the mouse. (items) = selected nodes:
-    /* ds.subscribe('callback', ({ items, event }) => {
-         table.rows().deselect();
-         table.rows('.ds-selected').select();
-         console.log(items)
-     });*/
-    ds.subscribe('predragstart', ({event}) => {
-        if (event.type != "mousedown") {
-            ds.stop()
-        }
-    });
-    ds.subscribe('dragstart', ({event}) => {
-        if (event === "mousedown") {
-            console.log(event)
-        }
-        toggleMenuOff();
-    })
-    ds.subscribe('elementselect', ({item, items}) => {
-        console.log(item)
-        // $(item).find(".checkbox")[0].checked = true;
+    function initializeDragSelect() {
+        ds = new DragSelect({
+            selectables: document.getElementsByClassName('context-clickable'),
+            area: document.getElementById('fileTableBody'),
+            draggability: false, // implement this instead: https://interactjs.io/docs/
+            keyboardDrag: false,
+            //selectedClass: 'selected'
+        });
+        // fired once the user releases the mouse. (items) = selected nodes:
+        /* ds.subscribe('callback', ({ items, event }) => {
+             table.rows().deselect();
+             table.rows('.ds-selected').select();
+             console.log(items)
+         });*/
+        ds.subscribe('predragstart', ({event}) => {
+            if (event.type != "mousedown") {
+                ds.stop()
+            }
+        });
+        ds.subscribe('dragstart', ({event}) => {
+            if (event === "mousedown") {
+                // console.log(event)
+            }
+            toggleMenuOff();
+        })
+        ds.subscribe('elementselect', ({item, items}) => {
+            // console.log(item)
+            // $(item).find(".checkbox")[0].checked = true;
 
-        selectRow(item);
-        if (items.length == $(".context-clickable").length - 1) {
-            $("#toggleAllSelection")[0].checked = true;
-        }
-    });
-    ds.subscribe('elementunselect', ({item, items}) => {
-        /// $(item).find(".checkbox")[0].checked = false;
+            selectRow(item);
+            if (items.length == $(".context-clickable").length - 1) {
+                $("#toggleAllSelection")[0].checked = true;
+            }
+        });
+        ds.subscribe('elementunselect', ({item, items}) => {
+            /// $(item).find(".checkbox")[0].checked = false;
 
-        deselectRow(item);
+            deselectRow(item);
 
-        $("#toggleAllSelection")[0].checked = false;
-        console.log(items)
-    });
+            $("#toggleAllSelection")[0].checked = false;
+            // console.log(items)
+        });
+    }
+
 
     /*
             $('#fileTable').selectable({
@@ -254,6 +257,7 @@
      * Initialise our application's code.
      */
     function init() {
+        initializeDragSelect()
         contextListener();
         clickListener();
         keyupListener();
@@ -462,12 +466,34 @@
         if (!link.classList.contains("context-item-dropdown")) {
 
             // loop through selected rows using for each
-            console.log("looping through selected rows")
+            // console.log("looping through selected rows")
             getSelectedRows().forEach(function (row) {
                     switch (link.getAttribute("data-action")) {
                         case "download":
                             window.location.href = "/api/v1/files/" + row.getAttribute("data-id");
                             break;
+                        case "delete":
+                            const fileId = row.getAttribute("data-id");
+                            $.ajax({
+                                url: "/api/v1/files/" + fileId,
+                                type: "DELETE",
+                                success: function (result) {
+                                    // console.log(result);
+                                    row.remove();
+                                },
+                                error: function (error) {
+                                    // show fomantic toast
+                                    $('body')
+                                        .toast({
+                                            class: 'error',
+                                            message: 'Could not delete file'
+                                        })
+                                    ;
+                                }
+                            });
+                            break;
+                        // case "new-folder":
+                        //     break;
                         default:
                             console.log(row.getAttribute("data-id"));
                             console.log(link.getAttribute("data-action"))

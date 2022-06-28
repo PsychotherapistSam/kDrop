@@ -16,10 +16,11 @@ content = @`
         <h1>Your Files</h1>
     @endif
 
-    @template.components.files.breadcrumbElement(breadcrumbs  = page.breadcrumbs)
+    @template.components.files.breadcrumbElementComp(breadcrumbs  = page.breadcrumbs)
 
     @if(currentIsFolder)
-        @template.components.files.fileList(fileDTOs = page.fileDTOs)
+        @template.components.files.fileUploadComp(parent = page.parent)
+        @template.components.files.fileListComp(fileDTOs = page.fileDTOs)
     @else
         <div class="ui basic segment">
             <a href="/api/v1/files/${page.parent!!.id.value.toString()}" class="ui huge fluid icon button">
@@ -28,7 +29,13 @@ content = @`
             </a>
         </div>
     @endif
+
+    <script>
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
+            initializeDragSelect();
+        });
+    </script>
 `,
 extraContent = @`
-    @template.components.files.fileListContextMenu()
+    @template.components.files.fileListContextMenuComp()
 `)
