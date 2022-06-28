@@ -122,6 +122,11 @@
                         <i class="settings icon"></i>
                         Settings
                     </a>
+                    <a class="@if(page is UserFilesPage) active @endif item"
+                       href="${UserFilesPage.ROUTE}" >
+                        <i class="folder icon"></i>
+                        My Files
+                    </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
                         <a class="@if(page is AdminIndexPage) active @endif item"
