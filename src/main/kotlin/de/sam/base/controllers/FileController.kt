@@ -86,6 +86,7 @@ class FileController {
         if (file != null) {
             val systemFile = File("./${file.path}")
             if (systemFile.exists()) {
+                // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
                 val dispositionType =
                     if (ctx.queryParam("download") == null) "inline" else "attachment"
 
