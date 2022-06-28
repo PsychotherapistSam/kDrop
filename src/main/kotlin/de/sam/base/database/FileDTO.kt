@@ -8,11 +8,11 @@ import org.joda.time.DateTime
 import java.io.Serializable
 import java.util.*
 
-class File(
+class FileDTO(
     var id: UUID,
     var name: String,
     var path: String,
-    var parent: File?,
+    var parent: FileDTO?,
     var owner: UserDTO,
     var size: Long,
     var sizeHR: String,
@@ -55,8 +55,8 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 }
 
 
-fun FileDAO.toFile(): File {
-    return File(
+fun FileDAO.toFile(): FileDTO {
+    return FileDTO(
         this.id.value,
         this.name,
         this.path,

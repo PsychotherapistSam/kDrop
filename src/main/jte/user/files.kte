@@ -19,13 +19,13 @@ content = @`
     @template.components.files.breadcrumbElement(breadcrumbs  = page.breadcrumbs)
 
     @if(currentIsFolder)
-        @template.components.files.fileList( files = page.files)
+        @template.components.files.fileList(fileDTOs = page.fileDTOs)
     @else
         <div class="ui basic segment">
-            <div class="ui huge fluid icon button">
+            <a href="/api/v1/files/${page.parent!!.id.value.toString()}" class="ui huge fluid icon button">
                 <i class="ui download icon"></i>
                 Download
-            </div>
+            </a>
         </div>
     @endif
 `,

@@ -17,6 +17,9 @@
                 </a>
             </div>
         </div>
+        <a class="red item context-item" data-action="download">
+            <i class="download icon"></i> Download
+        </a>
         <a class="item context-item" data-action="copy">
             <i class="copy icon"></i> Copy
         </a>
@@ -461,10 +464,17 @@
             // loop through selected rows using for each
             console.log("looping through selected rows")
             getSelectedRows().forEach(function (row) {
-                    console.log(row.getAttribute("data-id"));
-                    console.log(link.getAttribute("data-action"))
-                    console.log(row);
-                    console.log("Task ID - " + row.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
+                    switch (link.getAttribute("data-action")) {
+                        case "download":
+                            window.location.href = "/api/v1/files/" + row.getAttribute("data-id");
+                            break;
+                        default:
+                            console.log(row.getAttribute("data-id"));
+                            console.log(link.getAttribute("data-action"))
+                            console.log(row);
+                            console.log("Task ID - " + row.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
+                            break;
+                    }
                 }
             );
             /*for (var i = 0; i < getSelectedRows().length; i++) {

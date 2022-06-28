@@ -1,13 +1,13 @@
-@import de.sam.base.database.File
+@import de.sam.base.database.FileDTO
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.utils.toRecentTimeString
 @import de.sam.base.utils.humanReadableByteCountBin
 
-@param files: List<File>
+@param fileDTOs: List<FileDTO>
 
 <script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
 
-@if(files.isNotEmpty())
+@if(fileDTOs.isNotEmpty())
     <table class="ui unstackable table" id="fileTable">
         <thead>
         <th>
@@ -21,26 +21,26 @@
         <th>Modified</th>
         </thead>
         <tbody id="fileTableBody">
-        @for(file in files)
-            <tr class="context-clickable" data-id="${file.id.toString()}">
+        @for(fileDTO in fileDTOs)
+            <tr class="context-clickable" data-id="${fileDTO.id.toString()}">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
                         <input type="checkbox"><label>&nbsp;</label>
                     </div>
                 </td>
                 <td>
-                    <a href="${UserFilesPage.ROUTE}${file.id.toString()}">
-                        @if(file.isFolder)
+                    <a href="${UserFilesPage.ROUTE}${fileDTO.id.toString()}">
+                        @if(fileDTO.isFolder)
                             <i class="folder outline icon"></i>
                         @else
                             <i class="file outline icon"></i>
                         @endif
-                        ${file.name}
+                        ${fileDTO.name}
                     </a>
                 </td>
-                <td class="right aligned collapsing">${file.sizeHR}</td>
+                <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
                 <td class="right aligned collapsing"
-                    data-tooltip="${file.created.toString()}" data-inverted="">${file.created.toRecentTimeString()}</td>
+                    data-tooltip="${fileDTO.created.toString()}" data-inverted="">${fileDTO.created.toRecentTimeString()}</td>
             </tr>
         @endfor
         </tbody>

@@ -25,8 +25,8 @@ class UserFilesPage : Page() {
     override var templateName: String = "user/files.kte"
 
     var parent: FileDAO? = null
-    var files = listOf<File>()
-    var breadcrumbs = arrayListOf<File>()
+    var fileDTOs = listOf<FileDTO>()
+    var breadcrumbs = arrayListOf<FileDTO>()
 
     override fun handle(ctx: Context) {
         breadcrumbs.clear()
@@ -58,7 +58,7 @@ class UserFilesPage : Page() {
                     val filenameComparator = FilenameComparator()
 
                     logTimeSpent("getting the file list") {
-                        files = FileDAO
+                        fileDTOs = FileDAO
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFile() }
                             //.sortedBy { it.name }

@@ -3,6 +3,7 @@ package de.sam.base.utils
 import java.text.CharacterIterator
 import java.text.StringCharacterIterator
 
+/*
 fun humanReadableByteCountSI(bytes: Long): String? {
     var bytes = bytes
     if (-1000 < bytes && bytes < 1000) {
@@ -15,6 +16,7 @@ fun humanReadableByteCountSI(bytes: Long): String? {
     }
     return String.format("%.1f %cB", bytes / 1000.0, ci.current())
 }
+*/
 
 fun humanReadableByteCountBin(bytes: Long) = when {
     bytes == Long.MIN_VALUE || bytes < 0 -> "N/A"

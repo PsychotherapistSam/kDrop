@@ -1,7 +1,7 @@
-@import de.sam.base.database.File
+@import de.sam.base.database.FileDTO
 @import de.sam.base.pages.user.UserFilesPage
 
-@param breadcrumbs: ArrayList<File>
+@param breadcrumbs: ArrayList<FileDTO>
 
 <div class="ui breadcrumb">
     <div class="divider">

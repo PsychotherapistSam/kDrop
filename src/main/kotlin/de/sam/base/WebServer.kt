@@ -2,6 +2,7 @@ package de.sam.base
 
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.AuthenticationController
+import de.sam.base.controllers.FileController
 import de.sam.base.controllers.UserController
 import de.sam.base.database.FileDAO
 import de.sam.base.database.UserDAO
@@ -159,6 +160,17 @@ class WebServer {
                         delete("/", UserController()::deleteUser, UserRoles.SELF, UserRoles.ADMIN)
                         // get(UserController()::getUser)
                         put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
+                    }
+                }
+                path("/files") {
+                    // get("/", UserController()::getFiles, UserRoles.USER)
+                   // before("/", FileController()::checkFile)
+                    post("/", FileController()::uploadFile, UserRoles.USER)
+                    before("/{fileId}*", FileController()::getFileParameter)
+                    path("/{fileId}") {
+                        get("/", FileController()::getFile, UserRoles.USER)
+                        delete("/", FileController()::deleteFile, UserRoles.USER)
+                        //put("/", FileController()::updateFile, UserRoles.USER)
                     }
                 }
             }
