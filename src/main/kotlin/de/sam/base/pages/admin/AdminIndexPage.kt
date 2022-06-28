@@ -1,6 +1,7 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
+import de.sam.base.database.FileDAO
 import de.sam.base.database.UserDAO
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -22,12 +23,16 @@ class AdminIndexPage : Page() {
     override var templateName: String = "admin/index.kte"
 
     var userCount = 0
+    var fileCount = 0
     override fun handle(ctx: Context) {
         pageDiff = measureNanoTime {
             transaction {
                 addLogger(StdOutSqlLogger)
                 logTimeSpent("Getting user count") {
                     userCount = UserDAO.count()
+                }
+                logTimeSpent("Getting file count") {
+                    fileCount = FileDAO.count()
                 }
             }
         }

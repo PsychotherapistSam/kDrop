@@ -13,16 +13,16 @@ content = @`
          hx-target="body"
          hx-push-url="true">
         <div class="ui column">
-            <a class="ui fluid card" href="/admin/reports" hx-get="/admin/reports">
+            <a class="ui fluid card" href="/admin/files" hx-get="/admin/files">
                 <div class="content">
                     <div class="center aligned header">
-                        <i class="circle icon"></i>
-                        Arbitrary Content
+                        <i class="file icon"></i>
+                        Files
                     </div>
                     <div class="center aligned description">
                         <div class="ui statistic">
                             <div class="value">
-                                0
+                                ${page.fileCount}
                             </div>
                         </div>
                     </div>
@@ -56,7 +56,7 @@ content = @`
                     <div class="center aligned description">
                         <div class="ui negative statistic">
                             <div class="value">
-                                5
+                                0
                             </div>
                         </div>
                     </div>
