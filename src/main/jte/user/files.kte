@@ -23,10 +23,22 @@ content = @`
         @template.components.files.fileListComp(fileDTOs = page.fileDTOs)
     @else
         <div class="ui basic segment">
-            <a href="/api/v1/files/${page.parent!!.id.value.toString()}" class="ui huge fluid icon button">
+            <a href="/api/v1/files/${page.parent!!.id.value.toString()}"
+               class="ui huge fluid icon button"
+               download>
                 <i class="ui download icon"></i>
                 Download
             </a>
+            <div class="ui basic fitted segment">
+                @if(page.parent!!.mimeType == "application/pdf")
+                    <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}" width="100%"
+                            height="800px"></iframe>
+                @elseif(page.parent!!.mimeType.split("/")[0] == "image")
+                    <img class="ui centered image"
+                         src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                    alt="${page.parent!!.name}">
+                @endif
+            </div>
         </div>
     @endif
 

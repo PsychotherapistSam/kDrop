@@ -86,8 +86,11 @@ class FileController {
         if (file != null) {
             val systemFile = File("./${file.path}")
             if (systemFile.exists()) {
-                ctx.header("Content-Type", "application/octet-stream")
-                ctx.header("Content-Disposition", "attachment; filename=${file.name}")
+                val dispositionType =
+                    if (ctx.queryParam("download") == null) "inline" else "attachment; filename=${file.name}"
+
+                ctx.header("Content-Type", file.mimeType)
+                ctx.header("Content-Disposition", dispositionType)
                 ctx.result(FileInputStream(systemFile))
             } else {
                 throw NotFoundResponse("File not found")
