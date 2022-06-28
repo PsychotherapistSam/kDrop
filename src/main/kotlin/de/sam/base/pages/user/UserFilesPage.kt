@@ -5,6 +5,7 @@ import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.FilenameComparator
 import io.javalin.http.Context
+import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -43,6 +44,15 @@ class UserFilesPage : Page() {
                     logTimeSpent("finding the parent") {
                         parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
                     }
+
+                    // if the parentFileId is null, we are in the root directory so we do not return a 404
+                    if (parentFileId != null) {
+                        // check if either the file does not exist or the user isn't the owner of the file and the file is not public
+                        if (parent == null || parent!!.owner != user && parent!!.private) {
+                            throw NotFoundResponse("File not found")
+                        }
+                    }
+
                     logTimeSpent("the breadcrumb traversal") {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
