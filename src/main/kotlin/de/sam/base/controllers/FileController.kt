@@ -42,6 +42,7 @@ class FileController {
                 val file = FileDAO.new {
                     this.name = it.filename
                     this.path = "upload/${this.id}"
+                    this.mimeType = it.contentType ?: "application/octet-stream"
                     this.parent = parent
                     this.owner = owner
                     this.size = it.size

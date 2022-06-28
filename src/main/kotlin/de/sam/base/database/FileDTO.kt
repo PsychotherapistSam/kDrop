@@ -12,6 +12,7 @@ class FileDTO(
     var id: UUID,
     var name: String,
     var path: String,
+    var mimeType: String,
     var parent: FileDTO?,
     var owner: UserDTO,
     var size: Long,
@@ -28,6 +29,7 @@ class FileDTO(
 object FilesTable : UUIDTable("t_files") {
     val name = varchar("name", 128)
     val path = varchar("path", 128)
+    val mimeType = varchar("mime_type", 128)
     val parent = reference("parent", FilesTable).nullable()
     val owner = reference("owner", UsersTable)
     val size = long("size")
@@ -44,6 +46,7 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 
     var name by FilesTable.name
     var path by FilesTable.path
+    var mimeType by FilesTable.mimeType
     var parent by FileDAO optionalReferencedOn FilesTable.parent
     var owner by UserDAO referencedOn FilesTable.owner
     var size by FilesTable.size
@@ -60,6 +63,7 @@ fun FileDAO.toFile(): FileDTO {
         this.id.value,
         this.name,
         this.path,
+        this.mimeType,
         this.parent?.toFile(),
         this.owner.toUser(),
         this.size,
