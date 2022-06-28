@@ -26,7 +26,10 @@ content = @`
             @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
                 <a class="ui compact secondary right floated button"
                    href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
-                   hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit">View as Admin</a>
+                   hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+                   hx-target="body" hx-push-url="true">
+                    View as Admin
+                </a>
             @endif
         </h1>
     @endif
