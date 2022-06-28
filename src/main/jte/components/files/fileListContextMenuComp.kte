@@ -470,7 +470,7 @@
             getSelectedRows().forEach(function (row) {
                     switch (link.getAttribute("data-action")) {
                         case "download":
-                            window.location.href = "/api/v1/files/" + row.getAttribute("data-id");
+                            window.location.href = "/api/v1/files/" + row.getAttribute("data-id") + "?download";
                             break;
                         case "delete":
                             const fileId = row.getAttribute("data-id");
