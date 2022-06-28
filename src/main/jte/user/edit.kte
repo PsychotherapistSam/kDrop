@@ -52,7 +52,7 @@ content = @`
                         <i class="dropdown icon"></i>
                         <div class="default text">Select Role</div>
                         <div class="menu">
-                            @for(role in UserRoles.values().sortedBy { it.powerLevel }.reversed())
+                            @for(role in UserRoles.values().filter { !it.hidden }.sortedBy { it.powerLevel }.reversed())
                                 <div class="item" data-value="${role.name}">
                                     <div class="ui ${role.color} empty circular label"></div>
                                     ${role.title}
