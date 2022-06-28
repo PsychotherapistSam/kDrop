@@ -49,7 +49,7 @@
     <div class="ui placeholder segment">
         <div class="ui icon header">
             <i class="file icon"></i>
-            You don't have any files yet.
+            This folder is empty.
         </div>
         <div class="inline">
             <div class="ui secondary button"
