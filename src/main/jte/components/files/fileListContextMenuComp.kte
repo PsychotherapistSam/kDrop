@@ -46,7 +46,7 @@
         <form class="ui form" id="folderCreationForm">
             <div class="field">
                 <label for="username">Name</label>
-                <input type="text" name="name" id="name" placeholder="name" tabindex="1">
+                <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
             </div>
         </form>
     </div>
