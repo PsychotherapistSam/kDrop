@@ -49,5 +49,5 @@ content = @`
     </script>
 `,
 extraContent = @`
-    @template.components.files.fileListContextMenuComp()
+    @template.components.files.fileListContextMenuComp(parent = page.parent)
 `)

@@ -164,7 +164,7 @@ class WebServer {
                 }
                 path("/files") {
                     // get("/", UserController()::getFiles, UserRoles.USER)
-                   // before("/", FileController()::checkFile)
+                    // before("/", FileController()::checkFile)
                     post("/", FileController()::uploadFile, UserRoles.USER)
                     before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
@@ -172,6 +172,9 @@ class WebServer {
                         delete("/", FileController()::deleteFile, UserRoles.USER)
                         //put("/", FileController()::updateFile, UserRoles.USER)
                     }
+                }
+                path("/directories") {
+                    post("/", FileController()::createDirectory, UserRoles.USER)
                 }
             }
         }

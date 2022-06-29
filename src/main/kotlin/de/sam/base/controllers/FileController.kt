@@ -116,6 +116,40 @@ class FileController {
                 FileDAO.find { FilesTable.id eq file.id }.first().delete()
             }
         }
+
+        //TODO: if file is a folder, delete all files in it
+
         ctx.json(mapOf("status" to "ok"))
+    }
+
+    fun createDirectory(ctx: Context) {
+        val folderName = ctx.formParamAsClass<String>("name").get()
+
+        val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
+
+        transaction {
+            val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
+            val parent = if (parentId != null) FileDAO.findById(parentId) else null
+
+            val file = FileDAO.new {
+                this.name = folderName
+                this.path = "upload/${this.id}"
+                this.mimeType = ""
+                this.parent = parent
+                this.owner = owner
+                this.size = 0
+                this.sizeHR = "0 B"
+                this.password = null
+                this.private = true
+                this.created = DateTime.now()
+                this.isFolder = true
+            }
+            ctx.json(mapOf("id" to file.id.toString()))
+        }
+    }
+
+
+    fun deleteDirectory(ctx: Context) {
+
     }
 }

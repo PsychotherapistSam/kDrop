@@ -1,5 +1,8 @@
-<script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
+@import de.sam.base.database.FileDAO
 
+@param parent: FileDAO?
+
+<script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
 
 <!-- initially hidden right-click menu -->
 <nav id="context-menu" class="context-menu">
@@ -36,6 +39,25 @@
         </div>
     </div>
 </nav>
+
+<div class="ui tiny modal" id="folderCreationModal">
+    <div class="header">New Folder</div>
+    <div class="content">
+        <form class="ui form" id="folderCreationForm">
+            <div class="field">
+                <label for="username">Name</label>
+                <input type="text" name="name" id="name" placeholder="name" tabindex="1">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui compact green approve button"
+                _="on click add .loading">
+            Create
+        </button>
+        <button class="ui compact secondary deny button">Cancel</button>
+    </div>
+</div>
 
 <style>
     /* context menu */
@@ -492,8 +514,24 @@
                                 }
                             });
                             break;
-                        // case "new-folder":
-                        //     break;
+                        case "new-folder":
+                            $('#folderCreationModal').modal({
+                                onApprove: function () {
+                                    $.ajax({
+                                        url: "/api/v1/directories${if(parent != null ) "?parent=" + parent.id else ""}",
+                                        type: "POST",
+                                        data: $('#folderCreationForm').serialize(),
+                                        success: function () {
+                                            $('#folderCreationModal').modal('hide');
+                                            $('#folderCreationModal').remove();
+                                            htmx.trigger("#refreshButton", "refreshTable");
+                                            //window.location.href = '${AdminUsersPage.ROUTE}';
+                                        },
+                                    });
+                                    return false;
+                                }
+                            }).modal('show');
+                            break;
                         default:
                             console.log(row.getAttribute("data-id"));
                             console.log(link.getAttribute("data-action"))
