@@ -36,7 +36,7 @@ content = @`
                 @elseif(page.parent!!.mimeType.split("/")[0] == "image")
                     <img class="ui centered image"
                          src="/api/v1/files/${page.parent!!.id.value.toString()}"
-                    alt="${page.parent!!.name}">
+                         alt="${page.parent!!.name}">
                 @endif
             </div>
         </div>
@@ -44,7 +44,9 @@ content = @`
 
     <script>
         document.body.addEventListener('htmx:afterSwap', function (evt) {
+            ds.stop(withCallback = true)
             initializeDragSelect();
+            //   ds.addSelectables($(".context-clickable"))
         });
     </script>
 `,

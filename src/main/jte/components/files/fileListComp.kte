@@ -14,7 +14,9 @@
                      id="refreshButton"
                      hx-get="./?table=undefined"
                      hx-trigger="click, refreshTable from:body"
-                     hx-target="#fileListComponent"
+                     hx-target="#fileTableBody"
+                     hx-swap="outerHTML"
+                     hx-select="#fileTableBody"
                      _="${displayLoader}">
                     <i class="refresh icon"></i>
                 </div>
