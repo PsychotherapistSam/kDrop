@@ -18,7 +18,7 @@
         server: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
         credits: false,
         allowRevert: false,
-        maxParallelUploads: 15,
+        maxParallelUploads: 5,
     });
 
     $('.my-pond').on('FilePond:processfile', function (e) {
