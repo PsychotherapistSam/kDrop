@@ -92,6 +92,8 @@ class FileController {
 
                 ctx.header("Content-Type", file.mimeType)
                 ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
+                ctx.header("Content-Length", file.size.toString())
+
                 ctx.result(FileInputStream(systemFile))
             } else {
                 throw NotFoundResponse("File not found")
