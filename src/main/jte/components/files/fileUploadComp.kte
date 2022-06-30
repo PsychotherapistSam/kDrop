@@ -19,6 +19,7 @@
         credits: false,
         allowRevert: false,
         maxParallelUploads: 5,
+        allowMinimumUploadDuration: false
     });
 
     $('.my-pond').on('FilePond:processfile', function (e) {
