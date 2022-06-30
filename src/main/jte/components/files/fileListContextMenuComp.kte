@@ -258,7 +258,6 @@
         });
     }
 
-
     /*
             $('#fileTable').selectable({
                 classes: {
@@ -501,7 +500,9 @@
                                 type: "DELETE",
                                 success: function (result) {
                                     // console.log(result);
+                                    ds.removeSelectables(row)
                                     row.remove();
+                                    updateVisibilityOfEmptyFolder();
                                 },
                                 error: function (error) {
                                     // show fomantic toast
@@ -515,22 +516,7 @@
                             });
                             break;
                         case "new-folder":
-                            $('#folderCreationModal').modal({
-                                onApprove: function () {
-                                    $.ajax({
-                                        url: "/api/v1/directories${if(parent != null ) "?parent=" + parent.id else ""}",
-                                        type: "POST",
-                                        data: $('#folderCreationForm').serialize(),
-                                        success: function () {
-                                            $('#folderCreationModal').modal('hide');
-                                            $('#folderCreationModal').remove();
-                                            htmx.trigger("#refreshButton", "refreshTable");
-                                            //window.location.href = '${AdminUsersPage.ROUTE}';
-                                        },
-                                    });
-                                    return false;
-                                }
-                            }).modal('show');
+                            promptFolderCreation();
                             break;
                         default:
                             console.log(row.getAttribute("data-id"));
@@ -549,6 +535,26 @@
 
             toggleMenuOff();
         }
+    }
+
+    function promptFolderCreation() {
+        $('#folderCreationModal').modal({
+            onApprove: function () {
+                $.ajax({
+                    url: "/api/v1/directories${if(parent != null ) "?parent=" + parent.id else ""}",
+                    type: "POST",
+                    data: $('#folderCreationForm').serialize(),
+                    success: function () {
+                        $('#folderCreationModal').modal('hide');
+                        $('#folderCreationModal').remove();
+                        htmx.trigger("#refreshButton", "refreshTable");
+                        //window.location.href = '${AdminUsersPage.ROUTE}';
+                    },
+                });
+                return false;
+            }
+        }).modal('show');
+        return true;
     }
 
     /**

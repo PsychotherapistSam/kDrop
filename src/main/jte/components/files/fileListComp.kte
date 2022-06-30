@@ -7,7 +7,6 @@
 @param fileDTOs: List<FileDTO>
 
 <div id="fileListComponent" class="ui fitted basic segment">
-    @if(fileDTOs.isNotEmpty())
         <div class="ui one column grid">
             <div class="right aligned column">
                 <div class="ui right floated secondary compact icon button"
@@ -60,8 +59,8 @@
             @endfor
             </tbody>
         </table>
-    @else
-        <div class="ui placeholder segment">
+
+        <div class="ui placeholder segment" id="folder-empty-info"  style="@if(fileDTOs.isNotEmpty())display: none;@endif">
             <div class="ui icon header">
                 <i class="file icon"></i>
                 This folder is empty.
@@ -72,10 +71,20 @@
                     Upload a file
                 </div>
                 <div class="ui secondary button"
-                     _="on click set value of #input to ''">
-                    Upload a folder
+                     _="on click call promptFolderCreation()">
+                    Create a subfolder
                 </div>
             </div>
         </div>
-    @endif
+
+    <script>
+        function updateVisibilityOfEmptyFolder() {
+            if (ds.getSelectables().length === 0) {
+                $("#folder-empty-info").show();
+            } else {
+                $("#folder-empty-info").hide();
+            }
+        }
+    </script>
+
 </div>

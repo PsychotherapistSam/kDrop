@@ -46,7 +46,8 @@ content = @`
         document.body.addEventListener('htmx:afterSwap', function (evt) {
             ds.stop(withCallback = true)
             initializeDragSelect();
-            //   ds.addSelectables($(".context-clickable"))
+            updateVisibilityOfEmptyFolder();
+            //   ds.addSelectables()
         });
     </script>
 `,

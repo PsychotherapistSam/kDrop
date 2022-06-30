@@ -23,6 +23,14 @@
 
     $('.my-pond').on('FilePond:processfile', function (e) {
         console.log('file added event', e.detail);
-        htmx.trigger("#refreshButton", "refreshTable");
+        console.log('remove file');
     });
+
+    pond.onprocessfile = (error, file) => {
+        setTimeout(() => {
+            console.log('processfile', error, file);
+            pond.removeFile(file);
+        }, 1000);
+        htmx.trigger("#refreshButton", "refreshTable");
+    };
 </script>
