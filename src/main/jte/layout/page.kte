@@ -23,7 +23,7 @@
     <!-- You MUST include jQuery before Fomantic -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
-    <script async src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.7.0/dist/htmx.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.5/dist/_hyperscript_web.min.js"></script>
 
