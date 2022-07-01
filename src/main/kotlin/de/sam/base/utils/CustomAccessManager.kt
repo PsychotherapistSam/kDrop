@@ -3,6 +3,7 @@ package de.sam.base.utils
 import de.sam.base.users.UserRoles
 import io.javalin.core.security.AccessManager
 import io.javalin.core.security.RouteRole
+import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.UnauthorizedResponse
@@ -10,6 +11,20 @@ import java.util.*
 
 class CustomAccessManager : AccessManager {
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
+        val userAgentHeader = ctx.header("User-Agent") ?: throw BadRequestResponse("User-Agent is missing")
+        // Redirect safari users to a firefox download
+        if (userAgentHeader.contains("Safari")) {
+            ctx.redirect("https://firefox.com/download")
+            return
+        }
+
+        // Register bots
+        val listOfBotUserAgents = listOf("Googlebot")
+        if (listOfBotUserAgents.any { it in userAgentHeader }) {
+            ctx.attribute("isBot", true)
+        }
+
+
         if (routeRoles.isNotEmpty()) {
             if (!ctx.isLoggedIn) {
                 throw UnauthorizedResponse("You need to be logged in to access this resource.")
