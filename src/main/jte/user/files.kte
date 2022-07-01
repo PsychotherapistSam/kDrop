@@ -30,9 +30,9 @@ content = @`
                 Download
             </a>
             <div class="ui basic fitted segment">
-                @if(page.parent!!.mimeType == "application/pdf")
-                    <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}" width="100%"
-                            height="800px"></iframe>
+                @if(page.parent!!.mimeType == "application/pdf" || page.parent!!.mimeType == "application/json" ||page.parent!!.mimeType == "text/plain")
+                    <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                            style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
                 @elseif(page.parent!!.mimeType.split("/")[0] == "image")
                     <img class="ui centered image"
                          src="/api/v1/files/${page.parent!!.id.value.toString()}"
