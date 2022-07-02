@@ -4,9 +4,6 @@ import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.FileController
 import de.sam.base.controllers.UserController
-import de.sam.base.database.FileDAO
-import de.sam.base.database.UserDAO
-import de.sam.base.database.UsersTable
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.IndexPage
 import de.sam.base.pages.admin.AdminIndexPage
@@ -19,7 +16,6 @@ import de.sam.base.pages.user.UserLoginPage
 import de.sam.base.pages.user.UserRegistrationPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
-import de.sam.base.utils.humanReadableByteCountBin
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
 import gg.jte.TemplateEngine
@@ -30,11 +26,6 @@ import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
 import io.javalin.plugin.rendering.template.JavalinJte
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.logTimeSpent
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import java.nio.file.Path
 import java.util.*
 
@@ -83,11 +74,12 @@ class WebServer {
             // for userId validation
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
-            javalinConfig.sessionHandler { Session.fileSessionHandler() }
+            javalinConfig.sessionHandler { Session.sqlSessionHandler() }
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN));
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 CustomAccessManager().manage(handler, ctx, routeRoles)
             }
+
         }.start(config.port)
 
         app.events {

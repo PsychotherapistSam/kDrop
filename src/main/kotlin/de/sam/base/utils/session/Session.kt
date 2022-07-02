@@ -1,8 +1,7 @@
 package de.sam.base.utils.session
 
-import org.eclipse.jetty.server.session.DefaultSessionCache
-import org.eclipse.jetty.server.session.FileSessionDataStore
-import org.eclipse.jetty.server.session.SessionHandler
+import de.sam.base.database.hikariDataSource
+import org.eclipse.jetty.server.session.*
 import java.io.File
 
 object Session {
@@ -14,5 +13,20 @@ object Session {
                 this.storeDir = File(baseDir, "javalin-session-store").apply { mkdir() }
             }
         }
+    }
+
+    fun sqlSessionHandler() = SessionHandler().apply {
+        sessionCache = DefaultSessionCache(this).apply { // create the session handler
+            sessionDataStore = JDBCSessionDataStoreFactory().apply { // attach a cache to the handler
+                setDatabaseAdaptor(DatabaseAdaptor().apply { // attach a store to the cache
+                  //  setDriverInfo(driver, url)
+                    datasource = hikariDataSource!! // you can set data source here (for connection pooling, etc)
+                })
+            }.getSessionDataStore(sessionHandler)
+        }
+        httpOnly = true
+
+        // Sessions are valid for 5 days
+        maxInactiveInterval = 60 * 60 * 24 * 5 // 5 days
     }
 }
