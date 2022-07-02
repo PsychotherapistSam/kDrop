@@ -8,9 +8,10 @@ import java.util.*
 
 class Configuration {
 
-    var host = "http://localhost"
+    var host = "http://localhostt"
     var port = 7070
     var baseUrl: String = "http://localhost:$port"
+    var enforceHost = false
     var name: String = "Base Template"
     var copyrightLine: String = "© Be a Lama, Inc. 2022. All rights reserved."
     var description: String = ""

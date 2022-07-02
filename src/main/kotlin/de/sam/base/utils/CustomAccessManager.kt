@@ -1,5 +1,6 @@
 package de.sam.base.utils
 
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.users.UserRoles
 import io.javalin.core.security.AccessManager
 import io.javalin.core.security.RouteRole
@@ -7,7 +8,10 @@ import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.UnauthorizedResponse
+import java.net.URI
 import java.util.*
+import kotlin.system.measureNanoTime
+import kotlin.system.measureTimeMillis
 
 class CustomAccessManager : AccessManager {
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
@@ -24,6 +28,11 @@ class CustomAccessManager : AccessManager {
             ctx.attribute("isBot", true)
         }
 
+        if (config.enforceHost) {
+            if (URI(ctx.url()).host != URI(config.host).host) {
+                throw BadRequestResponse("Invalid host, expected ${URI(config.host).host} but got ${URI(ctx.url()).host}")
+            }
+        }
 
         if (routeRoles.isNotEmpty()) {
             if (!ctx.isLoggedIn) {
