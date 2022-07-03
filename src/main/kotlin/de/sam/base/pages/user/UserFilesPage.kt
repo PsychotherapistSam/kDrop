@@ -3,9 +3,9 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.file.FilenameComparator
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import org.apache.commons.io.IOCase
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -65,15 +65,13 @@ class UserFilesPage : Page() {
                         breadcrumbs.reverse()
                     }
 
-                    val filenameComparator = FilenameComparator()
-
                     logTimeSpent("getting the file list") {
                         fileDTOs = FileDAO
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFile() }
-                            //.sortedBy { it.name }
                             .sortedWith { a, b ->
-                                filenameComparator.compare(a.name, b.name)
+                                // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
+                                IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
                             }
                     }
                 }
