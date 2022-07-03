@@ -27,7 +27,7 @@ class FileDTO(
 
 
 object FilesTable : UUIDTable("t_files") {
-    val name = varchar("name", 128)
+    val name = varchar("name", 300)
     val path = varchar("path", 128)
     val mimeType = varchar("mime_type", 128)
     val parent = reference("parent", FilesTable).nullable()
