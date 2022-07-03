@@ -42,4 +42,12 @@
         endpoint: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
       //  bundle: true
     });
+
+    document.addEventListener("dragover", event => {
+        const dashboard = uppy.getPlugin('Dashboard');
+        if(!dashboard.isModalOpen()){
+            dashboard.openModal();
+        }
+    });
+
 </script>
