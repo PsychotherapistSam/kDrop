@@ -4,8 +4,11 @@
 @import de.sam.base.utils.humanReadableByteCountBin
 @import de.sam.base.pages.displayLoader
 @import org.joda.time.format.DateTimeFormat
+@import de.sam.base.utils.file.sorting.FileSortingDirection
 
 @param fileDTOs: List<FileDTO>
+@param sortByName: String
+@param sortBy: String
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
@@ -18,17 +21,41 @@
             </div>
         </div>
         <div class="right aligned column">
-            <div class="ui right floated secondary compact icon button"
-                 id="refreshButton"
-                 hx-get="./?table=undefined"
-                 hx-trigger="click, refreshTable from:body throttle: 1s"
-                 hx-target="#fileTableBody"
-                 hx-swap="outerHTML"
-                 hx-select="#fileTableBody"
-                 _="${displayLoader}">
-                <i class="refresh icon"></i>
+            <div class="ui basic fitted segment">
+                Sort by
+                <div class="ui inline scrolling dropdown" id="sortDropdown">
+                    <input type="hidden" name="sort" value="name"
+                           _="on change send refreshTable to #refreshButton"
+                    >
+                    <div class="text">Name</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        @for(direction in FileSortingDirection.sortDirections)
+                            <div class="item" data-value="${direction.name}">${direction.prettyName}</div>
+                        @endfor
+<%--                        <div class="item" data-value="name">Name (a-Z)</div>--%>
+<%--                        <div class="item" data-value="namerev">Name (Z-a)</div>--%>
+<%--                        <div class="item" data-value="smallest">Smallest</div>--%>
+<%--                        <div class="item" data-value="largest">Largest</div>--%>
+<%--                        <div class="item" data-value="newest">Newest</div>--%>
+<%--                        <div class="item" data-value="oldest">Oldest</div>--%>
+                    </div>
+                </div>
+                <div class="ui secondary compact icon button"
+                     id="refreshButton"
+                     hx-get="."
+                     hx-trigger="click, refreshTable from:body throttle: 1s"
+                     hx-params="table,sort"
+                     hx-include="[name='sort']"
+                     hx-target="#fileTableBody"
+                     hx-swap="outerHTML"
+                     hx-select="#fileTableBody"
+                     _="${displayLoader}">
+                    <i class="refresh icon"></i>
+                </div>
             </div>
         </div>
+
     </div>
     <table class="ui unstackable table" id="fileTable">
         <thead>
@@ -90,6 +117,10 @@
                 $("#folder-empty-info").hide();
             }
         }
+
+        $('#sortDropdown')
+            .dropdown({})
+        ;
     </script>
 
 </div>

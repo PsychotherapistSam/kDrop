@@ -19,7 +19,7 @@ content = @`
     @template.components.files.breadcrumbElementComp(breadcrumbs  = page.breadcrumbs)
 
     @if(currentIsFolder)
-        @template.components.files.fileListComp(fileDTOs = page.fileDTOs)
+        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy)
         @template.components.files.fileUploadComp(parent = page.parent)
     @else
         <div class="ui basic segment">

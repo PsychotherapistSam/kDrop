@@ -3,7 +3,7 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.file.NaturalOrderComparator.Companion.CASEINSENSITIVE_NUMERICAL_ORDER
+import de.sam.base.utils.file.sorting.FileSortingDirection
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
@@ -29,8 +29,15 @@ class UserFilesPage : Page() {
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
+    var sortByName: String = FileSortingDirection.sortDirections.first().prettyName
+    var sortBy: String = FileSortingDirection.sortDirections.first().name
+
     override fun handle(ctx: Context) {
         breadcrumbs.clear()
+
+        val sortingDirection = FileSortingDirection.sortDirections.first {
+            it.name == (ctx.queryParam("sort") ?: "name")
+        }
 
         pageDiff = measureNanoTime {
             val parentFileId =
@@ -71,7 +78,8 @@ class UserFilesPage : Page() {
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFile() }
                             .sortedWith { a, b ->
-                                CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
+                                sortingDirection.compare(a, b)
+                                //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
                                 // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
                                 //  IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
                             }
@@ -79,10 +87,13 @@ class UserFilesPage : Page() {
                 }
             }
         }
+
+        ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
+
         if (ctx.queryParam("table") != null) {
             ctx.render(
                 "components/files/fileListComp.kte",
-                mapOf("fileDTOs" to fileDTOs)
+                mapOf("fileDTOs" to fileDTOs, "sortBy" to sortBy, "sortByName" to sortByName)
             )
             return
         }
