@@ -9,8 +9,11 @@
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
         <div class=" column">
-            <div class="ui secondary compact icon button" id="fileUploadModal">
-                <i class="plus icon"></i> Upload File(s)
+            <div class="ui secondary compact animated button" id="fileUploadModal">
+                <div class="visible content">Upload File(s)</div>
+                <div class="hidden content">
+                    <i class="upload icon"></i>
+                </div>
             </div>
         </div>
         <div class="right aligned column">
@@ -71,11 +74,7 @@
             This folder is empty.
         </div>
         <div class="inline">
-            <div class="ui secondary button"
-                 _="on click call addUserModal()">
-                Upload a file
-            </div>
-            <div class="ui secondary button"
+            <div class="ui secondary compact button"
                  _="on click call promptFolderCreation()">
                 Create a subfolder
             </div>
