@@ -33,12 +33,12 @@
                         @for(direction in FileSortingDirection.sortDirections)
                             <div class="item" data-value="${direction.name}">${direction.prettyName}</div>
                         @endfor
-<%--                        <div class="item" data-value="name">Name (a-Z)</div>--%>
-<%--                        <div class="item" data-value="namerev">Name (Z-a)</div>--%>
-<%--                        <div class="item" data-value="smallest">Smallest</div>--%>
-<%--                        <div class="item" data-value="largest">Largest</div>--%>
-<%--                        <div class="item" data-value="newest">Newest</div>--%>
-<%--                        <div class="item" data-value="oldest">Oldest</div>--%>
+                        <%--                        <div class="item" data-value="name">Name (a-Z)</div>--%>
+                        <%--                        <div class="item" data-value="namerev">Name (Z-a)</div>--%>
+                        <%--                        <div class="item" data-value="smallest">Smallest</div>--%>
+                        <%--                        <div class="item" data-value="largest">Largest</div>--%>
+                        <%--                        <div class="item" data-value="newest">Newest</div>--%>
+                        <%--                        <div class="item" data-value="oldest">Oldest</div>--%>
                     </div>
                 </div>
                 <div class="ui secondary compact icon button"
@@ -102,6 +102,10 @@
             This folder is empty.
         </div>
         <div class="inline">
+            <div class="ui secondary compact button"
+                 _="on click call uppy.getPlugin('Dashboard').openModal()">
+                Upload File(s)
+            </div>
             <div class="ui secondary compact button"
                  _="on click call promptFolderCreation()">
                 Create a subfolder
