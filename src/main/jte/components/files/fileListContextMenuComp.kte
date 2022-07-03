@@ -499,7 +499,7 @@
                 }).join(",");
                 const data = new FormData();
                 data.append("files", ids);
-                if (getSelectedRows().length > 10) {
+                if (getSelectedRows().length > 5) {
                     showFileDeletionLoadingModal(getSelectedRows().length);
                 }
                 $.ajax({
