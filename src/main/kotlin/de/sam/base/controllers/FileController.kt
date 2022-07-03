@@ -33,6 +33,8 @@ class FileController {
             val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
             val parent = if (parentId != null) FileDAO.findById(parentId) else null
 
+            val idMap = mutableMapOf<String, UUID>()
+
             files.forEach {
                 val uploadFolder = File("./upload/")
                 if (!uploadFolder.exists()) {
@@ -55,8 +57,9 @@ class FileController {
 
                 FileUtil.streamToFile(it.content, "./upload/${file.id}")
 
-                ctx.json(mapOf("id" to file.id.toString()))
+                idMap[file.name] = file.id.value
             }
+            ctx.json(idMap)
         }
     }
 
@@ -103,7 +106,7 @@ class FileController {
         }
     }
 
-    fun deleteFile(ctx: Context) {
+    fun deleteSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter")
         if (file == null || file.owner.id != ctx.currentUserDTO!!.id) {
             throw NotFoundResponse("File not found")
@@ -115,13 +118,51 @@ class FileController {
         }
         if (!systemFile.exists()) {
             transaction {
-                FileDAO.find { FilesTable.id eq file.id }.first().delete()
+                FileDAO.findById(file.id)!!.delete()
             }
         }
 
         //TODO: if file is a folder, delete all files in it
 
         ctx.json(mapOf("status" to "ok"))
+    }
+
+    fun deleteFiles(ctx: Context) {
+        val fileListString = ctx.formParamAsClass<String>("files")
+            .check({ files ->
+                files
+                    .split(",")
+                    .all { file ->
+                        file.isValidUUID()
+                    }
+            }, "Invalid UUID")
+            .get()
+
+        val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
+        val deletedFileIDs = arrayListOf<UUID>()
+        transaction {
+            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
+                if (file.owner.id.value != ctx.currentUserDTO!!.id) {
+                    return@forEach
+                }
+
+                val systemFile = File("./${file.path}")
+                if (systemFile.exists()) {
+                    systemFile.delete()
+                }
+                if (!systemFile.exists()) {
+                    file.delete()
+                }
+                deletedFileIDs.add(file.id.value)
+            }
+        }
+
+        val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
+        if (filesNotDeleted.isNotEmpty()) {
+            ctx.json(mapOf("status" to "error", "filesNotDeleted" to filesNotDeleted, "filesDeleted" to fileIDs))
+        } else {
+            ctx.json(mapOf("status" to "ok", "filesDeleted" to fileIDs))
+        }
     }
 
     fun createDirectory(ctx: Context) {
@@ -154,4 +195,13 @@ class FileController {
     fun deleteDirectory(ctx: Context) {
 
     }
+}
+
+private fun String.isValidUUID(): Boolean {
+    try {
+        UUID.fromString(this)
+    } catch (exception: IllegalArgumentException) {
+        return false
+    }
+    return true
 }

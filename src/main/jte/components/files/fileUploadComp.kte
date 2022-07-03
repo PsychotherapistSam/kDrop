@@ -2,36 +2,44 @@
 
 @param parent: FileDAO?
 
-<link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet"/>
-<script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+<script src="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.js"></script>
+<link href="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.css" rel="stylesheet">
 
-<div class="ui basic segment my-pond"></div>
+<div class="ui basic segment my-pond" id="drag-drop-area"></div>
+<div class="ui basic segment UploadForm" id="UploadForm"></div>
 
 <script>
-    // https://pqina.nl/filepond/docs/api/exports/#enhancing-an-html-element
-    // get a reference to the input element
-    const inputElement = document.querySelector('.my-pond');
+    var uppy = new Uppy.Core({
+        debug: true,
+        autoProceed: false,
+    })
+    uppy.use(Uppy.Dashboard, {
+        target: '#drag-drop-area',
+        plugins: ['XHRUpload'],
+        inline: false,
+        trigger: "#fileUploadModal",
+        closeModalOnClickOutside: true,
 
-    // create a FilePond instance at the input element location
-    const pond = FilePond.create(inputElement, {
-        allowMultiple: true,
-        server: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
-        credits: false,
-        allowRevert: false,
-        maxParallelUploads: 5,
-        allowMinimumUploadDuration: false
+        showProgressDetails: true,
+        doneButtonHandler: () => {
+            this.uppy.reset()
+            uppy.getPlugin('Dashboard').closeModal()
+
+            //htmx.trigger("#refreshButton", "refreshTable");
+        },
     });
-
-    $('.my-pond').on('FilePond:processfile', function (e) {
-        console.log('file added event', e.detail);
-        console.log('remove file');
-    });
-
-    pond.onprocessfile = (error, file) => {
-        setTimeout(() => {
-            console.log('processfile', error, file);
-            pond.removeFile(file);
-        }, 1000);
+    uppy.on('dashboard:modal-closed', () => {
+        this.uppy.reset()
         htmx.trigger("#refreshButton", "refreshTable");
-    };
+    })
+    //  uppy.use(Uppy.DragDrop, {target: '#drag-drop-area'});
+    // uppy.use(Uppy.ProgressBar, {
+    //     target: '.UploadForm',
+    //     fixed: false,
+    //     hideAfterFinish: true,
+    // })
+    uppy.use(Uppy.XHRUpload, {
+        endpoint: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
+      //  bundle: true
+    });
 </script>

@@ -19,8 +19,8 @@ content = @`
     @template.components.files.breadcrumbElementComp(breadcrumbs  = page.breadcrumbs)
 
     @if(currentIsFolder)
-        @template.components.files.fileUploadComp(parent = page.parent)
         @template.components.files.fileListComp(fileDTOs = page.fileDTOs)
+        @template.components.files.fileUploadComp(parent = page.parent)
     @else
         <div class="ui basic segment">
             <a href="/api/v1/files/${page.parent!!.id.value.toString()}"
