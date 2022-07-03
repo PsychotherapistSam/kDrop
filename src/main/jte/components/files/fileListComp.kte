@@ -3,6 +3,7 @@
 @import de.sam.base.utils.toRecentTimeString
 @import de.sam.base.utils.humanReadableByteCountBin
 @import de.sam.base.pages.displayLoader
+@import org.joda.time.format.DateTimeFormat
 
 @param fileDTOs: List<FileDTO>
 
@@ -61,7 +62,7 @@
                 </td>
                 <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
                 <td class="right aligned collapsing"
-                    data-tooltip="${fileDTO.created.toString()}"
+                    data-tooltip="${fileDTO.created.toString(DateTimeFormat.forPattern("d.M.yyyy H:m:s (z)"))}"
                     data-inverted="">${fileDTO.created.toRecentTimeString()}</td>
             </tr>
         @endfor
