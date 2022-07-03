@@ -32,38 +32,6 @@ import java.util.*
 
 class WebServer {
     fun start() {
-        /*
-        val newRelicConfig: NewRelicConfig = object : NewRelicConfig {
-                override fun accountId(): String {
-                    return "3270869"
-                }
-
-                override fun apiKey(): String {
-                    return "NRII-Xk5AOsAXjqVNGsiueluZKQ096zjVM9RY"
-                }
-
-                override fun uri(): String {
-                    return "https://insights-collector.eu01.nr-data.net"
-                }
-
-                override fun get(key: String): String? {
-                    return null
-                }
-
-            }
-            val registry: MeterRegistry = NewRelicMeterRegistry(newRelicConfig, Clock.SYSTEM)
-    // add a tag to all reported values to simplify filtering in large installations:
-            // add a tag to all reported values to simplify filtering in large installations:
-            registry.config().commonTags("application", "kopimi-share")
-
-            ClassLoaderMetrics().bindTo(registry)
-            JvmMemoryMetrics().bindTo(registry)
-            JvmGcMetrics().bindTo(registry)
-            JvmThreadMetrics().bindTo(registry)
-            UptimeMetrics().bindTo(registry)
-            ProcessorMetrics().bindTo(registry)
-            DiskSpaceMetrics(File(System.getProperty("user.dir"))).bindTo(registry)*/
-
         /*transaction {
             addLogger(StdOutSqlLogger)
             logTimeSpent("adding 5000 testfiles 5") {
@@ -104,12 +72,11 @@ class WebServer {
 
             // register jte.gg template renderer
             JavalinJte.configure(createTemplateEngine())
-            // for userId validation
+            // for uuid validation
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
             javalinConfig.sessionHandler { Session.sqlSessionHandler() }
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
-         //   javalinConfig.registerPlugin(MicrometerPlugin(registry))
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 CustomAccessManager().manage(handler, ctx, routeRoles)
             }

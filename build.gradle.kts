@@ -40,16 +40,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
     implementation("org.ocpsoft.prettytime:prettytime:5.0.3.Final")
 
-    // https://mvnrepository.com/artifact/io.micrometer/micrometer-core
-    implementation("io.micrometer:micrometer-core:1.9.1")
-// https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-new-relic
-    implementation("io.micrometer:micrometer-registry-new-relic:1.9.1")
-
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation("commons-io:commons-io:2.11.0")
-
-
-
 }
 
 tasks.test {
