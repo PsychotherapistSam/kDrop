@@ -25,57 +25,44 @@ import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
-import io.javalin.plugin.metrics.MicrometerPlugin
 import io.javalin.plugin.rendering.template.JavalinJte
-import io.micrometer.core.instrument.Clock
-import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics
-import io.micrometer.core.instrument.binder.system.DiskSpaceMetrics
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics
-import io.micrometer.core.instrument.binder.system.UptimeMetrics
-import io.micrometer.newrelic.NewRelicConfig
-import io.micrometer.newrelic.NewRelicMeterRegistry
-import java.io.File
 import java.nio.file.Path
 import java.util.*
 
 
 class WebServer {
     fun start() {
+        /*
         val newRelicConfig: NewRelicConfig = object : NewRelicConfig {
-            override fun accountId(): String {
-                return "3270869"
+                override fun accountId(): String {
+                    return "3270869"
+                }
+
+                override fun apiKey(): String {
+                    return "NRII-Xk5AOsAXjqVNGsiueluZKQ096zjVM9RY"
+                }
+
+                override fun uri(): String {
+                    return "https://insights-collector.eu01.nr-data.net"
+                }
+
+                override fun get(key: String): String? {
+                    return null
+                }
+
             }
+            val registry: MeterRegistry = NewRelicMeterRegistry(newRelicConfig, Clock.SYSTEM)
+    // add a tag to all reported values to simplify filtering in large installations:
+            // add a tag to all reported values to simplify filtering in large installations:
+            registry.config().commonTags("application", "kopimi-share")
 
-            override fun apiKey(): String {
-                return "NRII-Xk5AOsAXjqVNGsiueluZKQ096zjVM9RY"
-            }
-
-            override fun uri(): String {
-                return "https://insights-collector.eu01.nr-data.net"
-            }
-
-            override fun get(key: String): String? {
-                return null
-            }
-
-        }
-
-        val registry: MeterRegistry = NewRelicMeterRegistry(newRelicConfig, Clock.SYSTEM)
-// add a tag to all reported values to simplify filtering in large installations:
-        // add a tag to all reported values to simplify filtering in large installations:
-        registry.config().commonTags("application", "kopimi-share")
-
-        ClassLoaderMetrics().bindTo(registry)
-        JvmMemoryMetrics().bindTo(registry)
-        JvmGcMetrics().bindTo(registry)
-        JvmThreadMetrics().bindTo(registry)
-        UptimeMetrics().bindTo(registry)
-        ProcessorMetrics().bindTo(registry)
-        DiskSpaceMetrics(File(System.getProperty("user.dir"))).bindTo(registry)
+            ClassLoaderMetrics().bindTo(registry)
+            JvmMemoryMetrics().bindTo(registry)
+            JvmGcMetrics().bindTo(registry)
+            JvmThreadMetrics().bindTo(registry)
+            UptimeMetrics().bindTo(registry)
+            ProcessorMetrics().bindTo(registry)
+            DiskSpaceMetrics(File(System.getProperty("user.dir"))).bindTo(registry)*/
 
         /*transaction {
             addLogger(StdOutSqlLogger)
@@ -122,7 +109,7 @@ class WebServer {
 
             javalinConfig.sessionHandler { Session.sqlSessionHandler() }
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
-            javalinConfig.registerPlugin(MicrometerPlugin(registry))
+         //   javalinConfig.registerPlugin(MicrometerPlugin(registry))
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 CustomAccessManager().manage(handler, ctx, routeRoles)
             }
