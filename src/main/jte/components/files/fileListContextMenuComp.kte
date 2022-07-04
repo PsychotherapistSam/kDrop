@@ -66,6 +66,13 @@
     </div>
 </div>
 
+<div class="ui tiny modal" id="fileDownloadModal">
+    <div class="header">Downloading files..</div>
+    <div class="content">
+        <div class="ui green active centered inline loader"></div>
+    </div>
+</div>
+
 <style>
     /* context menu */
 
@@ -492,51 +499,147 @@
     function menuItemListener(link) {
         // the dropdown menu should not close the whole menu when clicked, and itself should not be a clickable link, but yet it should not be considered outside the menu (which would lead it to close)
         if (!link.classList.contains("context-item-dropdown")) {
-
-            if (getSelectedRows().length > 0 && link.getAttribute("data-action") === "delete") {
+            if (getSelectedRows().length > 0) {
                 const ids = getSelectedRows().map(function (row) {
                     return row.getAttribute("data-id");
                 }).join(",");
                 const data = new FormData();
                 data.append("files", ids);
-                if (getSelectedRows().length > 5) {
-                    showFileDeletionLoadingModal(getSelectedRows().length);
-                }
-                $.ajax({
-                    url: "/api/v1/files",
-                    type: "DELETE",
-                    enctype: "multipart/form-data",
-                    data: data,
-                    processData: false,
-                    contentType: false,
+                switch (link.getAttribute("data-action")) {
+                    case "delete":
 
-                    success: function (result) {
-                        // console.log(result);
-                        // getSelectedRows().remove();
-                        // ds.removeSelectables(rowsToDelete)
-                        // updateVisibilityOfEmptyFolder();
-                        hideFileDeletionLoadingModal();
-                        htmx.trigger("#refreshButton", "refreshTable");
-                    },
-                    error: function (error) {
-                        // show fomantic toast
-                        hideFileDeletionLoadingModal();
-                        $('body')
-                            .toast({
-                                class: 'error',
-                                message: 'Could not delete file: ' + error
-                            })
-                        ;
-                    }
-                });
+                        if (getSelectedRows().length > 5) {
+                            showFileDeletionLoadingModal(getSelectedRows().length);
+                        }
+                        $.ajax({
+                            url: "/api/v1/files",
+                            type: "DELETE",
+                            enctype: "multipart/form-data",
+                            data: data,
+                            processData: false,
+                            contentType: false,
+
+                            success: function (result) {
+                                // console.log(result);
+                                // getSelectedRows().remove();
+                                // ds.removeSelectables(rowsToDelete)
+                                // updateVisibilityOfEmptyFolder();
+                                hideFileDeletionLoadingModal();
+                                htmx.trigger("#refreshButton", "refreshTable");
+                            },
+                            error: function (error) {
+                                // show fomantic toast
+                                hideFileDeletionLoadingModal();
+                                $('body')
+                                    .toast({
+                                        class: 'error',
+                                        message: 'Could not delete file: ' + error
+                                    })
+                                ;
+                            }
+                        });
+                        break;
+                    case "download":
+                        showFileDownloadModal(getSelectedRows().length);
+                        if (getSelectedRows().length === 1) {
+                            window.location.href = "/api/v1/files/" + getSelectedRows()[0].getAttribute("data-id") + "?download";
+                        } else {
+                            // https://stackoverflow.com/a/29556434
+                            var xhr = new XMLHttpRequest();
+                            xhr.open("PUT", "/api/v1/files", true);
+                            xhr.responseType = 'blob';
+                            // set multipart data
+                            xhr.onload = function (e) {
+                                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
+                                if (this.status == 200) {
+                                    var blob = new Blob([this.response], {type: 'application/zip'});
+                                    var downloadUrl = URL.createObjectURL(blob);
+                                    var a = document.createElement("a");
+                                    a.href = downloadUrl;
+                                    a.download = filename;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                } else {
+                                    $('body')
+                                        .toast({
+                                            class: 'error',
+                                            message: 'Could not download files as zip'
+                                        })
+                                    ;
+                                }
+                                hideFileDownloadModal();
+                            };
+                            xhr.send(data);
+
+                            /*
+                             $.ajax({
+                                 url: "/api/v1/files",
+                                 type: "PUT",
+                                 enctype: "multipart/form-data",
+                                 data: data,
+                                 processData: false,
+                                 contentType: false,
+
+                                 success: function (result) {
+                                     var blob = new Blob([result], {type: "application/zip"});
+                                     if (window.navigator.msSaveOrOpenBlob) {
+                                         window.navigator.msSaveBlob(blob, "download.zip");
+                                     } else {
+                                         var a = document.createElement("a");
+                                         a.href = window.URL.createObjectURL(blob);
+                                         a.download = "download.zip";
+                                         document.body.appendChild(a);
+                                         a.click();
+                                         document.body.removeChild(a);
+                                     }
+
+                                     //     save("download.zip", result)
+                                     //     console.log(result)
+                                     // console.log(result);
+                                     // getSelectedRows().remove();
+                                     // ds.removeSelectables(rowsToDelete)
+                                     // updateVisibilityOfEmptyFolder();
+                                     //  hideFileDeletionLoadingModal();
+                                     //   htmx.trigger("#refreshButton", "refreshTable");
+                                 },
+                                 error: function (error) {
+                                     // show fomantic toast
+                                     // hideFileDeletionLoadingModal();
+                                     $('body')
+                                         .toast({
+                                             class: 'error',
+                                             message: 'Could not download files: ' + error.toString()
+                                         })
+                                     ;
+                                 }
+                             });*/
+                        }
+                        break;
+                    case "new-folder":
+                        promptFolderCreation();
+                        break;
+                }
             }
 
+            function save(filename, data) {
+                const blob = new Blob([data], {type: 'text/csv'});
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveBlob(blob, filename);
+                } else {
+                    const elem = window.document.createElement('a');
+                    elem.href = window.URL.createObjectURL(blob);
+                    elem.download = filename;
+                    document.body.appendChild(elem);
+                    elem.click();
+                    document.body.removeChild(elem);
+                }
+            }
 
             getSelectedRows().forEach(function (row) {
                     switch (link.getAttribute("data-action")) {
-                        case "download":
-                            window.location.href = "/api/v1/files/" + row.getAttribute("data-id") + "?download";
-                            break;
+                        // case "download":
+                        //     window.location.href = "/api/v1/files/" + row.getAttribute("data-id") + "?download";
+                        //     break;
                         /*case "delete":
                             const fileId = row.getAttribute("data-id");
                             $.ajax({
@@ -559,9 +662,9 @@
                                 }
                             });
                             break;*/
-                        case "new-folder":
-                            promptFolderCreation();
-                            break;
+                        // case "new-folder":
+                        //     promptFolderCreation();
+                        //     break;
                         /* default:
                              console.log(row.getAttribute("data-id"));
                              console.log(link.getAttribute("data-action"))
@@ -612,6 +715,18 @@
 
     function hideFileDeletionLoadingModal() {
         $('#fileDeletionModal').modal('hide');
+    }
+
+    function showFileDownloadModal(fileCount) {
+        $('#fileDownloadModal').modal({
+            closable: false,
+            title: 'Downloading ' + fileCount + ' files',
+        }).modal('show');
+        return true;
+    }
+
+    function hideFileDownloadModal() {
+        $('#fileDownloadModal').modal('hide');
     }
 
     /**

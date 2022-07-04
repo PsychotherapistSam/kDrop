@@ -162,7 +162,7 @@ class WebServer {
                     // get("/", UserController()::getFiles, UserRoles.USER)
                     // before("/", FileController()::checkFile)
                     post("/", FileController()::uploadFile, UserRoles.USER)
-                    get("/", FileController()::getFiles, UserRoles.USER)
+                    put("/", FileController()::getFiles, UserRoles.USER)
                     delete("/", FileController()::deleteFiles, UserRoles.USER)
                     before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
