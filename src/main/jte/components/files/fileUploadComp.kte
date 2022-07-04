@@ -5,9 +5,6 @@
 <script src="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.js"></script>
 <link href="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.css" rel="stylesheet">
 
-<div class="ui basic segment my-pond" id="drag-drop-area"></div>
-<div class="ui basic segment UploadForm" id="UploadForm"></div>
-
 <script>
     var uppy = new Uppy.Core({
         debug: true,
@@ -24,20 +21,12 @@
         doneButtonHandler: () => {
             this.uppy.reset()
             uppy.getPlugin('Dashboard').closeModal()
-
-            //htmx.trigger("#refreshButton", "refreshTable");
         },
     });
     uppy.on('dashboard:modal-closed', () => {
         this.uppy.reset()
         htmx.trigger("#refreshButton", "refreshTable");
     })
-    //  uppy.use(Uppy.DragDrop, {target: '#drag-drop-area'});
-    // uppy.use(Uppy.ProgressBar, {
-    //     target: '.UploadForm',
-    //     fixed: false,
-    //     hideAfterFinish: true,
-    // })
     uppy.use(Uppy.XHRUpload, {
         endpoint: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
       //  bundle: true
@@ -49,5 +38,4 @@
             dashboard.openModal();
         }
     });
-
 </script>

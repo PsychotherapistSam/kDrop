@@ -41,7 +41,7 @@ class UserLoginPage : Page() {
                     return@prolongAtLeast
                 }
 
-                ctx.currentUserDTO = attempt.first
+                currentUserDTO = attempt.first
                 ctx.hxRedirect("/")
                 //ctx.redirect("/")
                 return@prolongAtLeast
