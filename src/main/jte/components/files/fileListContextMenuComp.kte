@@ -547,10 +547,10 @@
                         });
                         break;
                     case "download":
-                        showFileDownloadModal(rows.length, -1);
                         if (rows.length === 1) {
                             window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
                         } else {
+                            showFileDownloadModal(rows.length, -1);
                             // https://stackoverflow.com/a/29556434
                             var xhr = new XMLHttpRequest();
                             xhr.open("PUT", "/api/v1/files", true);
