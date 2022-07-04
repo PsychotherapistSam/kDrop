@@ -21,7 +21,7 @@ class UserRegistrationPage : Page() {
     override var templateName: String = "user/registration.kte"
 
     override fun handle(ctx: Context) {
-        if (ctx.isLoggedIn && currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
+        if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
             throw ForbiddenResponse("You are already registered.")
         } else if (!ctx.isLoggedIn && !Configuration.config.allowUserRegistration) {
             throw ForbiddenResponse("User registration is currently disabled.")
