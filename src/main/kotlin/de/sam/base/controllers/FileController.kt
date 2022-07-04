@@ -229,24 +229,23 @@ class FileController {
         val deletedFileIDs = arrayListOf<UUID>()
         transaction {
             FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (file.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+                if (!file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                     return@forEach
                 }
-
                 val systemFile = File("./${file.path}")
                 if (systemFile.exists()) {
                     systemFile.delete()
                 }
                 if (!systemFile.exists()) {
                     file.delete()
+                    deletedFileIDs.add(file.id.value)
                 }
-                deletedFileIDs.add(file.id.value)
             }
         }
 
         val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
         if (filesNotDeleted.isNotEmpty()) {
-            ctx.json(mapOf("status" to "error", "filesNotDeleted" to filesNotDeleted, "filesDeleted" to fileIDs))
+            ctx.json(mapOf("status" to "error", "filesNotDeleted" to filesNotDeleted, "filesDeleted" to deletedFileIDs))
         } else {
             ctx.json(mapOf("status" to "ok", "filesDeleted" to fileIDs))
         }
