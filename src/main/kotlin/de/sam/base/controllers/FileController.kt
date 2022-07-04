@@ -11,7 +11,6 @@ import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
-import io.javalin.http.util.SeekableWriter
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -23,8 +22,6 @@ import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 
 class FileController {
-    private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
-
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 5L // 1024 MB || 5 GiB
         if (ctx.header("Content-Length") != null && ctx.header("Content-Length")!!.toLong() > maxFileSize) {
@@ -33,10 +30,15 @@ class FileController {
 
         val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
+
         val files = ctx.uploadedFiles()
         transaction {
-            val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
+            val owner = UserDAO.findById(ctx.currentUserDTO!!.id)!!
             val parent = if (parentId != null) FileDAO.findById(parentId) else null
+
+            if (parent != null && !parent.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+                throw BadRequestResponse("Parent folder does not exist or is not owned by you")
+            }
 
             val idMap = mutableMapOf<String, UUID>()
 
@@ -68,7 +70,7 @@ class FileController {
         }
     }
 
-    val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
+    private val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
     fun getFileParameter(ctx: Context) {
         val userQueryTime = measureNanoTime {
             ctx.pathParamAsClass<UUID>("fileId")
@@ -85,8 +87,8 @@ class FileController {
                         logTimeSpent("Getting file by id") {
                             val fileDao = FileDAO.findById(it)
                             if (fileDao != null) {
-                                ctx.attribute("requestFileParameter", fileDao.toFile())
-                                cache[it] = Pair(System.currentTimeMillis(), fileDao.toFile())
+                                ctx.attribute("requestFileParameter", fileDao.toFileDTO())
+                                cache[it] = Pair(System.currentTimeMillis(), fileDao.toFileDTO())
                                 return@transaction true
                             } else {
                                 return@transaction false
@@ -100,26 +102,26 @@ class FileController {
     }
 
     fun getSingleFile(ctx: Context) {
-        val file = ctx.attribute<FileDTO>("requestFileParameter")
-        if (file != null) {
-            val systemFile = File("./${file.path}")
-            if (systemFile.exists()) {
-                // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-                val dispositionType =
-                    if (ctx.queryParam("download") == null) "inline" else "attachment"
+        val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
 
-                ctx.header("Content-Type", file.mimeType)
-                ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
-                ctx.header("Content-Length", file.size.toString())
-
-                CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
-                // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
-            } else {
-                throw NotFoundResponse("File not found")
-            }
-        } else {
+        if (file.canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
             throw NotFoundResponse("File not found")
         }
+
+        val systemFile = File("./${file.path}")
+        if (!systemFile.exists()) {
+            throw NotFoundResponse("File not found")
+        }
+        // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
+        val dispositionType =
+            if (ctx.queryParam("download") == null) "inline" else "attachment"
+
+        ctx.header("Content-Type", file.mimeType)
+        ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
+        ctx.header("Content-Length", file.size.toString())
+
+        CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
+        // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
     }
 
     fun getFiles(ctx: Context) {
@@ -137,7 +139,7 @@ class FileController {
         val fileList = arrayListOf<Pair<File, String>>()
         transaction {
             FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (file.owner.id.value != ctx.currentUserDTO!!.id) {
+                if (!file.toFileDTO().canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
                     return@forEach
                 }
 
@@ -161,7 +163,6 @@ class FileController {
 
         if (tempZipFile.exists()) {
             // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-
 
             ctx.header("Content-Type", "application/zip")
             ctx.header(
@@ -193,7 +194,7 @@ class FileController {
 
     fun deleteSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter")
-        if (file == null || file.owner.id != ctx.currentUserDTO!!.id) {
+        if (file == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
             throw NotFoundResponse("File not found")
         }
 
@@ -227,7 +228,7 @@ class FileController {
         val deletedFileIDs = arrayListOf<UUID>()
         transaction {
             FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (file.owner.id.value != ctx.currentUserDTO!!.id) {
+                if (file.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                     return@forEach
                 }
 
@@ -258,6 +259,10 @@ class FileController {
         transaction {
             val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
             val parent = if (parentId != null) FileDAO.findById(parentId) else null
+
+            if (parent != null && !parent.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+                throw BadRequestResponse("Parent folder does not exist or is not owned by you")
+            }
 
             val file = FileDAO.new {
                 this.name = folderName

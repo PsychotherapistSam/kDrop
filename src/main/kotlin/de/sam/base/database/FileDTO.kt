@@ -22,6 +22,14 @@ class FileDTO(
     var created: DateTime,
     var isFolder: Boolean,
 ) : Serializable {
+    fun canBeViewedByUserId(id: UUID): Boolean {
+        return !private || owner.id == id
+    }
+
+    fun isOwnedByUserId(id: UUID): Boolean {
+        return owner.id == id
+    }
+
     // placeholder for functions
 }
 
@@ -58,13 +66,13 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 }
 
 
-fun FileDAO.toFile(): FileDTO {
+fun FileDAO.toFileDTO(): FileDTO {
     return FileDTO(
         this.id.value,
         this.name,
         this.path,
         this.mimeType,
-        this.parent?.toFile(),
+        this.parent?.toFileDTO(),
         this.owner.toUser(),
         this.size,
         this.sizeHR,

@@ -64,7 +64,7 @@ class UserFilesPage : Page() {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
                         while (breadcrumb != null) {
-                            breadcrumbs.add(breadcrumb.toFile())
+                            breadcrumbs.add(breadcrumb.toFileDTO())
                             breadcrumb = breadcrumb.parent
                         }
 
@@ -76,7 +76,7 @@ class UserFilesPage : Page() {
                     logTimeSpent("getting the file list") {
                         fileDTOs = FileDAO
                             .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
-                            .map { it.toFile() }
+                            .map { it.toFileDTO() }
                             .sortedWith { a, b ->
                                 sortingDirection.compare(a, b)
                                 //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
