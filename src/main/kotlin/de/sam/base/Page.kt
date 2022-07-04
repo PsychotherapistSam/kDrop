@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
 
-abstract class Page: Handler {
+abstract class Page : Handler {
     abstract var name: String
     abstract var title: String
     abstract var pageDescription: String
@@ -23,6 +23,7 @@ abstract class Page: Handler {
 
     fun getRenderTime(): String {
         val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
+//        println("pageDiff: ${nanoToMilli(pageDiff)}; templateDiff: ${nanoToMilli(templateDiff)}; total: ${nanoToMilli(pageDiff + templateDiff)}")
         return nanoToMilli(pageDiff + templateDiff)
     }
 

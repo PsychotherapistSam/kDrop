@@ -50,6 +50,14 @@ object FilesTable : UUIDTable("t_files") {
 }
 
 class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
+    fun canBeViewedByUserId(id: UUID): Boolean {
+        return !private || owner.id.value == id
+    }
+
+    fun isOwnedByUserId(id: UUID): Boolean {
+        return owner.id.value == id
+    }
+
     companion object : UUIDEntityClass<FileDAO>(FilesTable)
 
     var name by FilesTable.name

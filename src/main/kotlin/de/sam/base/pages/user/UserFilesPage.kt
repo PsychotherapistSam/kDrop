@@ -5,6 +5,7 @@ import de.sam.base.database.FileDAO
 import de.sam.base.database.FileDTO
 import de.sam.base.database.FilesTable
 import de.sam.base.database.toFileDTO
+import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
 import de.sam.base.utils.isLoggedIn
 import io.javalin.http.Context
@@ -26,7 +27,7 @@ class UserFilesPage : Page() {
     override var title: String = name
     override var pageDescription: String
         get() = name
-        set(value) {}
+        set(_) {}
     override var templateName: String = "user/files.kte"
 
     var parent: FileDAO? = null
@@ -37,13 +38,14 @@ class UserFilesPage : Page() {
     var sortBy: String = FileSortingDirection.sortDirections.first().name
 
     override fun handle(ctx: Context) {
-        breadcrumbs.clear()
-
-        val sortingDirection = FileSortingDirection.sortDirections.first {
-            it.name == (ctx.queryParam("sort") ?: "name")
-        }
-
         pageDiff = measureNanoTime {
+            breadcrumbs.clear()
+
+            val sortingDirection =
+                FileSortingDirection.sortDirections.first {
+                    it.name == (ctx.queryParam("sort") ?: "name")
+                }
+
             val parentFileId =
                 if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
 
@@ -52,27 +54,23 @@ class UserFilesPage : Page() {
                     parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
                 }
                 /*val user = logTimeSpent("finding the current user by id in the database") {
-                    return@logTimeSpent UserDAO.findById(currentUserDTO!!.id)
+                    return@logTimeSpent UserDAO.findById(ctx.currentUserDTO!!.id)
                 }*/
 
                 // if the parentFileId is null, we are in the root directory so we do not return a 404
-                if (parentFileId != null) {
-                    // check if either the file does not exist or the user isn't the owner of the file and the file is not public
-                    if (parent != null && parent!!.private && (currentUserDTO == null || !parent!!.toFileDTO()
-                            .isOwnedByUserId(currentUserDTO!!.id))
-                    ) {
-                        throw NotFoundResponse("File not found")
-                        //   if (parent == null || parent!!.toFileDTO().canBeViewedByUserId() && parent!!.private) {
+                logTimeSpent("checking for file access") {
+                    if (parentFileId != null) {
+                        // check if either the file does not exist or the user isn't the owner of the file and the file is not public
+                        if (parent != null && parent!!.private && (ctx.currentUserDTO == null || !parent!!
+                                .isOwnedByUserId(ctx.currentUserDTO!!.id))
+                        ) {
+                            throw NotFoundResponse("File not found")
+                            //   if (parent == null || parent!!.toFileDTO().canBeViewedByUserId() && parent!!.private) {
+                        }
                     }
                 }
 
-                // TODO: if !folder
-
-                if (parent == null || parent!!.isFolder) {
-                    if (!ctx.isLoggedIn) {
-                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
-                    }
-
+                if (parent != null) {
                     logTimeSpent("the breadcrumb traversal") {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
@@ -84,11 +82,16 @@ class UserFilesPage : Page() {
                         // reverse list because the traversal is backwards
                         breadcrumbs.reverse()
                     }
+                }
 
+                if (parent == null || parent!!.isFolder) {
+                    if (!ctx.isLoggedIn) {
+                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
+                    }
 
                     logTimeSpent("getting the file list") {
                         fileDTOs = FileDAO
-                            .find { FilesTable.owner eq currentUserDTO!!.id and FilesTable.parent.eq(parent?.id) }
+                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFileDTO() }
                             .sortedWith { a, b ->
                                 sortingDirection.compare(a, b)
@@ -99,9 +102,8 @@ class UserFilesPage : Page() {
                     }
                 }
             }
+            ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
         }
-
-        ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
 
         if (ctx.queryParam("table") != null) {
             ctx.render(
