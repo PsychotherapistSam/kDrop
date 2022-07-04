@@ -1,11 +1,15 @@
 package de.sam.base.pages.user
 
 import de.sam.base.Page
-import de.sam.base.database.*
-import de.sam.base.utils.currentUserDTO
+import de.sam.base.database.FileDAO
+import de.sam.base.database.FileDTO
+import de.sam.base.database.FilesTable
+import de.sam.base.database.toFileDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
+import de.sam.base.utils.isLoggedIn
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import io.javalin.http.UnauthorizedResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -44,20 +48,29 @@ class UserFilesPage : Page() {
                 if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
 
             transaction {
-                val user = logTimeSpent("finding the current user by id in the database") {
-                    return@logTimeSpent UserDAO.findById(ctx.currentUserDTO!!.id)
+                logTimeSpent("finding the parent") {
+                    parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
                 }
-                if (user != null) {
-                    logTimeSpent("finding the parent") {
-                        parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
-                    }
+                /*val user = logTimeSpent("finding the current user by id in the database") {
+                    return@logTimeSpent UserDAO.findById(currentUserDTO!!.id)
+                }*/
 
-                    // if the parentFileId is null, we are in the root directory so we do not return a 404
-                    if (parentFileId != null) {
-                        // check if either the file does not exist or the user isn't the owner of the file and the file is not public
-                        if (parent == null || parent!!.owner != user && parent!!.private) {
-                            throw NotFoundResponse("File not found")
-                        }
+                // if the parentFileId is null, we are in the root directory so we do not return a 404
+                if (parentFileId != null) {
+                    // check if either the file does not exist or the user isn't the owner of the file and the file is not public
+                    if (parent != null && parent!!.private && (currentUserDTO == null || !parent!!.toFileDTO()
+                            .isOwnedByUserId(currentUserDTO!!.id))
+                    ) {
+                        throw NotFoundResponse("File not found")
+                        //   if (parent == null || parent!!.toFileDTO().canBeViewedByUserId() && parent!!.private) {
+                    }
+                }
+
+                // TODO: if !folder
+
+                if (parent == null || parent!!.isFolder) {
+                    if (!ctx.isLoggedIn) {
+                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
                     }
 
                     logTimeSpent("the breadcrumb traversal") {
@@ -75,7 +88,7 @@ class UserFilesPage : Page() {
 
                     logTimeSpent("getting the file list") {
                         fileDTOs = FileDAO
-                            .find { FilesTable.owner eq user.id and FilesTable.parent.eq(parent?.id) }
+                            .find { FilesTable.owner eq currentUserDTO!!.id and FilesTable.parent.eq(parent?.id) }
                             .map { it.toFileDTO() }
                             .sortedWith { a, b ->
                                 sortingDirection.compare(a, b)

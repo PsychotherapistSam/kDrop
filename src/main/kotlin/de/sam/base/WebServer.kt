@@ -122,7 +122,7 @@ class WebServer {
                 path("/files") {
                     get("/", UserFilesPage(), UserRoles.USER)
                     path("/{fileId}") {
-                        get("/", UserFilesPage(), UserRoles.USER)
+                        get("/", UserFilesPage())
                     }
                 }
             }
@@ -166,7 +166,7 @@ class WebServer {
                     delete("/", FileController()::deleteFiles, UserRoles.USER)
                     before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
-                        get("/", FileController()::getSingleFile, UserRoles.USER)
+                        get("/", FileController()::getSingleFile)
                         delete("/", FileController()::deleteSingleFile, UserRoles.USER)
                         //put("/", FileController()::updateFile, UserRoles.USER)
                     }

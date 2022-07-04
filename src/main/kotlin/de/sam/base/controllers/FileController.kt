@@ -104,7 +104,8 @@ class FileController {
     fun getSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
 
-        if (file.canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
+        // the file is private and the user isn't logged in or the file isn't owned by the user
+        if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
             throw NotFoundResponse("File not found")
         }
 
