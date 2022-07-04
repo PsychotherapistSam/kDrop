@@ -4,6 +4,7 @@ import com.password4j.Argon2Function
 import com.password4j.types.Argon2
 import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.humanReadableByteCountBin
 import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
@@ -14,7 +15,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.File
 import java.io.FileInputStream
+import java.lang.Thread.sleep
 import java.util.*
+import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 
 class FileController {
@@ -84,7 +87,7 @@ class FileController {
         ctx.attribute("fileQueryTime", userQueryTime)
     }
 
-    fun getFile(ctx: Context) {
+    fun getSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter")
         if (file != null) {
             val systemFile = File("./${file.path}")
@@ -103,6 +106,75 @@ class FileController {
             }
         } else {
             throw NotFoundResponse("File not found")
+        }
+    }
+
+    fun getFiles(ctx: Context) {
+        val fileListString = ctx.formParamAsClass<String>("files")
+            .check({ files ->
+                files
+                    .split(",")
+                    .all { file ->
+                        file.isValidUUID()
+                    }
+            }, "Invalid UUID")
+            .get()
+        val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
+
+        val fileList = arrayListOf<Pair<File, String>>()
+        transaction {
+            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
+                if (file.owner.id.value != ctx.currentUserDTO!!.id) {
+                    return@forEach
+                }
+
+                val systemFile = File("./${file.path}")
+                if (systemFile.exists()) {
+                    fileList.add(Pair(systemFile, file.name))
+                }
+            }
+        }
+
+        val tempZipFile = File("./upload/temp/${UUID.randomUUID()}.zip")
+
+        val nanoTime = measureNanoTime {
+            zipFiles(fileList, tempZipFile)
+        }
+
+        val milliTime = nanoTime / 1000000.0
+        println("Zipping took $milliTime ms")
+
+        println("Zipping done")
+
+        if (tempZipFile.exists()) {
+            // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
+
+
+            ctx.header("Content-Type", "application/zip")
+            ctx.header(
+                "Content-Disposition",
+                "attachment; filename=download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip"
+            )
+            ctx.header("Content-Length", tempZipFile.length().toString())
+
+            ctx.result(FileInputStream(tempZipFile))
+        } else {
+            throw NotFoundResponse("File not found")
+        }
+
+        thread {
+            var counter = 0
+            while (tempZipFile.exists()) {
+                tempZipFile.delete()
+                counter++
+                sleep(1000)
+                // if file can not be deleted at runtime, it will be deleted on the next stop
+                if (counter > 60) {
+                    tempZipFile.deleteOnExit()
+                    return@thread
+                }
+            }
+            println("deleted zip file")
         }
     }
 
