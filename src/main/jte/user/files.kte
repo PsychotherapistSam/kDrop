@@ -16,8 +16,8 @@ content = @`
         <h1>Your Files</h1>
     @endif
 
-    @if(page.currentUserDTO != null)
-        @template.components.files.breadcrumbElementComp(breadcrumbs  = page.breadcrumbs)
+    @if(page.fileIsOwnedByCurrentUser)
+        @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
     @if(currentIsFolder)

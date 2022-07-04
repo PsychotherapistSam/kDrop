@@ -31,6 +31,7 @@ class UserFilesPage : Page() {
     override var templateName: String = "user/files.kte"
 
     var parent: FileDAO? = null
+    var fileIsOwnedByCurrentUser = false
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
@@ -53,24 +54,25 @@ class UserFilesPage : Page() {
                 logTimeSpent("finding the parent") {
                     parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
                 }
-                /*val user = logTimeSpent("finding the current user by id in the database") {
-                    return@logTimeSpent UserDAO.findById(ctx.currentUserDTO!!.id)
-                }*/
 
-                // if the parentFileId is null, we are in the root directory so we do not return a 404
                 logTimeSpent("checking for file access") {
+                    fileIsOwnedByCurrentUser =
+                        ctx.currentUserDTO != null && parent != null && parent!!.owner.id.value == ctx.currentUserDTO!!.id
+
+                    // if the parentFileId is null, we are in the root directory so we do not return a 404
                     if (parentFileId != null) {
                         // check if either the file does not exist or the user isn't the owner of the file and the file is not public
-                        if (parent != null && parent!!.private && (ctx.currentUserDTO == null || !parent!!
-                                .isOwnedByUserId(ctx.currentUserDTO!!.id))
-                        ) {
-                            throw NotFoundResponse("File not found")
+                        if (parent != null && parent!!.private) {
+                            println("${parent!!.owner.id} vs ${ctx.currentUserDTO!!.id}")
+                            if (!fileIsOwnedByCurrentUser) {
+                                throw NotFoundResponse("File not found")
+                            }
                             //   if (parent == null || parent!!.toFileDTO().canBeViewedByUserId() && parent!!.private) {
                         }
                     }
                 }
 
-                if (parent != null) {
+                if (parent != null && fileIsOwnedByCurrentUser) {
                     logTimeSpent("the breadcrumb traversal") {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
