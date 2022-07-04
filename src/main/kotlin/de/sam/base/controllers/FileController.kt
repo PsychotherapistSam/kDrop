@@ -3,6 +3,7 @@ package de.sam.base.controllers
 import com.password4j.Argon2Function
 import com.password4j.types.Argon2
 import de.sam.base.database.*
+import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.humanReadableByteCountBin
@@ -10,6 +11,7 @@ import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import io.javalin.http.util.SeekableWriter
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -66,15 +68,25 @@ class FileController {
         }
     }
 
+    val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
     fun getFileParameter(ctx: Context) {
         val userQueryTime = measureNanoTime {
             ctx.pathParamAsClass<UUID>("fileId")
                 .check({
+                    if (cache.containsKey(it)) {
+                        if (System.currentTimeMillis() < cache[it]!!.first + 1000 * 60) {
+                            ctx.attribute("requestFileParameter", cache[it]!!.second)
+                            return@check true
+                        } else {
+                            cache.remove(it)
+                        }
+                    }
                     transaction {
                         logTimeSpent("Getting file by id") {
                             val fileDao = FileDAO.findById(it)
                             if (fileDao != null) {
                                 ctx.attribute("requestFileParameter", fileDao.toFile())
+                                cache[it] = Pair(System.currentTimeMillis(), fileDao.toFile())
                                 return@transaction true
                             } else {
                                 return@transaction false
@@ -100,7 +112,8 @@ class FileController {
                 ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
                 ctx.header("Content-Length", file.size.toString())
 
-                ctx.result(FileInputStream(systemFile))
+                CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
+                // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
             } else {
                 throw NotFoundResponse("File not found")
             }

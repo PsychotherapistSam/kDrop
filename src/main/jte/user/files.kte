@@ -31,12 +31,25 @@ content = @`
             </a>
             <div class="ui basic fitted segment">
                 @if(page.parent!!.mimeType == "application/pdf" || page.parent!!.mimeType == "application/json" ||page.parent!!.mimeType == "text/plain")
-                    <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}"
-                            style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
+                <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                        style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
+                @elseif(page.parent!!.mimeType == "video/mp4")
+                <h1>Plyr</h1>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
+                <video controls crossorigin playsinline id="plyr">
+                    <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="video/mp4">
+                </video>
+                <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.js"></script>
+                <script>
+                    const player = new Plyr('#plyr', {captions: {active: true}});
+
+                    // Expose player so it can be used from the console
+                    window.player = player;
+                </script>
                 @elseif(page.parent!!.mimeType.split("/")[0] == "image")
-                    <img class="ui centered image"
-                         src="/api/v1/files/${page.parent!!.id.value.toString()}"
-                         alt="${page.parent!!.name}">
+                <img class="ui centered image"
+                     src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                     alt="${page.parent!!.name}">
                 @endif
             </div>
         </div>
