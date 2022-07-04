@@ -17,10 +17,10 @@ class CustomAccessManager : AccessManager {
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
         val userAgentHeader = ctx.header("User-Agent") ?: throw BadRequestResponse("User-Agent is missing")
         // Redirect safari users to a firefox download
-        if (userAgentHeader.contains("Safari")) {
+        /*if (userAgentHeader.contains("Safari")) {
             ctx.redirect("https://firefox.com/download")
             return
-        }
+        }*/
 
         // Register bots
         val listOfBotUserAgents = listOf("Googlebot")
