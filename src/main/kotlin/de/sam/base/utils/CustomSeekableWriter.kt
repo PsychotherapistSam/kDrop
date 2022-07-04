@@ -46,8 +46,7 @@ object CustomSeekableWriter {
             val read = it.read(buffer, 0, buffer.size.toLong().coerceAtMost(bytesLeft).toInt())
             try {
                 this.write(buffer, 0, read)
-            } catch (e: EOFException) {
-                println("Request ended early (EOF)")
+            } catch (_: EOFException) {
             }
             bytesLeft -= read
         }

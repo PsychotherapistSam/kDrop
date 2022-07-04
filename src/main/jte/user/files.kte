@@ -34,7 +34,6 @@ content = @`
                 <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}"
                         style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
                 @elseif(page.parent!!.mimeType == "video/mp4")
-                <h1>Plyr</h1>
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
                 <video controls crossorigin playsinline id="plyr">
                     <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="video/mp4">
