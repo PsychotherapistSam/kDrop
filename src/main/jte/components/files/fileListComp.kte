@@ -5,6 +5,7 @@
 @import de.sam.base.pages.displayLoader
 @import org.joda.time.format.DateTimeFormat
 @import de.sam.base.utils.file.sorting.FileSortingDirection
+@import de.sam.base.utils.toReadableTimeString
 
 @param fileDTOs: List<FileDTO>
 @param sortByName: String
@@ -89,7 +90,7 @@
                 </td>
                 <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
                 <td class="right aligned collapsing"
-                    data-tooltip="${fileDTO.created.toString(DateTimeFormat.forPattern("d.M.yyyy H:m:s (z)"))}"
+                    data-tooltip="${fileDTO.created.toReadableTimeString()}"
                     data-inverted="">${fileDTO.created.toRecentTimeString()}</td>
             </tr>
         @endfor

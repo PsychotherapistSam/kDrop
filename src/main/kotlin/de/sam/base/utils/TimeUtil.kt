@@ -1,6 +1,8 @@
 package de.sam.base.utils
 
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import org.ocpsoft.prettytime.PrettyTime
@@ -38,10 +40,18 @@ var formatter: PeriodFormatter = PeriodFormatterBuilder()
     .appendYears().appendSuffix(" years ago\n")
     .printZeroNever()
     .toFormatter()
+
+
 val prettyTime = PrettyTime().apply {
     locale = Locale.ENGLISH
 }
 
+val patternFormatter: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-M-d H:m:s (z)")
+
 fun DateTime.toRecentTimeString(): String? {
     return prettyTime.format(this.toDate())
+}
+
+fun DateTime.toReadableTimeString(): String? {
+    return this.toString(patternFormatter)
 }

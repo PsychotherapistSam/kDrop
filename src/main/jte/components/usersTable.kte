@@ -2,6 +2,7 @@
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.pages.displayLoader
+@import de.sam.base.utils.toReadableTimeString
 @import de.sam.base.utils.toRecentTimeString
 @import org.joda.time.format.DateTimeFormat
 
@@ -67,7 +68,7 @@
                             <a href="/admin/users/${user.id.toString()}/"
                                hx-get="/admin/users/${user.id.toString()}/">${user.name}</a>
                         </td>
-                        <td data-tooltip="${user.registrationDate.toString(DateTimeFormat.forPattern("d.M.yyyy H:m:s (z)"))}"
+                        <td data-tooltip="${user.registrationDate.toReadableTimeString()}"
                             data-inverted="">${user.registrationDate.toRecentTimeString()}</td>
                         <td>N/A</td>
                         <td>@if(user.roles.contains(UserRoles.PREMIUM))
