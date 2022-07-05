@@ -32,6 +32,7 @@ class UserFilesPage : Page() {
 
     var parent: FileDAO? = null
     var fileIsOwnedByCurrentUser = false
+    var breadcrumbVisible = false
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
@@ -58,6 +59,8 @@ class UserFilesPage : Page() {
                 logTimeSpent("checking for file access") {
                     fileIsOwnedByCurrentUser =
                         ctx.currentUserDTO != null && parent != null && parent!!.owner.id.value == ctx.currentUserDTO!!.id
+
+                    breadcrumbVisible = parent == null || parent!!.owner.id.value == ctx.currentUserDTO!!.id
 
                     // if the parentFileId is null, we are in the root directory so we do not return a 404
                     if (parentFileId != null) {
