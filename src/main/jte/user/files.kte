@@ -47,7 +47,7 @@ content = @`
                     // Expose player so it can be used from the console
                     window.player = player;
                 </script>
-                @elseif(page.parent!!.mimeType == "audio/mpeg")
+                @elseif(page.parent!!.mimeType.split("/")[0] == "audio")
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
                 <audio controls id="plyr">
                     <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="${page.parent!!.mimeType}">
