@@ -38,11 +38,23 @@ content = @`
                 @elseif(page.parent!!.mimeType == "video/mp4")
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
                 <video controls crossorigin playsinline id="plyr">
-                    <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="video/mp4">
+                    <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="${page.parent!!.mimeType}">
                 </video>
                 <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.js"></script>
                 <script>
-                    const player = new Plyr('#plyr', {captions: {active: true}});
+                    const player = new Plyr('#plyr');
+
+                    // Expose player so it can be used from the console
+                    window.player = player;
+                </script>
+                @elseif(page.parent!!.mimeType == "audio/mpeg")
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
+                <audio controls id="plyr">
+                    <source src="/api/v1/files/${page.parent!!.id.value.toString()}" type="${page.parent!!.mimeType}">
+                </audio>
+                <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.js"></script>
+                <script>
+                    const player = new Plyr('#plyr');
 
                     // Expose player so it can be used from the console
                     window.player = player;
