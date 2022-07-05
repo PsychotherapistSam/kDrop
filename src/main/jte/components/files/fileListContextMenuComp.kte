@@ -514,7 +514,6 @@
                 data.append("files", ids);
                 switch (link.getAttribute("data-action")) {
                     case "delete":
-
                         if (rows.length > 5) {
                             showFileDeletionLoadingModal(rows.length);
                         }
@@ -739,6 +738,7 @@
             if (!progressBar.hasClass("indeterminate")) {
                 progressBar.removeClass("active")
                 progressBar.removeClass("grey")
+                progressBar.removeClass("success")
                 progressBar.addClass("indeterminate")
                 progressBar.addClass("orange")
             }
