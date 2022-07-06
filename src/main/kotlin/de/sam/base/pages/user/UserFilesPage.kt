@@ -58,15 +58,14 @@ class UserFilesPage : Page() {
 
                 logTimeSpent("checking for file access") {
                     fileIsOwnedByCurrentUser =
-                        ctx.currentUserDTO != null && parent != null && parent!!.owner.id.value == ctx.currentUserDTO!!.id
+                        ctx.currentUserDTO != null && parent != null && ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
 
-                    breadcrumbVisible = parent == null || parent!!.owner.id.value == ctx.currentUserDTO!!.id
+                    breadcrumbVisible = parent == null || ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
 
                     // if the parentFileId is null, we are in the root directory so we do not return a 404
                     if (parentFileId != null) {
                         // check if either the file does not exist or the user isn't the owner of the file and the file is not public
                         if (parent != null && parent!!.private) {
-                            println("${parent!!.owner.id} vs ${ctx.currentUserDTO!!.id}")
                             if (!fileIsOwnedByCurrentUser) {
                                 throw NotFoundResponse("File not found")
                             }
@@ -91,7 +90,7 @@ class UserFilesPage : Page() {
 
                 if (parent == null || parent!!.isFolder) {
                     if (!ctx.isLoggedIn) {
-                        throw UnauthorizedResponse("You need to be logged in to access this resource.")
+                        throw NotFoundResponse("File not found")
                     }
 
                     logTimeSpent("getting the file list") {
