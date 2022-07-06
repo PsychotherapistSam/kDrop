@@ -78,7 +78,7 @@
                         <input type="checkbox"><label>&nbsp;</label>
                     </div>
                 </td>
-                <td>
+                <td style="word-break: break-all;">
                     <a href="${UserFilesPage.ROUTE}${fileDTO.id.toString()}/">
                         @if(fileDTO.isFolder)
                             <i class="folder outline icon"></i>
