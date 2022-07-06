@@ -75,7 +75,7 @@ content = @`
                     <tbody>
                     <tr>
                         <td class="two wide column">Name</td>
-                        <td>${page.parent!!.name}</td>
+                        <td style="word-break: break-all;">${page.parent!!.name}</td>
                     </tr>
                     <tr>
                         <td>ID</td>
@@ -94,8 +94,8 @@ content = @`
                         <td>${page.parent!!.created.toRecentTimeString()} (${page.parent!!.created.toReadableTimeString()})</td>
                     </tr>
                     <tr>
-                        <td>SHA256</td>
-                        <td>not yet computed</td>
+                        <td>SHA512</td>
+                        <td style="word-break: break-all;">${page.parent!!.hash ?: "not yet computed"}</td>
                     </tr>
                     </tbody>
                 </table>

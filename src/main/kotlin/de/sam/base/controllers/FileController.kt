@@ -17,6 +17,7 @@ import org.joda.time.DateTime
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
+import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
@@ -62,7 +63,12 @@ class FileController {
                     this.isFolder = false
                 }
 
-                FileUtil.streamToFile(it.content, "./upload/${file.id}")
+                val targetFile = File("./upload/${file.id}")
+                FileUtil.streamToFile(it.content, targetFile.path)
+
+                logTimeSpent("hashing file") {
+                    file.hash = targetFile.sha512()
+                }
 
                 idMap[file.name] = file.id.value
             }
@@ -285,6 +291,19 @@ class FileController {
     fun deleteDirectory(ctx: Context) {
 
     }
+}
+
+private fun File.sha512(): String {
+    val digest = MessageDigest.getInstance("SHA-512")
+    val hash = digest.digest(this.readBytes())
+    // convert byte array to Hex string
+    val hexString = StringBuffer()
+    for (i in hash.indices) {
+        val hex = Integer.toHexString(0xff and hash[i].toInt())
+        if (hex.length == 1) hexString.append('0')
+        hexString.append(hex)
+    }
+    return hexString.toString()
 }
 
 private fun String.isValidUUID(): Boolean {
