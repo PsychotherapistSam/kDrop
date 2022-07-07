@@ -475,26 +475,27 @@
      */
     function positionMenu(e) {
         clickCoords = getPosition(e);
+        console.log(clickCoords)
         clickCoordsX = clickCoords.x;
         clickCoordsY = clickCoords.y;
 
         menuWidth = menu.offsetWidth + 4;
         menuHeight = menu.offsetHeight + 4;
 
-        windowWidth = window.innerWidth;
-        windowHeight = window.innerHeight;
+        // windowWidth = window.innerWidth;
+        // windowHeight = window.innerHeight;
 
-        if ((windowWidth - clickCoordsX) < menuWidth) {
-            menu.style.left = windowWidth - menuWidth + "px";
-        } else {
-            menu.style.left = clickCoordsX + "px";
-        }
+        // if ((windowWidth - clickCoordsX) < menuWidth) {
+        //     menu.style.left = windowWidth - menuWidth + "px";
+        // } else {
+        menu.style.left = clickCoordsX + "px";
+        // }
 
-        if ((windowHeight - clickCoordsY) < menuHeight) {
-            menu.style.top = windowHeight - menuHeight + "px";
-        } else {
+        // if ((windowHeight - clickCoordsY) < menuHeight) {
+        //     menu.style.top = windowHeight - menuHeight + "px";
+        // } else {
             menu.style.top = clickCoordsY + "px";
-        }
+        // }
     }
 
     /**
