@@ -74,7 +74,7 @@ content = @`
                 <table class="ui compact definition table">
                     <tbody>
                     <tr>
-                        <td class="two wide column">Name</td>
+                        <td>Name</td>
                         <td style="word-break: break-all;">${page.parent!!.name}</td>
                     </tr>
                     <tr>
