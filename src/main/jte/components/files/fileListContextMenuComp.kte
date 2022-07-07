@@ -375,10 +375,10 @@
      * Listens for click events.
      */
     function clickListener() {
-        const target = document.querySelector('#fileTable')
+        const fileTable = document.querySelector('#fileTable')
 
         document.addEventListener("click", function (e) {
-            if (event.target.type === "checkbox" && event.target.id != "toggleAllSelection" && event.composedPath().includes(target)) {
+            if (event.target.type === "checkbox" && event.target.id != "toggleAllSelection" && event.composedPath().includes(fileTable)) {
                 var row = event.target.closest(".context-clickable")
                 if (event.target.checked) {
                     // not using addSelection because that uses invalid jquery on mobile
@@ -406,8 +406,8 @@
             }
 
             // clear selection when clicking outside of the table
-            const withinBoundaries = e.composedPath().includes(target)
-            if (!withinBoundaries) {
+            const withinBoundaries = e.composedPath().includes(fileTable)
+            if (!withinBoundaries && !e.target.classList.contains("context-item-dropdown")) {
                 ds.clearSelection();
             }
         }, false);
@@ -682,6 +682,7 @@
                     }
                 }
             );
+            toggleMenuOff();
         }
 
         /*for (var i = 0; i < getSelectedRows().length; i++) {
@@ -690,7 +691,6 @@
             console.log("Task ID - " + row.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
         }*/
 
-        toggleMenuOff();
     }
 
     function promptFolderCreation() {
