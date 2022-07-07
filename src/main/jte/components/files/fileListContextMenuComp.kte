@@ -695,6 +695,7 @@
 
     function promptFolderCreation() {
         $('#folderCreationModal').modal({
+            duration: 250,
             onApprove: function () {
                 $.ajax({
                     url: "/api/v1/directories${if(parent != null ) "?parent=" + parent.id else ""}",
@@ -717,6 +718,7 @@
 
     function showFileDeletionLoadingModal(fileCount) {
         $('#fileDeletionModal').modal({
+            duration: 250,
             closable: false,
             title: 'Deleting ' + fileCount + ' files',
         }).modal('show');
@@ -765,6 +767,7 @@
             });
         }
         $('#fileDownloadModal').modal({
+            duration: 250,
             closable: false,
             title: 'Downloading ' + fileCount + ' files',
         }).modal('show');
