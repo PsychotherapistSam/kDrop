@@ -72,7 +72,7 @@
         </thead>
         <tbody id="fileTableBody">
         @for(fileDTO in fileDTOs)
-            <tr class="context-clickable" data-id="${fileDTO.id.toString()}">
+            <tr class="context-clickable" data-id="${fileDTO.id.toString()}" data-folder="true">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
                         <input type="checkbox"><label>&nbsp;</label>

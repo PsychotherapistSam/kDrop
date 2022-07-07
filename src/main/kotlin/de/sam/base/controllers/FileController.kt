@@ -1,7 +1,5 @@
 package de.sam.base.controllers
 
-import com.password4j.Argon2Function
-import com.password4j.types.Argon2
 import de.sam.base.database.*
 import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
@@ -19,6 +17,7 @@ import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.security.MessageDigest
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 
@@ -205,19 +204,30 @@ class FileController {
             throw NotFoundResponse("File not found")
         }
 
-        val systemFile = File("./${file.path}")
-        if (systemFile.exists()) {
-            systemFile.delete()
-        }
-        if (!systemFile.exists()) {
-            transaction {
-                FileDAO.findById(file.id)!!.delete()
-            }
+        val fileIDs = listOf(file.id)
+
+        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!)
+
+        val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
+        if (filesNotDeleted.isNotEmpty()) {
+            ctx.json(mapOf("status" to "error", "filesNotDeleted" to filesNotDeleted, "filesDeleted" to deletedFileIDs))
+        } else {
+            ctx.json(mapOf("status" to "ok", "filesDeleted" to fileIDs))
         }
 
-        //TODO: if file is a folder, delete all files in it
-
-        ctx.json(mapOf("status" to "ok"))
+//        val systemFile = File("./${file.path}")
+//        if (systemFile.exists()) {
+//            systemFile.delete()
+//        }
+//        if (!systemFile.exists()) {
+//            transaction {
+//                FileDAO.findById(file.id)!!.delete()
+//            }
+//        }
+//
+//        //TODO: if file is a folder, delete all files in it
+//
+//        ctx.json(mapOf("status" to "ok"))
     }
 
     fun deleteFiles(ctx: Context) {
@@ -232,22 +242,8 @@ class FileController {
             .get()
 
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
-        val deletedFileIDs = arrayListOf<UUID>()
-        transaction {
-            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (!file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
-                    return@forEach
-                }
-                val systemFile = File("./${file.path}")
-                if (systemFile.exists()) {
-                    systemFile.delete()
-                }
-                if (!systemFile.exists()) {
-                    file.delete()
-                    deletedFileIDs.add(file.id.value)
-                }
-            }
-        }
+
+        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!)
 
         val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
         if (filesNotDeleted.isNotEmpty()) {
@@ -255,6 +251,38 @@ class FileController {
         } else {
             ctx.json(mapOf("status" to "ok", "filesDeleted" to fileIDs))
         }
+    }
+
+    private fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): ArrayList<UUID> {
+        val deletedFileIDs = arrayListOf<UUID>()
+        transaction {
+            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
+                if (!file.isOwnedByUserId(user.id)) {
+                    return@forEach
+                }
+
+                if (file.isFolder) {
+                    logTimeSpent("recursively deleting folder ${file.name}") {
+                        val folderFiles = FileDAO.find { FilesTable.parent eq file.id }.toList().map { it.id.value }
+                        deleteFileList(folderFiles, user)
+                        file.delete()
+                        deletedFileIDs.add(file.id.value)
+                    }
+                } else {
+                    logTimeSpent("deleting file ${file.name}") {
+                        val systemFile = File("./${file.path}")
+                        if (systemFile.exists()) {
+                            systemFile.delete()
+                        }
+                        if (!systemFile.exists()) {
+                            file.delete()
+                            deletedFileIDs.add(file.id.value)
+                        }
+                    }
+                }
+            }
+        }
+        return deletedFileIDs
     }
 
     fun createDirectory(ctx: Context) {
