@@ -43,7 +43,7 @@
 <div class="ui tiny modal" id="folderCreationModal">
     <div class="header">New Folder</div>
     <div class="content">
-        <form class="ui form" id="folderCreationForm">
+        <form class="ui form" id="folderCreationForm" onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
             <div class="field">
                 <label for="username">Name</label>
                 <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
@@ -494,7 +494,7 @@
         // if ((windowHeight - clickCoordsY) < menuHeight) {
         //     menu.style.top = windowHeight - menuHeight + "px";
         // } else {
-            menu.style.top = clickCoordsY + "px";
+        menu.style.top = clickCoordsY + "px";
         // }
     }
 
@@ -702,7 +702,9 @@
                     data: $('#folderCreationForm').serialize(),
                     success: function () {
                         $('#folderCreationModal').modal('hide');
-                        $('#folderCreationModal').remove();
+                        $('#folderCreationModal').find("button.approve").first().removeClass("loading")
+                        $('#folderCreationForm').trigger("reset");
+                        //  $('#folderCreationModal').remove();
                         htmx.trigger("#refreshButton", "refreshTable");
                         //window.location.href = '${AdminUsersPage.ROUTE}';
                     },
