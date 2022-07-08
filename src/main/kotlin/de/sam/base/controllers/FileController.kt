@@ -149,9 +149,14 @@ class FileController {
                     return@forEach
                 }
 
-                val systemFile = File("./${file.path}")
-                if (systemFile.exists()) {
-                    fileList.add(Pair(systemFile, file.name))
+                if (file.isFolder) {
+                    // add all files and subfolders recursively
+                    fileList.addAll(getChildren(file, ctx.currentUserDTO!!, file.name + "/"))
+                } else {
+                    val systemFile = File("./${file.path}")
+                    if (systemFile.exists()) {
+                        fileList.add(Pair(systemFile, file.name))
+                    }
                 }
             }
         }
@@ -196,6 +201,23 @@ class FileController {
             }
             println("deleted zip file")
         }
+    }
+
+    private fun getChildren(file: FileDAO, user: UserDTO, namePrefix: String): Collection<Pair<File, String>> {
+        val children = arrayListOf<Pair<File, String>>()
+        FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
+            if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
+                return@forEach
+            }
+            if (child.isFolder) {
+                children.addAll(getChildren(child, user, namePrefix + child.name + "/"))
+            }
+            val systemFile = File("./${child.path}")
+            if (systemFile.exists()) {
+                children.add(Pair(systemFile, namePrefix + child.name))
+            }
+        }
+        return children
     }
 
     fun deleteSingleFile(ctx: Context) {
@@ -313,11 +335,6 @@ class FileController {
             }
             ctx.json(mapOf("id" to file.id.toString()))
         }
-    }
-
-
-    fun deleteDirectory(ctx: Context) {
-
     }
 }
 

@@ -547,7 +547,7 @@
                         });
                         break;
                     case "download":
-                        if (rows.length === 1) {
+                        if (rows.length === 1 && !rows[0].getAttribute("data-folder")) {
                             window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
                         } else {
                             showFileDownloadModal(rows.length, -1);
