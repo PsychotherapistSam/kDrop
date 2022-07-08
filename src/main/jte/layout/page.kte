@@ -27,6 +27,8 @@
     <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.7.0/dist/htmx.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.5/dist/_hyperscript_web.min.js"></script>
 
+<%--    <link rel="stylesheet" type="text/css" href="/css/dark_mode.min.css">--%>
+
 </head>
 <body>
 <div class="full height">

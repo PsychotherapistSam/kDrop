@@ -25,6 +25,7 @@ import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
+import io.javalin.http.staticfiles.Location
 import io.javalin.plugin.rendering.template.JavalinJte
 import java.nio.file.Path
 import java.util.*
@@ -83,7 +84,16 @@ class WebServer {
             javalinConfig.requestLogger { ctx, timeInMs ->
                 println("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
-            javalinConfig.enableCorsForAllOrigins()
+
+            javalinConfig.addStaticFiles {
+                it.hostedPath = "/"
+                it.directory = "/public"
+                it.location = Location.CLASSPATH       // Location.CLASSPATH (jar) or Location.EXTERNAL (file system)
+                it.precompress = false                 // if the files should be pre-compressed and cached in memory (optimization)
+                it.aliasCheck = null                   // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
+            }
+
+//            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
         app.events {
