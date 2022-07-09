@@ -1,7 +1,10 @@
 @import de.sam.base.database.FileDAO
+@import de.sam.base.utils.isLoggedIn
+@import de.sam.base.utils.preferencesString
+@import de.sam.base.Page
 
 @param parent: FileDAO?
-
+@param page: Page
 <script src="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.js"></script>
 <link href="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.css" rel="stylesheet">
 
@@ -15,7 +18,9 @@
         inline: false,
         trigger: "#fileUploadModal",
         closeModalOnClickOutside: true,
-
+        @if(page.context!!.isLoggedIn && page.context!!.preferencesString!!.split(",").contains("dark-mode"))
+            theme: 'dark',
+        @endif
         showProgressDetails: true,
         doneButtonHandler: () => {
             this.uppy.reset()
@@ -29,12 +34,12 @@
     uppy.use(Uppy.XHRUpload, {
         endpoint: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
         timeout: 1000 * 60 * 5  // file hashing can take a while (especially on very large files), allow 5 minutes.
-      //  bundle: true
+        //  bundle: true
     });
 
     document.addEventListener("dragover", event => {
         const dashboard = uppy.getPlugin('Dashboard');
-        if(!dashboard.isModalOpen()){
+        if (!dashboard.isModalOpen()) {
             dashboard.openModal();
         }
     });
