@@ -4,6 +4,8 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 @import de.sam.base.database.UserDTO
+@import de.sam.base.utils.preferences.Preferences
+@import de.sam.base.utils.preferencesString
 
 @param page: Page
 
@@ -75,6 +77,29 @@ content = @`
             </div>
         </form>
     </div>
+
+    <h4 class="ui horizontal divider header">
+        <i class="cog chart icon"></i>
+        Preferences
+    </h4>
+    <div class="ui basic fitted segment">
+        <form class="ui form" method="PUT" id="preferences-form">
+            <!-- error or success class -->
+            @for(preferenceTriple in Preferences.preferencesList)
+                @if(preferenceTriple.second == Boolean)
+                    <div class="field">
+                        <div class="ui toggle secondary checkbox">
+                            <input type="checkbox" name="${preferenceTriple.first}" class="custom-preference"
+                                   checked="${page.context!!.preferencesString!!.split(",").contains(preferenceTriple.first)}">
+                            <!-- hx-put="/clicked" hx-trigger="change" hx-params="public" hx-swap="none"  -->
+                            <label>${preferenceTriple.third}</label>
+                        </div>
+                    </div>
+                @endif
+            @endfor
+        </form>
+    </div>
+
     <h4 class="ui horizontal divider header">
         <i class="key chart icon"></i>
         Password
@@ -136,6 +161,58 @@ content = @`
                     form.find('.ui.error.message .header').html('Action ' + data.statusText);
                     form.find('.ui.error.message p').html('Error Code: ' + data.status);
                 }
+            });
+        });
+
+        const preferenceItem = $(".custom-preference");
+        preferenceItem.on('input', function (event) {
+            const form = $("#preferences-form");
+            const method = form.attr('method');
+
+            const target = event.target
+            const data = new FormData()
+            data.set(target.name, $("input[name=" + target.name + "]").is(":checked"))
+
+            // add loading indicator to form
+            form.addClass('loading');
+            $.ajax({
+                type: method,
+                headers: {
+                    'Accept': 'application/json',
+                },
+                url: "/api/v1/users/${selectedUserDTO!!.id.toString()}",
+                data: data,
+                processData: false,
+                contentType: false,
+            }).always(function () {
+                form.removeClass('loading');
+            }).done(function () {
+                // form.removeClass("error")
+                $('body')
+                    .toast({
+                        class: 'success',
+                        message: 'Saved settings'
+                    })
+                ;
+                // form.addClass("success")
+                // form.find('.ui.success.message .header').html('Saved user details');
+            }).fail(function (data) {
+                $('body')
+                    .toast({
+                        class: 'error',
+                        message: 'Could not save settings'
+                    })
+                ;
+
+                // form.addClass("error")
+                // form.removeClass("success")
+                // if (data.responseJSON) {
+                //     form.find('.ui.error.message .header').html('Error saving user details');
+                //     form.find('.ui.error.message p').html(data.responseJSON[0]);
+                // } else {
+                //     form.find('.ui.error.message .header').html('Action ' + data.statusText);
+                //     form.find('.ui.error.message p').html('Error Code: ' + data.status);
+                // }
             });
         });
 

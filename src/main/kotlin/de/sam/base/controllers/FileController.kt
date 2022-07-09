@@ -30,7 +30,6 @@ class FileController {
 
         val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
-
         val files = ctx.uploadedFiles()
         transaction {
             val owner = UserDAO.findById(ctx.currentUserDTO!!.id)!!

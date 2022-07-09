@@ -80,7 +80,7 @@ class AuthenticationController {
                                 .result
                             this.roles = UserRoles.USER.name
                             this.hidden = false
-                            this.preferences = "{}"
+                            this.preferences = ""
                             this.registrationDate = DateTime.now()
                         }
                     }

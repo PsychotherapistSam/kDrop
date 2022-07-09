@@ -18,6 +18,8 @@ abstract class Page : Handler {
     private var templateStartTime: Long? = null // = System.nanoTime()
     var currentUserDTO: UserDTO? = null // = ctx.currentUser
 
+    var context: Context? = null
+
     //TODO: nonces
     //  val nonce = ctx.attribute<String>("nonce")
 
@@ -44,6 +46,7 @@ abstract class Page : Handler {
     }*/
 
     override fun handle(ctx: Context) {
+        context = ctx
         currentUserDTO = ctx.currentUserDTO
         templateStartTime = System.nanoTime()
         ctx.render(templateName, Collections.singletonMap("page", this))

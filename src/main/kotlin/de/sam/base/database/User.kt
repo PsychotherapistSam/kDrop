@@ -33,18 +33,19 @@ class UserDTO(
         return roles.contains(role)
     }
 
+
     fun hasPreferences(preference: String): Boolean {
         return this.preferences.split(",").contains(preferences)
     }
 
-    fun getPreference(preference: String): String? {
-        val prefs = preferences.split(",")
-        val index = prefs.indexOf(preference)
-        if (index == -1) {
-            return null
-        }
-        return prefs[index + 1]
-    }
+//    fun getPreference(preference: String): String? {
+//        val prefs = preferences.split(",")
+//        val index = prefs.indexOf(preference)
+//        if (index == -1) {
+//            return null
+//        }
+//        return prefs[index + 1]
+//    }
 }
 
 

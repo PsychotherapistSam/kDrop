@@ -11,3 +11,7 @@ var Context.currentUserDTO: UserDTO?
 var Context.isLoggedIn: Boolean
     get() = this.currentUserDTO != null
     set(value) = throw UnsupportedOperationException("Cannot set isLoggedIn")
+
+var Context.preferencesString: String?
+    get() = this.currentUserDTO?.preferences ?: ""
+    set(_) = throw UnsupportedOperationException("Cannot set preferencesString")

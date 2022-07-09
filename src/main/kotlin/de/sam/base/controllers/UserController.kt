@@ -10,6 +10,8 @@ import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.isLoggedIn
+import de.sam.base.utils.preferences.Preferences
 import io.javalin.core.validation.ValidationError
 import io.javalin.core.validation.Validator
 import io.javalin.http.*
@@ -65,6 +67,32 @@ class UserController {
                             val roles = value.first().split(",").map { UserRoles.valueOf(it) }
                             if (roles != selectedUserDTO.roles) {
                                 user.roles = roles.joinToString(",") { it.name }
+                            }
+                        }
+                    }
+//                    "pref-dark-mode" -> {
+//                        if (ctx.isLoggedIn) {
+//                            val darkMode = value.first().toBoolean()
+//                            val preferences = user.preferences.split(",").filter { it.isNotBlank() }.toMutableList()
+//
+//                            if (darkMode) {
+//                                preferences.add("dark-mode")
+//                            } else {
+//                                preferences.remove("dark-mode")
+//                            }
+//                            user.preferences = preferences.joinToString(",")
+//                        }
+//                    }
+                    else -> {
+                        if (ctx.isLoggedIn) {
+                            if (Preferences.preferencesList.any { it.first == key && it.second == Boolean }) {
+                                val preferences = user.preferences.split(",").filter { it.isNotBlank() }.distinct().toMutableList()
+                                if (value.first().toBoolean()) {
+                                    preferences.add(key)
+                                } else {
+                                    preferences.remove(key)
+                                }
+                                user.preferences = preferences.joinToString(",")
                             }
                         }
                     }

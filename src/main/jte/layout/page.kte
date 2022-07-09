@@ -1,4 +1,6 @@
 @import de.sam.base.Page
+@import de.sam.base.utils.isLoggedIn
+@import de.sam.base.utils.preferencesString
 @import gg.jte.Content
 
 @param page: Page
@@ -27,8 +29,9 @@
     <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.7.0/dist/htmx.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.5/dist/_hyperscript_web.min.js"></script>
 
-<%--    <link rel="stylesheet" type="text/css" href="/css/dark_mode.min.css">--%>
-
+    @if(page.context!!.isLoggedIn  && page.context!!.preferencesString!!.split(",").contains("dark-mode"))
+        <link rel="stylesheet" type="text/css" href="/css/dark_mode.min.css">
+    @endif
 </head>
 <body>
 <div class="full height">
