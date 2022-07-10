@@ -129,6 +129,26 @@ class FileController {
         // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
     }
 
+    fun updateFile(ctx: Context) {
+        val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
+
+        // the file is private and the user isn't logged in or the file isn't owned by the user
+        if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
+            throw NotFoundResponse("File not found")
+        }
+        transaction {
+            val actualFile = FileDAO.findById(file.id) ?: throw NotFoundResponse("File not found")
+            ctx.formParamMap().forEach { (key, value) ->
+                when (key) {
+                    "name" -> actualFile.name = value.first()
+//                    "password" -> actualFile.password = value
+                    "public" -> actualFile.private = value.first() != "on" && value.first() != "true"
+//                    "parent" -> actualFile.parent = FileDAO.findById(UUID.fromString(value))
+                }
+            }
+        }
+    }
+
     fun getFiles(ctx: Context) {
         val fileListString = ctx.formParamAsClass<String>("files")
             .check({ files ->

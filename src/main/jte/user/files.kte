@@ -23,7 +23,7 @@ content = @`
     @endif
 
     @if(currentIsFolder)
-        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy)
+        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!)
         @template.components.files.fileUploadComp(parent = page.parent, page = page)
     @else
         <div class="ui basic fitted segment">

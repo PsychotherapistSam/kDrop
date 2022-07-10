@@ -60,7 +60,8 @@ class UserFilesPage : Page() {
                     fileIsOwnedByCurrentUser =
                         ctx.currentUserDTO != null && parent != null && ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
 
-                    breadcrumbVisible = parent == null || ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
+                    breadcrumbVisible =
+                        parent == null || ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
 
                     // if the parentFileId is null, we are in the root directory so we do not return a 404
                     if (parentFileId != null) {
@@ -112,7 +113,12 @@ class UserFilesPage : Page() {
         if (ctx.queryParam("table") != null) {
             ctx.render(
                 "components/files/fileListComp.kte",
-                mapOf("fileDTOs" to fileDTOs, "sortBy" to sortBy, "sortByName" to sortByName)
+                mapOf(
+                    "fileDTOs" to fileDTOs,
+                    "sortBy" to sortBy,
+                    "sortByName" to sortByName,
+                    "ctx" to ctx
+                )
             )
             return
         }

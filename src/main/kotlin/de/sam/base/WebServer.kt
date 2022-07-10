@@ -88,9 +88,9 @@ class WebServer {
             javalinConfig.addStaticFiles {
                 it.hostedPath = "/"
                 it.directory = "/public"
-                it.location = Location.CLASSPATH       // Location.CLASSPATH (jar) or Location.EXTERNAL (file system)
-                it.precompress = false                 // if the files should be pre-compressed and cached in memory (optimization)
-                it.aliasCheck = null                   // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
+                it.location = Location.CLASSPATH // Location.CLASSPATH (jar) or Location.EXTERNAL (file system)
+                it.precompress = false // if the files should be pre-compressed and cached in memory (optimization)
+                it.aliasCheck = null // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
             }
 
 //            javalinConfig.enableCorsForAllOrigins()
@@ -177,6 +177,7 @@ class WebServer {
                     before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
                         get("/", FileController()::getSingleFile)
+                        put("/", FileController()::updateFile, UserRoles.USER)
                         delete("/", FileController()::deleteSingleFile, UserRoles.USER)
                         //put("/", FileController()::updateFile, UserRoles.USER)
                     }

@@ -15,3 +15,7 @@ var Context.isLoggedIn: Boolean
 var Context.preferencesString: String?
     get() = this.currentUserDTO?.preferences ?: ""
     set(_) = throw UnsupportedOperationException("Cannot set preferencesString")
+
+var Context.isMobileUser: Boolean
+    get() = this.attribute<Boolean>("isMobile") == true
+    set(value) = this.attribute("isMobile", value)

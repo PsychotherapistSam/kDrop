@@ -10,9 +10,11 @@ import io.javalin.http.Handler
 import io.javalin.http.UnauthorizedResponse
 import java.net.URI
 import java.util.*
-import kotlin.system.measureNanoTime
-import kotlin.system.measureTimeMillis
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
+@OptIn(ExperimentalTime::class)
 class CustomAccessManager : AccessManager {
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
         val userAgentHeader = ctx.header("User-Agent") ?: throw BadRequestResponse("User-Agent is missing")
@@ -27,6 +29,13 @@ class CustomAccessManager : AccessManager {
         if (listOfBotUserAgents.any { it in userAgentHeader }) {
             ctx.attribute("isBot", true)
         }
+
+        val time = measureTime {
+            val info = UAgentInfo(userAgentHeader, ctx.header("Accepts"))
+            info.initDeviceScan()
+            ctx.attribute("isMobile", info.isTierIphone)
+        }
+        println("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
 
         if (config.enforceHost) {
             if (URI(ctx.url()).host != URI(config.host).host) {

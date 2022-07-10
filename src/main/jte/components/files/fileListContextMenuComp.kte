@@ -19,31 +19,26 @@
                 </a>
             </div>
         </div>
-        <a class="red item context-item" data-action="download">
+        <a class="item context-item" data-action="edit">
+            <i class="pen icon"></i> Edit
+        </a>
+        <a class="item context-item" data-action="download">
             <i class="download icon"></i> Download
         </a>
         <a class="item context-item" data-action="copy">
-            <i class="copy icon"></i> Copy
+            <i class="move icon"></i> Move
         </a>
         <a class="red item context-item" data-action="delete">
             <i class="red trash icon"></i> Delete
         </a>
-        <div class="ui simple dropdown item context-item context-item-dropdown">
-            <i class="dropdown icon"></i>
-            More
-            <div class="menu">
-                <a class="item context-item" data-action="display-small">Small</a>
-                <a class="item context-item" data-action="display-medium">Medium</a>
-                <a class="item context-item" data-action="display-large">Large</a>
-            </div>
-        </div>
     </div>
 </nav>
 
 <div class="ui tiny modal" id="folderCreationModal">
     <div class="header">New Folder</div>
     <div class="content">
-        <form class="ui form" id="folderCreationForm" onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+        <form class="ui form" id="folderCreationForm"
+              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
             <div class="field">
                 <label for="username">Name</label>
                 <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
@@ -54,6 +49,32 @@
         <button class="ui compact green approve button"
                 _="on click add .loading">
             Create
+        </button>
+        <button class="ui compact secondary deny button">Cancel</button>
+    </div>
+</div>
+
+<div class="ui tiny modal" id="fileEditModal">
+    <div class="header">Edit Folder</div>
+    <div class="content">
+        <form class="ui form" id="fileEditForm"
+              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+            <div class="field">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <label for="public">Public</label>
+                    <input type="checkbox" name="public" id="public" class="hidden">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui compact green approve button"
+                _="on click add .loading">
+            Save
         </button>
         <button class="ui compact secondary deny button">Cancel</button>
     </div>
@@ -124,6 +145,49 @@
 </style>
 
 <script>
+    // Jquery Serialization Plug-In
+    // https://tdanemar.wordpress.com/2010/08/24/jquery-serialize-method-and-checkboxes/
+    $.fn.serialize = function (options) {
+        return $.param(this.serializeArray(options));
+    };
+
+    $.fn.serializeArray = function (options) {
+        var o = $.extend({
+            checkboxesAsBools: false
+        }, options || {});
+
+        var rselectTextarea = /select|textarea/i;
+        var rinput = /text|hidden|password|search/i;
+
+        return this.map(function () {
+            return this.elements ? $.makeArray(this.elements) : this;
+        })
+            .filter(function () {
+                return this.name && !this.disabled &&
+                    (this.checked
+                        || (o.checkboxesAsBools && this.type === 'checkbox')
+                        || rselectTextarea.test(this.nodeName)
+                        || rinput.test(this.type));
+            })
+            .map(function (i, elem) {
+                var val = $(this).val();
+                return val == null ?
+                    null :
+                    $.isArray(val) ?
+                        $.map(val, function (val, i) {
+                            return { name: elem.name, value: val };
+                        }) :
+                        {
+                            name: elem.name,
+                            value: (o.checkboxesAsBools && this.type === 'checkbox') ? //moar ternaries!
+                                (this.checked ? 'true' : 'false') :
+                                val
+                        };
+            }).get();
+    };
+
+
+
     // https://stackoverflow.com/a/39845980/11324248
     // https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
     // https://codepen.io/SitePoint/pen/MYLoWY
@@ -641,6 +705,9 @@
                     case "new-folder":
                         promptFolderCreation();
                         break;
+                    case "edit":
+                        promptFileEdit(rows[0]);
+                        break;
                 }
             }
             getSelectedRows().forEach(function (row) {
@@ -777,6 +844,48 @@
     function hideFileDownloadModal() {
         $('#fileDownloadModal').modal('hide');
     }
+
+    function promptFileEdit(element) {
+        const modal = $("#fileEditModal");
+        const form = $("#fileEditForm");
+
+        const fileId = element.getAttribute("data-id");
+        const name = element.getAttribute("data-name");
+        const isFolder = element.hasAttribute("data-folder");
+        const isPublic = element.hasAttribute("data-public");
+
+        const nameField = form.find("#name");
+        nameField.val(name);
+        const publicField = form.find("#public").parent()
+
+        if (isPublic) {
+            publicField.checkbox("check");
+        } else {
+            publicField.checkbox("uncheck");
+        }
+
+        $(modal).modal({
+            duration: 250,
+            onApprove: function () {
+                $.ajax({
+                    url: "/api/v1/files/" + fileId,
+                    type: "PUT",
+                    data: form.serialize({ checkboxesAsBools: true }),
+                    success: function () {
+                        modal.modal('hide');
+                        modal.find("button.approve").first().removeClass("loading")
+                        form.trigger("reset");
+                        //  $('#folderCreationModal').remove();
+                        htmx.trigger("#refreshButton", "refreshTable");
+                        //window.location.href = '${AdminUsersPage.ROUTE}';
+                    },
+                });
+                return false;
+            }
+        }).modal('show');
+        return true;
+    }
+
 
     /**
      * Run the app.

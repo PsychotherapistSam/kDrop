@@ -5,11 +5,14 @@
 @import de.sam.base.pages.displayLoader
 @import org.joda.time.format.DateTimeFormat
 @import de.sam.base.utils.file.sorting.FileSortingDirection
+@import de.sam.base.utils.isMobileUser
 @import de.sam.base.utils.toReadableTimeString
+@import io.javalin.http.Context
 
 @param fileDTOs: List<FileDTO>
 @param sortByName: String
 @param sortBy: String
+@param ctx: Context
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
@@ -67,12 +70,19 @@
             </div>
         </th>
         <th>Name</th>
-        <th>Size</th>
-        <th>Modified</th>
+        @if(!ctx.isMobileUser)
+            <th class="right aligned" data-tooltip="LOCK = This file is private" data-inverted="">Public</th>
+            <th class="right aligned">Size</th>
+        @endif
+        <th class="right aligned">Modified</th>
         </thead>
         <tbody id="fileTableBody">
         @for(fileDTO in fileDTOs)
-            <tr class="context-clickable" data-id="${fileDTO.id.toString()}" data-folder="true">
+            <tr class="context-clickable"
+                data-id="${fileDTO.id.toString()}"
+                data-name="${fileDTO.name}"
+                data-folder="${fileDTO.isFolder}"
+                data-public="${!fileDTO.private}">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
                         <input type="checkbox"><label>&nbsp;</label>
@@ -88,7 +98,18 @@
                         ${fileDTO.name}
                     </a>
                 </td>
-                <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
+                @if(!ctx.isMobileUser)
+                    <td class="right aligned collapsing">
+                        @if(fileDTO.private)
+                            <div class="ui basic fitted segment">
+                                <i class="lock icon"></i>
+                            </div>
+                        @else
+                            <i class="open lock icon"></i>
+                        @endif
+                    </td>
+                    <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
+                @endif
                 <td class="right aligned collapsing"
                     data-tooltip="${fileDTO.created.toReadableTimeString()}"
                     data-inverted="">${fileDTO.created.toRecentTimeString()}</td>
