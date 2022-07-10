@@ -23,7 +23,7 @@ content = @`
     @endif
 
     @if(currentIsFolder)
-        @if(!page.parent!!.private)
+        @if(page.parent != null && !page.parent!!.private)
             <div class="ui warning message">
                 <div class="header">
                     This folder is publically accessible!
