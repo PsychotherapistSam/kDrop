@@ -80,7 +80,7 @@ class FileController {
             ctx.pathParamAsClass<UUID>("fileId")
                 .check({
                     if (cache.containsKey(it)) {
-                        if (System.currentTimeMillis() < cache[it]!!.first + 1000 * 60) {
+                        if (System.currentTimeMillis() < cache[it]!!.first + 1000 * 10) {
                             ctx.attribute("requestFileParameter", cache[it]!!.second)
                             return@check true
                         } else {
