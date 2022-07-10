@@ -23,6 +23,15 @@ content = @`
     @endif
 
     @if(currentIsFolder)
+        @if(!page.parent!!.private)
+            <div class="ui warning message">
+                <div class="header">
+                    This folder is publically accessible!
+                </div>
+                This folder is publically accessible to all people who have access to the link. All files or folders in this folder will inherit this access by default.
+                You can change this behavior by setting the access of this folder to private.
+            </div>
+        @endif
         @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!)
         @template.components.files.fileUploadComp(parent = page.parent, page = page)
     @else
@@ -78,10 +87,6 @@ content = @`
                         <td style="word-break: break-all;">${page.parent!!.name}</td>
                     </tr>
                     <tr>
-                        <td>ID</td>
-                        <td>${page.parent!!.id.toString()}</td>
-                    </tr>
-                    <tr>
                         <td>Type</td>
                         <td>${page.parent!!.mimeType}</td>
                     </tr>
@@ -91,7 +96,21 @@ content = @`
                     </tr>
                     <tr>
                         <td>Creation Date</td>
-                        <td>${page.parent!!.created.toRecentTimeString()} (${page.parent!!.created.toReadableTimeString()})</td>
+                        <td>${page.parent!!.created.toRecentTimeString()}
+                            (${page.parent!!.created.toReadableTimeString()})
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Public</td>
+                        @if(page.parent!!.private)
+                            <td>No</td>
+                        @else
+                            <td>Yes</td>
+                        @endif
+                    </tr>
+                    <tr>
+                        <td>ID</td>
+                        <td>${page.parent!!.id.toString()}</td>
                     </tr>
                     <tr>
                         <td>SHA512</td>
