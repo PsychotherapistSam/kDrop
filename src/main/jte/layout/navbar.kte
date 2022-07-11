@@ -42,15 +42,15 @@
                             <div class="header">
                                 Signed in as ${currentUser.name}
                             </div>
-                            <a class="@if(page is UserEditPage) active @endif item"
-                               href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
-                                <i class="settings icon"></i>
-                                Settings
-                            </a>
                             <a class="@if(page is UserFilesPage) active @endif item"
                                href="${UserFilesPage.ROUTE}">
                                 <i class="folder icon"></i>
                                 My Files
+                            </a>
+                            <a class="@if(page is UserEditPage) active @endif item"
+                               href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
+                                <i class="settings icon"></i>
+                                Settings
                             </a>
                             <div class="divider"></div>
                             @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
@@ -117,15 +117,15 @@
                             ${highestRole.name}
                         </div>
                     </div>
-                    <a class="@if(page is UserEditPage) active @endif item"
-                       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
-                        <i class="settings icon"></i>
-                        Settings
-                    </a>
                     <a class="@if(page is UserFilesPage) active @endif item"
                        href="${UserFilesPage.ROUTE}" >
                         <i class="folder icon"></i>
                         My Files
+                    </a>
+                    <a class="@if(page is UserEditPage) active @endif item"
+                       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
+                        <i class="settings icon"></i>
+                        Settings
                     </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
