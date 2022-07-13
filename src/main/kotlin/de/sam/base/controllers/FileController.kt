@@ -9,6 +9,7 @@ import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
@@ -78,8 +79,14 @@ class FileController {
             }
             ctx.json(idMap)
         }
-
-        recalculateFolderSize(parentFileId, userId)
+        try {
+            recalculateFolderSize(parentFileId, userId)
+        } catch (ex: ExposedSQLException) {
+            // ExposedSQLException -> PSQLException
+            // this happens when multiple threads try to recalculate the size of the same folder at the same time
+            // error message is  ERROR: could not serialize access due to concurrent update
+            Logger.error(ex.message)
+        }
     }
 
     @OptIn(ExperimentalTime::class)
