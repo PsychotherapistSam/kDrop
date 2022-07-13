@@ -72,6 +72,7 @@ class FileController {
             }
 
             if (parent != null) {
+                //TODO: also maybe update parents parent recursively
                 parent.size = getFileSize(parent, owner.toUser())
                 parent.sizeHR = humanReadableByteCountBin(parent.size)
             }
