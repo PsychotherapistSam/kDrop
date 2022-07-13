@@ -58,7 +58,7 @@
     <div class="header">Edit Folder</div>
     <div class="content">
         <form class="ui form" id="fileEditForm"
-              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+              onsubmit="$('#fileEditModal').find('button.approve').first().click(); return false;">
             <div class="field">
                 <label for="name">Name</label>
                 <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
