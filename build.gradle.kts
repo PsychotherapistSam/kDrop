@@ -42,6 +42,15 @@ dependencies {
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation("commons-io:commons-io:2.11.0")
+
+    val tinylog = "2.5.0-M2.1"
+    // Tinylog
+    // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
+    implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
+    // https://mvnrepository.com/artifact/org.tinylog/tinylog-impl
+    implementation("org.tinylog:tinylog-impl:$tinylog")
+
+
 }
 
 tasks.test {

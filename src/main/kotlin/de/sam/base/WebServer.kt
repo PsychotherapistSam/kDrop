@@ -27,6 +27,7 @@ import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
 import io.javalin.http.staticfiles.Location
 import io.javalin.plugin.rendering.template.JavalinJte
+import org.tinylog.kotlin.Logger
 import java.nio.file.Path
 import java.util.*
 
@@ -68,6 +69,7 @@ class WebServer {
         }*/
 
 
+        Logger.debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->
             // javalinConfig.enableWebjars()
 
@@ -82,7 +84,8 @@ class WebServer {
                 CustomAccessManager().manage(handler, ctx, routeRoles)
             }
             javalinConfig.requestLogger { ctx, timeInMs ->
-                println("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
+                Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
+//                println("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
 
             javalinConfig.addStaticFiles {
@@ -96,6 +99,7 @@ class WebServer {
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
+        Logger.debug("Registering Javalin route handlers")
         app.events {
             it.handlerAdded { metaInfo ->
                 if (metaInfo.handler is Page) {
@@ -106,13 +110,14 @@ class WebServer {
                         if (value == null || value.toString().isEmpty()) {
                             routeField.set(String, metaInfo.path)
                         } else {
-                            println("Route already set: ${metaInfo.path}, not overwriting")
+                            Logger.debug("Route already set: ${metaInfo.path}, not overwriting")
                         }
                     }
                 }
             }
         }
 
+        Logger.debug("Registering Javalin exception handlers")
         app.exception(HttpResponseException::class.java) { e, ctx ->
             if (ctx.header("Accept")?.contains("application/json") == true) {
                 ctx.status(e.status)
@@ -122,6 +127,7 @@ class WebServer {
             }
         }
 
+        Logger.debug("Registering Javalin routes")
         app.routes {
             get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
