@@ -11,31 +11,37 @@ import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
 import org.joda.time.DateTime
+import org.tinylog.kotlin.Logger
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.security.MessageDigest
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 class FileController {
+    @OptIn(ExperimentalTime::class)
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 5L // 1024 MB || 5 GiB
         if (ctx.header("Content-Length") != null && ctx.header("Content-Length")!!.toLong() > maxFileSize) {
             throw BadRequestResponse("File too big, max size is ${humanReadableByteCountBin(maxFileSize)}")
         }
 
-        val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
+        val userId = ctx.currentUserDTO!!.id
+        val parentFileId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
         val files = ctx.uploadedFiles()
         transaction {
-            val owner = UserDAO.findById(ctx.currentUserDTO!!.id)!!
-            val parent = if (parentId != null) FileDAO.findById(parentId) else null
+            val owner = UserDAO.findById(userId)!!
+            val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
 
-            if (parent != null && !parent.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+            if (parentFile != null && !parentFile.toFileDTO().isOwnedByUserId(userId)) {
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
             }
 
@@ -51,7 +57,7 @@ class FileController {
                     this.name = it.filename
                     this.path = "upload/${this.id}"
                     this.mimeType = it.contentType ?: "application/octet-stream"
-                    this.parent = parent
+                    this.parent = parentFile
                     this.owner = owner
                     this.size = it.size
                     this.sizeHR = humanReadableByteCountBin(it.size)
@@ -70,15 +76,55 @@ class FileController {
 
                 idMap[file.name] = file.id.value
             }
-
-            if (parent != null) {
-                //TODO: also maybe update parents parent recursively
-                parent.size = getFileSize(parent, owner.toUser())
-                parent.sizeHR = humanReadableByteCountBin(parent.size)
-            }
-
             ctx.json(idMap)
         }
+
+        recalculateFolderSize(parentFileId, userId)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private fun recalculateFolderSize(folderId: UUID?, userId: UUID) {
+        // this is a seperate transaction beacuse the files would not be in the database
+        transaction {
+            measureTime {
+                val owner = UserDAO.findById(userId)!!
+                val parent = if (folderId != null) FileDAO.findById(folderId) else null
+
+                if (parent != null) {
+                    //TODO: also maybe update parents parent recursively // this ends up in nearly going to the root folder.
+
+                    // update lowest most folder since it's not included in the above loop
+                    //                Logger.info("updating folder ${parent.name}")
+                    //                parent.size = getFileSize(parent, owner.toUser()) // + files.sumByLong { it.size }
+                    //                parent.sizeHR = humanReadableByteCountBin(parent.size)
+                    //                parent.created = DateTime.now()
+
+                    // find upper most parent and update it's size including the newly uploaded files (assuming they were all successfully uploaded)
+                    // ideally this should be in a seperate transaction.
+                    var parentsParent = parent
+                    while (parentsParent != null) {
+                        Logger.debug("updating folder ${parentsParent.name} which was ${parentsParent.sizeHR}")
+                        parentsParent.size = calculateFileSize(parentsParent, owner.toUser())
+                        // + files.sumByLong { it.size }
+                        parentsParent.sizeHR = humanReadableByteCountBin(parentsParent.size)
+                        Logger.debug("folder is now ${parentsParent.sizeHR}")
+                        parentsParent.created = DateTime.now()
+
+                        parentsParent = parentsParent.parent
+                    }
+                }
+            }
+        }.let { Logger.debug("refreshed filesize tree in ${it.toLong(DurationUnit.MILLISECONDS)}ms") }
+    }
+
+    private fun calculateFileSize(file: FileDAO, user: UserDTO): Long {
+        var size = 0L
+        if (file.isFolder) {
+            size += getAllChildrenRecursively(file, user).sumByLong { it.size }
+        } else {
+            size += file.size
+        }
+        return size
     }
 
     private fun getAllChildrenRecursively(file: FileDAO, user: UserDTO): ArrayList<FileDAO> {
@@ -88,27 +134,16 @@ class FileController {
                 if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
                     return@forEach
                 }
-                if (child.isFolder) {
-                    children.addAll(getAllChildrenRecursively(child, user))
-                }
+                // not needed anymore since folders should have the correct size. but keeping it here for future reference.
+//                if (child.isFolder) {
+//                    children.addAll(getAllChildrenRecursively(child, user))
+//                }
                 children.add(child)
             }
         }
         return children
     }
 
-
-    private fun getFileSize(file: FileDAO, user: UserDTO): Long {
-        var size = 0L
-        if (file.isFolder) {
-            getAllChildrenRecursively(file, user).forEach {
-                size += it.size
-            }
-        } else {
-            size += file.size
-        }
-        return size
-    }
 
     private val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
     fun getFileParameter(ctx: Context) {
@@ -332,8 +367,13 @@ class FileController {
 
     private fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): ArrayList<UUID> {
         val deletedFileIDs = arrayListOf<UUID>()
+        val allFiles = arrayListOf<FileDAO>()
         transaction {
-            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
+            allFiles.addAll(FileDAO.find { FilesTable.id inList fileIDs })
+        }
+
+        transaction {
+            allFiles.forEach { file ->
                 if (!file.isOwnedByUserId(user.id)) {
                     return@forEach
                 }
@@ -358,12 +398,22 @@ class FileController {
                     }
                 }
                 //TODO: only do this once (and last) if there are multiple files with the same parent
-                logTimeSpent("recalculating parent size") {
-                    if (file.parent != null) {
-                        if (file.parent != null) {
-                            file.parent!!.size = getFileSize(file.parent!!, user)
-                            file.parent!!.sizeHR = humanReadableByteCountBin(file.parent!!.size)
-                        }
+//                logTimeSpent("recalculating parent size") {
+//                    if (file.parent != null) {
+//                        if (file.parent != null) {
+//                            file.parent!!.size = calculateFileSize(file.parent!!, user)
+//                            file.parent!!.sizeHR = humanReadableByteCountBin(file.parent!!.size)
+//                        }
+//                    }
+//                }
+            }
+            logTimeSpent("refreshing all deleted files parents size") {
+                val keys = allFiles.groupBy { it.parent }.keys
+
+                keys.forEach { parent ->
+                    if (parent != null) {
+                        Logger.debug("refreshing size of ${parent.name}")
+                        recalculateFolderSize(parent.id.value, user.id)
                     }
                 }
             }
