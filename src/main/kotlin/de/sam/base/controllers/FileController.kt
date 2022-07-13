@@ -70,8 +70,43 @@ class FileController {
 
                 idMap[file.name] = file.id.value
             }
+
+            if (parent != null) {
+                parent.size = getFileSize(parent, owner.toUser())
+                parent.sizeHR = humanReadableByteCountBin(parent.size)
+            }
+
             ctx.json(idMap)
         }
+    }
+
+    private fun getAllChildrenRecursively(file: FileDAO, user: UserDTO): ArrayList<FileDAO> {
+        val children = arrayListOf<FileDAO>()
+        logTimeSpent("getting children of ${file.name}") {
+            FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
+                if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
+                    return@forEach
+                }
+                if (child.isFolder) {
+                    children.addAll(getAllChildrenRecursively(child, user))
+                }
+                children.add(child)
+            }
+        }
+        return children
+    }
+
+
+    private fun getFileSize(file: FileDAO, user: UserDTO): Long {
+        var size = 0L
+        if (file.isFolder) {
+            getAllChildrenRecursively(file, user).forEach {
+                size += it.size
+            }
+        } else {
+            size += file.size
+        }
+        return size
     }
 
     private val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
@@ -318,6 +353,15 @@ class FileController {
                         if (!systemFile.exists()) {
                             file.delete()
                             deletedFileIDs.add(file.id.value)
+                        }
+                    }
+                }
+                //TODO: only do this once (and last) if there are multiple files with the same parent
+                logTimeSpent("recalculating parent size") {
+                    if (file.parent != null) {
+                        if (file.parent != null) {
+                            file.parent!!.size = getFileSize(file.parent!!, user)
+                            file.parent!!.sizeHR = humanReadableByteCountBin(file.parent!!.size)
                         }
                     }
                 }
