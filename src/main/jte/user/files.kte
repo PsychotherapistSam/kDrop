@@ -2,6 +2,7 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.displayLoader
+@import de.sam.base.utils.*
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
 @import de.sam.base.utils.toReadableTimeString
@@ -24,17 +25,21 @@ content = @`
         @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
-    @if(currentIsFolder)
-        @if(page.parent != null && !page.parent!!.private)
-            <div class="ui warning message">
-                <div class="header">
-                    This folder is publically accessible!
-                </div>
-                This folder is publically accessible to all people who have access to the link. All files or folders in
-                this folder will inherit this access by default.
-                You can change this behavior by setting the access of this folder to private.
+    @if(page.parent != null && !page.parent!!.private && page.fileIsOwnedByCurrentUser)
+        !{val typeString = if(page.parent!!.isFolder) "folder" else "file"}
+        <div class="ui warning message">
+            <div class="header">
+                This ${typeString} is publically accessible!
             </div>
-        @endif
+            This ${typeString} is publically accessible to all people who have access to the link.
+            @if(page.parent!!.isFolder)
+            All files or folders in this folder will inherit this access by default.
+            @endif
+            You can change this behavior by setting the access of this ${typeString} to private.
+        </div>
+    @endif
+
+    @if(currentIsFolder)
         @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!)
         @template.components.files.fileUploadComp(parent = page.parent, page = page)
     @else
