@@ -65,12 +65,13 @@ class UserFilesPage : Page() {
 
                     // if the parentFileId is null, we are in the root directory so we do not return a 404
                     if (parentFileId != null) {
-                        // check if either the file does not exist or the user isn't the owner of the file and the file is not public
-                        if (parent != null && parent!!.private) {
-                            if (!fileIsOwnedByCurrentUser) {
-                                throw NotFoundResponse("File not found")
-                            }
-                            //   if (parent == null || parent!!.toFileDTO().canBeViewedByUserId() && parent!!.private) {
+                        // check if the file does not exist. parentFileId != null && parent == null means that the file does not exist
+                        if (parent == null) {
+                            throw NotFoundResponse("File not found")
+                        }
+                        // the user isn't the owner of the file and the file is not public
+                        if (parent!!.private && !fileIsOwnedByCurrentUser) {
+                            throw NotFoundResponse("File not found")
                         }
                     }
                 }
