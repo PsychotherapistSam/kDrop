@@ -152,12 +152,12 @@
     };
 
     $.fn.serializeArray = function (options) {
-        var o = $.extend({
+        const o = $.extend({
             checkboxesAsBools: false
         }, options || {});
 
-        var rselectTextarea = /select|textarea/i;
-        var rinput = /text|hidden|password|search/i;
+        const rselectTextarea = /select|textarea/i;
+        const rinput = /text|hidden|password|search/i;
 
         return this.map(function () {
             return this.elements ? $.makeArray(this.elements) : this;
@@ -170,12 +170,12 @@
                         || rinput.test(this.type));
             })
             .map(function (i, elem) {
-                var val = $(this).val();
+                const val = $(this).val();
                 return val == null ?
                     null :
                     $.isArray(val) ?
                         $.map(val, function (val, i) {
-                            return { name: elem.name, value: val };
+                            return {name: elem.name, value: val};
                         }) :
                         {
                             name: elem.name,
@@ -185,7 +185,6 @@
                         };
             }).get();
     };
-
 
 
     // https://stackoverflow.com/a/39845980/11324248
@@ -211,7 +210,7 @@
      * @return {Boolean}
      */
     function clickInsideElement(e, className) {
-        var el = e.srcElement || e.target;
+        let el = e.srcElement || e.target;
 
         if (el.classList.contains(className)) {
             return el;
@@ -233,22 +232,22 @@
      * @return {Object} Returns the x and y position
      */
     function getPosition(e) {
-        var posx = 0;
-        var posy = 0;
+        let posX = 0;
+        let posY = 0;
 
         if (!e) var e = window.event;
 
         if (e.pageX || e.pageY) {
-            posx = e.pageX;
-            posy = e.pageY;
+            posX = e.pageX;
+            posY = e.pageY;
         } else if (e.clientX || e.clientY) {
-            posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-            posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+            posX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+            posY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
         }
 
         return {
-            x: posx,
-            y: posy
+            x: posX,
+            y: posY
         }
     }
 
@@ -263,28 +262,28 @@
     /**
      * Variables.
      */
-    var contextMenuClassName = "context-menu";
-    var contextMenuLinkClassName = "context-item";
-    var contextMenuActive = "context-menu--active";
+    const contextMenuClassName = "context-menu";
+    const contextMenuLinkClassName = "context-item";
+    const contextMenuActive = "context-menu--active";
 
-    var taskItemClassName = "context-clickable";
-    var rowInContext;
-    var taskItemActiveClass = "active";
+    const taskItemClassName = "context-clickable";
+    let rowInContext;
+    const taskItemActiveClass = "active";
 
-    var clickCoords;
-    var clickCoordsX;
-    var clickCoordsY;
+    let clickCoords;
+    let clickCoordsX;
+    let clickCoordsY;
 
-    var menu = document.querySelector("#context-menu");
-    var menuState = 0;
-    var menuWidth;
-    var menuHeight;
-    var menuPosition;
-    var menuPositionX;
-    var menuPositionY;
+    const menu = document.querySelector("#context-menu");
+    let menuState = 0;
+    let menuWidth;
+    let menuHeight;
+    let menuPosition;
+    let menuPositionX;
+    let menuPositionY;
 
-    var windowWidth;
-    var windowHeight;
+    let windowWidth;
+    let windowHeight;
 
 
     /*
@@ -443,7 +442,7 @@
 
         document.addEventListener("click", function (e) {
             if (event.target.type === "checkbox" && event.target.id != "toggleAllSelection" && event.composedPath().includes(fileTable)) {
-                var row = event.target.closest(".context-clickable")
+                const row = event.target.closest(".context-clickable");
                 if (event.target.checked) {
                     // not using addSelection because that uses invalid jquery on mobile
                     selectRow(row)
@@ -455,7 +454,7 @@
                 }
             }
 
-            var clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
+            const clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
 
             if (clickeElIsLink) {
                 e.preventDefault();
@@ -463,7 +462,7 @@
             } else {
                 // this closes the menu when not clicking on the menu
                 // this closes the menu when the dropdown is clicked, so I disabled it (without really understanding the code)
-                var button = e.which || e.button;
+                const button = e.which || e.button;
                 if (button === 1) {
                     toggleMenuOff();
                 }
@@ -616,34 +615,44 @@
                         } else {
                             showFileDownloadModal(rows.length, -1);
                             // https://stackoverflow.com/a/29556434
-                            var xhr = new XMLHttpRequest();
+                            const xhr = new XMLHttpRequest();
                             xhr.open("PUT", "/api/v1/files", true);
+                            xhr.setRequestHeader("x-client", "web/api");
                             xhr.responseType = 'blob';
                             // set multipart data
                             xhr.onprogress = function (e) {
-                                console.log(e.loaded + " / " + e.total);
+                                // console.log(e.loaded + " / " + e.total);
                                 if (e.lengthComputable) {
                                     const percentComplete = (e.loaded / e.total) * 100;
                                     showFileDownloadModal(rows.length, Math.round(percentComplete));
                                 }
                             };
                             xhr.onload = function (e) {
-                                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
-                                if (this.status == 200) {
-                                    var blob = new Blob([this.response], {type: 'application/zip'});
-                                    var downloadUrl = URL.createObjectURL(blob);
-                                    var a = document.createElement("a");
+                                if (this.status === 200) {
+                                    const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
+                                    const blob = new Blob([this.response], {type: 'application/zip'});
+                                    const downloadUrl = URL.createObjectURL(blob);
+                                    const a = document.createElement("a");
                                     a.href = downloadUrl;
                                     a.download = filename;
                                     document.body.appendChild(a);
                                     a.click();
                                 } else {
-                                    $('body')
-                                        .toast({
-                                            class: 'error',
-                                            message: 'Could not download files as zip'
-                                        })
-                                    ;
+                                    const blob = new Blob([this.response], {type: 'application/zip'});
+                                    const fileReader = new FileReader();
+                                    fileReader.onload = (e) => {
+                                        $('body')
+                                            .toast({
+                                                class: 'red',
+                                                message: JSON.parse(e.target.result)[0],
+                                                position: 'bottom right',
+                                                displayTime: 5000,
+                                                showProgress: 'bottom',
+                                            })
+                                        ;
+                                    };
+                                    fileReader.readAsText(blob)
+
                                 }
                                 hideFileDownloadModal();
                             };
@@ -870,7 +879,7 @@
                 $.ajax({
                     url: "/api/v1/files/" + fileId,
                     type: "PUT",
-                    data: form.serialize({ checkboxesAsBools: true }),
+                    data: form.serialize({checkboxesAsBools: true}),
                     success: function () {
                         modal.modal('hide');
                         modal.find("button.approve").first().removeClass("loading")

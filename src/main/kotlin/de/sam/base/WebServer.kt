@@ -119,7 +119,9 @@ class WebServer {
 
         Logger.debug("Registering Javalin exception handlers")
         app.exception(HttpResponseException::class.java) { e, ctx ->
-            if (ctx.header("Accept")?.contains("application/json") == true) {
+            if (ctx.header("Accept")?.contains("application/json") == true
+                || ctx.header("x-client")?.equals("web/api") == true
+            ) {
                 ctx.status(e.status)
                 ctx.json(arrayOf(e.message))
             } else {

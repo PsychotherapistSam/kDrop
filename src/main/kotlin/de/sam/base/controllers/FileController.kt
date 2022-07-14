@@ -27,7 +27,6 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 class FileController {
-    @OptIn(ExperimentalTime::class)
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 5L // 1024 MB || 5 GiB
         if (ctx.header("Content-Length") != null && ctx.header("Content-Length")!!.toLong() > maxFileSize) {
@@ -79,8 +78,20 @@ class FileController {
             }
             ctx.json(idMap)
         }
-        try {
+        if (ctx.header("x-batch-upload")?.toBoolean() == true) {
+            val batchSize = ctx.header("x-batch-size")?.toInt() ?: 0
+            val currentIndex = ctx.header("x-batch-index")?.toInt() ?: 0
+
+            // do the calculation once when half of the files have been uploaded and once when the upload is finished
+            if (batchSize / 2 == currentIndex + 1 || batchSize == currentIndex + 1) {
+                Logger.debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
+                recalculateFolderSize(parentFileId, userId)
+            }
+        } else {
+            Logger.debug("updating folder size during upload a singular file")
             recalculateFolderSize(parentFileId, userId)
+        }
+        try {
         } catch (ex: ExposedSQLException) {
             // ExposedSQLException -> PSQLException
             // this happens when multiple threads try to recalculate the size of the same folder at the same time
@@ -152,6 +163,7 @@ class FileController {
     }
 
 
+    //TODO: get rid of this
     private val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
     fun getFileParameter(ctx: Context) {
         val userQueryTime = measureNanoTime {
@@ -227,7 +239,16 @@ class FileController {
         }
     }
 
+    private val usersCurrentlyZipping = mutableSetOf<UUID>()
+
     fun getFiles(ctx: Context) {
+
+        val userId = ctx.currentUserDTO!!.id
+
+        if (usersCurrentlyZipping.contains(userId)) {
+            throw BadRequestResponse("You cannot download two zip files at once")
+        }
+
         val fileListString = ctx.formParamAsClass<String>("files")
             .check({ files ->
                 files
@@ -260,9 +281,14 @@ class FileController {
 
         val tempZipFile = File("./upload/temp/${UUID.randomUUID()}.zip")
 
+        // only let users create one zip at a time, reducing the possibility of a dos
+        usersCurrentlyZipping.add(userId)
+
         val nanoTime = measureNanoTime {
             zipFiles(fileList, tempZipFile)
         }
+
+        usersCurrentlyZipping.remove(userId)
 
         val milliTime = nanoTime / 1000000.0
         println("Zipping took $milliTime ms")

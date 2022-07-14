@@ -19,7 +19,7 @@
         trigger: "#fileUploadModal",
         closeModalOnClickOutside: true,
         @if(page.context!!.isLoggedIn && page.context!!.preferencesString!!.split(",").contains("dark-mode"))
-            theme: 'dark',
+        theme: 'dark',
         @endif
         showProgressDetails: true,
         doneButtonHandler: () => {
@@ -33,8 +33,22 @@
     })
     uppy.use(Uppy.XHRUpload, {
         endpoint: '/api/v1/files${if(parent != null ) "?parent=" + parent.id else ""}',
-        timeout: 1000 * 60 * 5  // file hashing can take a while (especially on very large files), allow 5 minutes.
-        //  bundle: true
+        timeout: 1000 * 60 * 5,  // file hashing can take a while (especially on very large files), allow 5 minutes.
+        //  bundle: true,
+        headers: (file) => {
+            if (uppy.getFiles().length > 1) {
+                console.log(file)
+                return {
+                    "x-batch-upload": true,
+                    "x-batch-size": uppy.getFiles().length,
+                    "x-batch-index": uppy.getFiles().findIndex(f => f.id === file.id)
+                }
+            } else {
+                return {
+                    "x-batch-upload": false
+                }
+            }
+        }
     });
 
     document.addEventListener("dragover", event => {
