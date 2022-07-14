@@ -1,0 +1,209 @@
+<div class="ui tiny modal" id="folderCreationModal">
+    <div class="header">New Folder</div>
+    <div class="content">
+        <form class="ui form" id="folderCreationForm"
+              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+            <div class="field">
+                <label for="username">Name</label>
+                <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui compact green approve button"
+                _="on click add .loading">
+            Create
+        </button>
+        <button class="ui compact secondary deny button">Cancel</button>
+    </div>
+</div>
+
+<div class="ui tiny modal" id="fileEditModal">
+    <div class="header">Edit Folder</div>
+    <div class="content">
+        <form class="ui form" id="fileEditForm"
+              onsubmit="$('#fileEditModal').find('button.approve').first().click(); return false;">
+            <div class="field">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
+            </div>
+            <div class="field">
+                <div class="ui checkbox">
+                    <label for="public">Public</label>
+                    <input type="checkbox" name="public" id="public" class="hidden">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui compact green approve button"
+                _="on click add .loading">
+            Save
+        </button>
+        <button class="ui compact secondary deny button">Cancel</button>
+    </div>
+</div>
+
+<div class="ui tiny modal" id="fileDeletionModal">
+    <div class="header">Deleting files..</div>
+    <div class="content">
+        <div class="ui red active centered inline loader"></div>
+    </div>
+</div>
+
+<div class="ui tiny modal" id="fileDownloadModal">
+    <div class="header">Downloading files..</div>
+    <div class="content">
+        <div class="ui orange indeterminate progress" id="downloadModalProgress" data-total="100">
+            <div class="bar">
+                <div class="progress">Processing</div>
+            </div>
+            <div class="label">Funding</div>
+        </div>
+        <%--        <div class="ui green active centered inline loader" id="downlaodModalLoader"></div>--%>
+    </div>
+</div>
+
+<div class="ui basic large modal" id="imagePreviewModal">
+    <div class="image content">
+        <img class="ui rounded image" src="/" id="imagePreviewImage">
+    </div>
+</div>
+
+<script>
+    function promptFolderCreation(parentId) {
+        $('#folderCreationModal').modal({
+            duration: 250,
+            onApprove: function () {
+                let attributes = "";
+                if (parentId != null) {
+                    attributes = "?parent=" + parentId;
+                }
+                $.ajax({
+                    url: "/api/v1/directories" + attributes,
+                    type: "POST",
+                    data: $('#folderCreationForm').serialize(),
+                    success: function () {
+                        $('#folderCreationModal').modal('hide');
+                        $('#folderCreationModal').find("button.approve").first().removeClass("loading")
+                        $('#folderCreationForm').trigger("reset");
+                        htmx.trigger("#refreshButton", "refreshTable");
+                    },
+                });
+                return false;
+            }
+        }).modal('show');
+        return true;
+    }
+
+    function showFileDeletionLoadingModal(fileCount) {
+        $('#fileDeletionModal').modal({
+            duration: 250,
+            closable: false,
+            title: 'Deleting ' + fileCount + ' files',
+        }).modal('show');
+        return true;
+    }
+
+    function hideFileDeletionLoadingModal() {
+        $('#fileDeletionModal').modal('hide');
+    }
+
+    function showFileDownloadModal(fileCount, progress) {
+        const progressBar = $("#downloadModalProgress");
+        const barText = progressBar.find(".progress")
+        const barLabel = progressBar.find(".label")
+        if (progress == -1) {
+            progressBar.progress({
+                percent: 100,
+                autoSuccess: false,
+                label: ""
+            });
+
+            if (!progressBar.hasClass("indeterminate")) {
+                progressBar.removeClass("active")
+                progressBar.removeClass("grey")
+                progressBar.removeClass("success")
+                progressBar.addClass("indeterminate")
+                progressBar.addClass("orange")
+            }
+            barText.text("Processing")
+            barLabel.text("Processing files on the server")
+        } else {
+            if (progressBar.hasClass("indeterminate")) {
+                progressBar.removeClass("indeterminate")
+                progressBar.removeClass("orange")
+                progressBar.addClass("active")
+                progressBar.addClass("grey")
+            }
+
+            progressBar.attr("data-percent", progress)
+
+            barText.text(progress + "%")
+            barLabel.show()
+            barLabel.text("Downloading")
+            progressBar.progress({
+                percent: progress
+            });
+        }
+        $('#fileDownloadModal').modal({
+            duration: 250,
+            closable: false,
+            title: 'Downloading ' + fileCount + ' files',
+        }).modal('show');
+        return true;
+    }
+
+    function hideFileDownloadModal() {
+        $('#fileDownloadModal').modal('hide');
+    }
+
+
+    function promptFileEdit(element) {
+        const modal = $("#fileEditModal");
+        const form = $("#fileEditForm");
+
+        const fileId = element.getAttribute("data-id");
+        const name = element.getAttribute("data-name");
+        const isFolder = element.hasAttribute("data-folder");
+        const isPublic = element.hasAttribute("data-public");
+
+        const nameField = form.find("#name");
+        nameField.val(name);
+        const publicField = form.find("#public").parent()
+
+        if (isPublic) {
+            publicField.checkbox("check");
+        } else {
+            publicField.checkbox("uncheck");
+        }
+
+        $(modal).modal({
+            duration: 250,
+            onApprove: function () {
+                $.ajax({
+                    url: "/api/v1/files/" + fileId,
+                    type: "PUT",
+                    data: form.serialize({checkboxesAsBools: true}),
+                    success: function () {
+                        modal.modal('hide');
+                        modal.find("button.approve").first().removeClass("loading")
+                        form.trigger("reset");
+                        htmx.trigger("#refreshButton", "refreshTable");
+                    },
+                });
+                return false;
+            }
+        }).modal('show');
+        return true;
+    }
+
+    function showImagePreviewModal(url) {
+        $("#imagePreviewImage").attr("src", url);
+        $("#imagePreviewModal")
+            .modal({
+                duration: 250,
+            })
+            .modal('show')
+    }
+</script>

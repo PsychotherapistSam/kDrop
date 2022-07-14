@@ -1,3 +1,4 @@
+@import de.sam.base.database.FileDAO
 @import de.sam.base.database.FileDTO
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.utils.toRecentTimeString
@@ -13,6 +14,7 @@
 @param sortByName: String
 @param sortBy: String
 @param ctx: Context
+@param parent: FileDAO?
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
@@ -82,7 +84,8 @@
                 data-id="${fileDTO.id.toString()}"
                 data-name="${fileDTO.name}"
                 data-folder="${fileDTO.isFolder}"
-                data-public="${!fileDTO.private}">
+                data-public="${!fileDTO.private}"
+                data-mime="${fileDTO.mimeType}">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
                         <input type="checkbox"><label>&nbsp;</label>
