@@ -1,3 +1,46 @@
+<script src="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/magnific-popup.min.css">
+
+<style>
+    /* overlay at start */
+    .mfp-fade.mfp-bg {
+        opacity: 0;
+
+        -webkit-transition: all 0.15s ease-out;
+        -moz-transition: all 0.15s ease-out;
+        transition: all 0.15s ease-out;
+    }
+
+    /* overlay animate in */
+    .mfp-fade.mfp-bg.mfp-ready {
+        opacity: 0.8;
+    }
+
+    /* overlay animate out */
+    .mfp-fade.mfp-bg.mfp-removing {
+        opacity: 0;
+    }
+
+    /* content at start */
+    .mfp-fade.mfp-wrap .mfp-content {
+        opacity: 0;
+
+        -webkit-transition: all 0.15s ease-out;
+        -moz-transition: all 0.15s ease-out;
+        transition: all 0.15s ease-out;
+    }
+
+    /* content animate it */
+    .mfp-fade.mfp-wrap.mfp-ready .mfp-content {
+        opacity: 1;
+    }
+
+    /* content animate out */
+    .mfp-fade.mfp-wrap.mfp-removing .mfp-content {
+        opacity: 0;
+    }
+</style>
+
 <div class="ui tiny modal" id="folderCreationModal">
     <div class="header">New Folder</div>
     <div class="content">
@@ -64,11 +107,17 @@
     </div>
 </div>
 
-<div class="ui basic large modal" id="imagePreviewModal">
-    <div class="image content">
-        <img class="ui rounded image" src="/" id="imagePreviewImage">
+<div class="ui basic image modal" id="imagePreviewModal">
+    <div class="content">
+        <img class="ui rounded centered image" src="/" id="imagePreviewImage" width="100%">
     </div>
 </div>
+<!-- remove blank space on images that are sized weirdly -->
+<style>
+    /*.image.modal {*/
+    /*    width: unset !important;*/
+    /*}*/
+</style>
 
 <script>
     function promptFolderCreation(parentId) {
@@ -199,11 +248,15 @@
     }
 
     function showImagePreviewModal(url) {
-        $("#imagePreviewImage").attr("src", url);
-        $("#imagePreviewModal")
-            .modal({
-                duration: 250,
-            })
-            .modal('show')
+        $.magnificPopup.open({
+            removalDelay: 300, mainClass: 'mfp-fade',
+            items: {
+                src: url,
+            },
+            gallery: {
+                enabled: false
+            },
+            type: 'image'
+        }, 0);
     }
 </script>
