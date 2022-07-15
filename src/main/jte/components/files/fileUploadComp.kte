@@ -52,9 +52,11 @@
     });
 
     document.addEventListener("dragover", event => {
-        const dashboard = uppy.getPlugin('Dashboard');
-        if (!dashboard.isModalOpen()) {
-            dashboard.openModal();
+        if (event.dataTransfer.types.indexOf("Files") !== -1 || event.dataTransfer.types.indexOf("application/x-moz-file") !== -1) {
+            const dashboard = uppy.getPlugin('Dashboard');
+            if (!dashboard.isModalOpen()) {
+                dashboard.openModal();
+            }
         }
     });
 </script>
