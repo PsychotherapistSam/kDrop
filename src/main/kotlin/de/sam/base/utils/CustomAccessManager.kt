@@ -8,6 +8,7 @@ import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.UnauthorizedResponse
+import org.tinylog.kotlin.Logger
 import java.net.URI
 import java.util.*
 import kotlin.time.DurationUnit
@@ -35,7 +36,7 @@ class CustomAccessManager : AccessManager {
             info.initDeviceScan()
             ctx.attribute("isMobile", info.isTierIphone)
         }
-        println("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
+        Logger.debug("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
 
         if (config.enforceHost) {
             if (URI(ctx.url()).host != URI(config.host).host) {

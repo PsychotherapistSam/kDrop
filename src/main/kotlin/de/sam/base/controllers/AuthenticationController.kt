@@ -4,8 +4,8 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.UserDTO
 import de.sam.base.database.UserDAO
+import de.sam.base.database.UserDTO
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
@@ -14,8 +14,6 @@ import de.sam.base.utils.prolongAtLeast
 import io.javalin.core.validation.ValidationError
 import io.javalin.http.Context
 import io.javalin.http.HttpCode
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
@@ -70,7 +68,6 @@ class AuthenticationController {
                     ctx.json(errors.map { it.message })
                 } else {
                     val userDAO = transaction {
-                        addLogger(StdOutSqlLogger)
                         return@transaction UserDAO.new {
                             this.name = username!!
                             this.password = Password.hash(password)

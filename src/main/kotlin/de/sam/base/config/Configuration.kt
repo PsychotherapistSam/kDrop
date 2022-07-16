@@ -19,6 +19,7 @@ class Configuration {
     var database = Database()
     var allowUserRegistration: Boolean = false
     var devEnvironment = true
+    var logLevel = "TRACE"
 
     class Database {
         var host: String = "localhost"

@@ -3,10 +3,8 @@ package de.sam.base.pages.admin
 import de.sam.base.Page
 import de.sam.base.database.FileDAO
 import de.sam.base.database.UserDAO
+import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.Context
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.measureNanoTime
 
@@ -27,7 +25,6 @@ class AdminIndexPage : Page() {
     override fun handle(ctx: Context) {
         pageDiff = measureNanoTime {
             transaction {
-                addLogger(StdOutSqlLogger)
                 logTimeSpent("Getting user count") {
                     userCount = UserDAO.count()
                 }

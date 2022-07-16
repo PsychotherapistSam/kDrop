@@ -8,15 +8,13 @@ import de.sam.base.database.toFileDTO
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
 import de.sam.base.utils.isLoggedIn
+import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
-import io.javalin.http.UnauthorizedResponse
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
-
 
 class UserFilesPage : Page() {
     companion object {

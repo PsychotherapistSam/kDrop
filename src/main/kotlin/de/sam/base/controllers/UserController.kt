@@ -4,24 +4,24 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration
-import de.sam.base.database.UserDTO
 import de.sam.base.database.UserDAO
+import de.sam.base.database.UserDTO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toUser
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
+import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.preferences.Preferences
 import io.javalin.core.validation.ValidationError
 import io.javalin.core.validation.Validator
-import io.javalin.http.*
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.logTimeSpent
+import io.javalin.http.BadRequestResponse
+import io.javalin.http.Context
+import io.javalin.http.NotFoundResponse
+import io.javalin.http.UnauthorizedResponse
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.system.measureNanoTime
 
 class UserController {
@@ -158,7 +158,6 @@ fun validateUsername(
         errors.addAll(validator.errors()[fieldName]!!)
     } else {
         val userDao = transaction {
-            addLogger(StdOutSqlLogger)
             return@transaction UserDAO.find { UsersTable.name.lowerCase() like username!!.lowercase() }
                 .firstOrNull()
         }

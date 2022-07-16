@@ -26,7 +26,6 @@ class UserRegistrationPage : Page() {
         } else if (!ctx.isLoggedIn && !Configuration.config.allowUserRegistration) {
             throw ForbiddenResponse("User registration is currently disabled.")
         }
-
         super.handle(ctx)
     }
 }

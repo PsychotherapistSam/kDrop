@@ -5,12 +5,12 @@ import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.humanReadableByteCountBin
+import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.jetbrains.exposed.sql.logTimeSpent
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
 import org.joda.time.DateTime
@@ -291,9 +291,8 @@ class FileController {
         usersCurrentlyZipping.remove(userId)
 
         val milliTime = nanoTime / 1000000.0
-        println("Zipping took $milliTime ms")
-
-        println("Zipping done")
+        Logger.debug("Zipping took $milliTime ms")
+        Logger.debug("Zipping done")
 
         if (tempZipFile.exists()) {
             // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
@@ -322,7 +321,7 @@ class FileController {
                     return@thread
                 }
             }
-            println("deleted zip file")
+            Logger.debug("deleted zip file")
         }
     }
 

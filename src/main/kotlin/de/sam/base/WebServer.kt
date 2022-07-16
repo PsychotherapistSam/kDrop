@@ -35,7 +35,6 @@ import java.util.*
 class WebServer {
     fun start() {
         /*transaction {
-            addLogger(StdOutSqlLogger)
             logTimeSpent("adding 5000 testfiles 5") {
                 val owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
                 val fileOne = FileDAO.new {

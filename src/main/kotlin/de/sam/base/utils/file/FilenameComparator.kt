@@ -1,5 +1,6 @@
 package de.sam.base.utils.file
 
+import org.tinylog.kotlin.Logger
 import java.math.BigInteger
 import java.util.regex.Pattern
 import kotlin.math.min
@@ -24,7 +25,7 @@ class FilenameComparator : Comparator<String?> {
                 try {
                     cmp = BigInteger(split1[i]).compareTo(BigInteger(split2[i]))
                 } catch (e: NumberFormatException ) {
-                    println("Error comparing $o1 and $o2")
+                    Logger.error("Error comparing $o1 and $o2")
                 }
             }
 
