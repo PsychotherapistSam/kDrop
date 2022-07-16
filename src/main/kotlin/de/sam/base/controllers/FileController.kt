@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
 import org.joda.time.DateTime
 import org.tinylog.kotlin.Logger
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
@@ -36,7 +37,12 @@ class FileController {
         val userId = ctx.currentUserDTO!!.id
         val parentFileId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
-        val files = ctx.uploadedFiles()
+        val files = try {
+            ctx.uploadedFiles()
+        } catch (EofException: EOFException) {
+            Logger.error("Early EOF, aborting request")
+            throw BadRequestResponse("Early EOF")
+        }
         transaction {
             val owner = UserDAO.findById(userId)!!
             val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
