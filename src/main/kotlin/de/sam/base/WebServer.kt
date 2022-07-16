@@ -84,7 +84,6 @@ class WebServer {
             }
             javalinConfig.requestLogger { ctx, timeInMs ->
                 Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
-//                println("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
 
             javalinConfig.addStaticFiles {
@@ -96,7 +95,6 @@ class WebServer {
             }
 
             javalinConfig.autogenerateEtags = true
-
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
