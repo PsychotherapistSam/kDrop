@@ -215,6 +215,10 @@ class FileController {
         ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
         ctx.header("Content-Length", file.size.toString())
 
+        // date header for the generated etags
+        ctx.header("Date", file.created.toString())
+        // ctx.header("Cache-Control", "public, max-age=31536000")
+
         CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
         // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
     }

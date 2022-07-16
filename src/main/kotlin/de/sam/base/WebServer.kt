@@ -95,6 +95,8 @@ class WebServer {
                 it.aliasCheck = null // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
             }
 
+            javalinConfig.autogenerateEtags = true
+
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
