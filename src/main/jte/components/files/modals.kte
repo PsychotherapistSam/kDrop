@@ -109,7 +109,7 @@
 
 <div class="ui basic image modal" id="imagePreviewModal">
     <div class="content">
-        <img class="ui rounded centered image" src="/" id="imagePreviewImage" width="100%">
+        <img class="ui rounded centered image" src="" id="imagePreviewImage" width="100%">
     </div>
 </div>
 <!-- remove blank space on images that are sized weirdly -->
