@@ -25,9 +25,11 @@ abstract class Page(
     //  val nonce = ctx.attribute<String>("nonce")
 
     fun getRenderTime(): String {
-        val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
+//        val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
 //        println("pageDiff: ${nanoToMilli(pageDiff)}; templateDiff: ${nanoToMilli(templateDiff)}; total: ${nanoToMilli(pageDiff + templateDiff)}")
-        return nanoToMilli(pageDiff + templateDiff)
+//        return nanoToMilli(pageDiff + templateDiff)
+        val startTime = context?.attribute("javalin-request-log-start-time") as Long? ?: System.nanoTime()
+        return nanoToMilli(System.nanoTime() - startTime)
     }
 
     fun getPageDiff(): String {
