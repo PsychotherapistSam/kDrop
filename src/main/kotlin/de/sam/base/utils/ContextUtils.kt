@@ -1,5 +1,7 @@
 package de.sam.base.utils
 
+import de.sam.base.database.FileDAO
+import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import io.javalin.http.Context
 
@@ -19,3 +21,11 @@ var Context.preferencesString: String?
 var Context.isMobileUser: Boolean
     get() = this.attribute<Boolean>("isMobile") == true
     set(value) = this.attribute("isMobile", value)
+
+var Context.fileDTOFromId: FileDTO?
+    get() = this.attribute<FileDTO>("requestFileDTOParameter")
+    set(value) = this.attribute("requestFileDTOParameter", value)
+
+var Context.fileDAOFromId: FileDAO?
+    get() = this.attribute<FileDAO>("requestFileDAOParameter")
+    set(value) = this.attribute("requestFileDAOParameter", value)

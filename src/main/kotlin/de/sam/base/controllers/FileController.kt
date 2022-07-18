@@ -4,6 +4,7 @@ import de.sam.base.database.*
 import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.zipFiles
+import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.humanReadableByteCountBin
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.util.FileUtil
@@ -158,57 +159,16 @@ class FileController {
                 if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
                     return@forEach
                 }
-                // not needed anymore since folders should have the correct size. but keeping it here for future reference.
-//                if (child.isFolder) {
-//                    children.addAll(getAllChildrenRecursively(child, user))
-//                }
                 children.add(child)
             }
         }
         return children
     }
 
-
-    //TODO: get rid of this
-    private val cache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
-    fun getFileParameter(ctx: Context) {
-        val userQueryTime = measureNanoTime {
-            ctx.pathParamAsClass<UUID>("fileId")
-                .check({
-                    if (cache.containsKey(it)) {
-                        if (System.currentTimeMillis() < cache[it]!!.first + 1000 * 10) {
-                            ctx.attribute("requestFileParameter", cache[it]!!.second)
-                            return@check true
-                        } else {
-                            cache.remove(it)
-                        }
-                    }
-                    transaction {
-                        logTimeSpent("Getting file by id") {
-                            val fileDao = FileDAO.findById(it)
-                            if (fileDao != null) {
-                                ctx.attribute("requestFileParameter", fileDao.toFileDTO())
-                                cache[it] = Pair(System.currentTimeMillis(), fileDao.toFileDTO())
-                                return@transaction true
-                            } else {
-                                return@transaction false
-                            }
-                        }
-                    }
-                }, "File ID is not valid")
-                .get()
-        }
-        ctx.attribute("fileQueryTime", userQueryTime)
-    }
-
     fun getSingleFile(ctx: Context) {
-        val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
+        //TODO: this using a context extension
 
-        // TODO: move this to the access manager
-        // the file is private and the user isn't logged in or the file isn't owned by the user
-        if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
-            throw NotFoundResponse("File not found")
-        }
+        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
 
         val systemFile = File("./${file.path}")
         if (!systemFile.exists()) {
@@ -231,7 +191,7 @@ class FileController {
     }
 
     fun updateFile(ctx: Context) {
-        val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
+        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
 
         // the file is private and the user isn't logged in or the file isn't owned by the user
         if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
@@ -253,7 +213,6 @@ class FileController {
     private val usersCurrentlyZipping = mutableSetOf<UUID>()
 
     fun getFiles(ctx: Context) {
-
         val userId = ctx.currentUserDTO!!.id
 
         if (usersCurrentlyZipping.contains(userId)) {

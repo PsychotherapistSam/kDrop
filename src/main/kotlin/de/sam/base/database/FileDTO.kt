@@ -23,12 +23,12 @@ class FileDTO(
     var isFolder: Boolean,
     var hash: String?
 ) : Serializable {
-    fun canBeViewedByUserId(id: UUID): Boolean {
-        return !private || owner.id == id
+    fun canBeViewedByUserId(id: UUID?): Boolean {
+        return !private || id != null && owner.id == id
     }
 
-    fun isOwnedByUserId(id: UUID): Boolean {
-        return owner.id == id
+    fun isOwnedByUserId(id: UUID?): Boolean {
+        return id != null && owner.id == id
     }
 
     // placeholder for functions

@@ -7,12 +7,15 @@ import de.sam.base.database.FilesTable
 import de.sam.base.database.toFileDTO
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
+import de.sam.base.utils.fileDAOFromId
+import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.system.measureNanoTime
 
@@ -24,9 +27,8 @@ class UserFilesPage : Page(
         lateinit var ROUTE: String
     }
 
-    var parent: FileDAO? = null
+    var parent: FileDTO? = null
     var fileIsOwnedByCurrentUser = false
-    var breadcrumbVisible = false
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
@@ -42,57 +44,34 @@ class UserFilesPage : Page(
                     it.name == (ctx.queryParam("sort") ?: "name")
                 }
 
-            val parentFileId =
-                if (ctx.pathParamMap().containsKey("fileId")) UUID.fromString(ctx.pathParam("fileId")) else null
+            parent = ctx.fileDTOFromId
 
             transaction {
-                logTimeSpent("finding the parent") {
-                    parent = if (parentFileId != null) FileDAO.findById(parentFileId) else null
-                }
-
-                logTimeSpent("checking for file access") {
-                    // TODO: move this to the access manager
-                    fileIsOwnedByCurrentUser =
-                        ctx.currentUserDTO != null && parent != null && ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
-
-                    breadcrumbVisible =
-                        parent == null || ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
-
-                    // if the parentFileId is null, we are in the root directory so we do not return a 404
-                    if (parentFileId != null) {
-                        // check if the file does not exist. parentFileId != null && parent == null means that the file does not exist
-                        if (parent == null) {
-                            throw NotFoundResponse("File not found")
-                        }
-                        // the user isn't the owner of the file and the file is not public
-                        if (parent!!.private && !fileIsOwnedByCurrentUser) {
-                            throw NotFoundResponse("File not found")
-                        }
-                    }
-                }
-
-                if (parent != null && fileIsOwnedByCurrentUser) {
+                if (parent != null && parent!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
                     logTimeSpent("the breadcrumb traversal") {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
                         while (breadcrumb != null) {
-                            breadcrumbs.add(breadcrumb.toFileDTO())
+                            breadcrumbs.add(breadcrumb)
                             breadcrumb = breadcrumb.parent
                         }
-
                         // reverse list because the traversal is backwards
                         breadcrumbs.reverse()
                     }
                 }
 
+                // parent == null defualts to root folder
                 if (parent == null || parent!!.isFolder) {
                     if (!ctx.isLoggedIn) {
+                        Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
                         throw NotFoundResponse("File not found")
                     }
 
                     logTimeSpent("getting the file list") {
                         fileDTOs = FileDAO
-                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(parent?.id) }
+                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId?.id) }
+//                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId) }
+//                            .filter { it.parent?.id?.value == parent?.id }
                             .map { it.toFileDTO() }
                             .sortedWith { a, b ->
                                 sortingDirection.compare(a, b)

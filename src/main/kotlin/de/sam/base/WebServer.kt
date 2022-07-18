@@ -79,8 +79,11 @@ class WebServer {
 
             javalinConfig.sessionHandler { Session.sqlSessionHandler() }
             javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
+
+            // limit to one instance per webserver
+            val customAccessManager = CustomAccessManager()
             javalinConfig.accessManager { handler, ctx, routeRoles ->
-                CustomAccessManager().manage(handler, ctx, routeRoles)
+                customAccessManager.manage(handler, ctx, routeRoles)
             }
             javalinConfig.requestLogger { ctx, timeInMs ->
                 Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
@@ -137,9 +140,10 @@ class WebServer {
             path("/user") {
                 get("/settings", UserEditPage(), UserRoles.USER)
                 path("/files") {
+                    //TODO:  seperate this to two different pages
                     get("/", UserFilesPage(), UserRoles.USER)
                     path("/{fileId}") {
-                        get("/", UserFilesPage())
+                        get("/", UserFilesPage(), UserRoles.FILE_ACCESS_CHECK)
                     }
                 }
             }
@@ -147,7 +151,6 @@ class WebServer {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
                 path("/users") {
                     get("/", AdminUsersPage(), UserRoles.ADMIN)
-
                     before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
                         get("/", AdminUserViewPage(), UserRoles.ADMIN)
@@ -181,11 +184,11 @@ class WebServer {
                     post("/", FileController()::uploadFile, UserRoles.USER)
                     put("/", FileController()::getFiles, UserRoles.USER)
                     delete("/", FileController()::deleteFiles, UserRoles.USER)
-                    before("/{fileId}*", FileController()::getFileParameter)
+                    // before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
-                        get("/", FileController()::getSingleFile)
-                        put("/", FileController()::updateFile, UserRoles.USER)
-                        delete("/", FileController()::deleteSingleFile, UserRoles.USER)
+                        get("/", FileController()::getSingleFile, UserRoles.FILE_ACCESS_CHECK)
+                        put("/", FileController()::updateFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
+                        delete("/", FileController()::deleteSingleFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
                         //put("/", FileController()::updateFile, UserRoles.USER)
                     }
                 }

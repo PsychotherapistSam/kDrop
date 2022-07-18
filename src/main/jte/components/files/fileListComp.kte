@@ -14,7 +14,7 @@
 @param sortByName: String
 @param sortBy: String
 @param ctx: Context
-@param parent: FileDAO?
+@param parent: FileDTO?
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">

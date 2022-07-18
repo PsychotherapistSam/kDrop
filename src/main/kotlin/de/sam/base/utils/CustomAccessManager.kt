@@ -1,23 +1,29 @@
 package de.sam.base.utils
 
 import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.database.FileDAO
+import de.sam.base.database.FileDTO
+import de.sam.base.database.toFileDTO
 import de.sam.base.users.UserRoles
+import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.security.AccessManager
 import io.javalin.core.security.RouteRole
-import io.javalin.http.BadRequestResponse
-import io.javalin.http.Context
-import io.javalin.http.Handler
-import io.javalin.http.UnauthorizedResponse
+import io.javalin.http.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
 import java.net.URI
 import java.util.*
+import kotlin.system.measureNanoTime
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
 class CustomAccessManager : AccessManager {
+    val fileCache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
+
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
+        val routeRolesMap = routeRoles.map { it as UserRoles }
         val userAgentHeader = ctx.header("User-Agent") ?: throw BadRequestResponse("User-Agent is missing")
         // Redirect safari users to a firefox download
         /*if (userAgentHeader.contains("Safari")) {
@@ -44,20 +50,19 @@ class CustomAccessManager : AccessManager {
             }
         }
 
-        if (routeRoles.isNotEmpty()) {
+        if (routeRolesMap.any { !it.special }) {
             if (!ctx.isLoggedIn) {
                 throw UnauthorizedResponse("You need to be logged in to access this resource.")
             }
 
             val maxUserRole = ctx.currentUserDTO!!.roles.maxOf { it.powerLevel }
-            val minReqiredRole = routeRoles
-                .map { it as UserRoles }
-                //.filter { !it.hidden }
+            val minReqiredRole = routeRolesMap
+//                .filter { !it.hidden }
                 .minOf { it.powerLevel }
 
             val reachesRoleRequirement = maxUserRole >= minReqiredRole
 
-            if (routeRoles.contains(UserRoles.SELF) && ctx.pathParam("userId") != null) {
+            if (routeRolesMap.contains(UserRoles.SELF) && ctx.pathParam("userId") != null) {
                 if (ctx.currentUserDTO!!.id != UUID.fromString(ctx.pathParam("userId")) && !reachesRoleRequirement) {
                     // you can't access other users' resources if "self" is set
                     throw UnauthorizedResponse(
@@ -67,18 +72,54 @@ class CustomAccessManager : AccessManager {
             }
 
             if (!reachesRoleRequirement) {
-                val minRole = routeRoles.map { it as UserRoles }.minByOrNull { it.powerLevel }
-                // val minRoleName = (routeRoles.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
+                val minRole = routeRolesMap.minByOrNull { it.powerLevel }
+                // val minRoleName = (routeRolesMap.map { it as UserRoles }).minByOrNull { it.powerLevel }!!.name
 
                 throw UnauthorizedResponse(
                     "You are not authorized to access this resource.",
                     hashMapOf("minimumRole" to minRole!!.name)
                 ) //You need to be at least $minRole")
             }
-/*                    // check if ctx.currentUser.roles has any role in routeRoles
-                    if (!routeRoles.any { ctx.currentUser!!.roles.contains(it) }) {
+/*                    // check if ctx.currentUser.roles has any role in routeRolesMap
+                    if (!routeRolesMap.any { ctx.currentUser!!.roles.contains(it) }) {
                         throw UnauthorizedResponse("You are not authorized to access this resource")
                     }*/
+        }
+
+        //TODO: check access to parent file/folder
+
+        if (routeRolesMap.contains(UserRoles.FILE_ACCESS_CHECK)) {
+            val userQueryTime = measureNanoTime {
+                var fileDTO: FileDTO? = null
+                val fileId = ctx.pathParamAsClass<UUID>("fileId")
+                    .get()
+
+                if (fileCache.containsKey(fileId)) {
+                    if (System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
+                        ctx.fileDTOFromId = fileCache[fileId]!!.second
+                    } else {
+                        fileCache.remove(fileId)
+                    }
+                }
+                transaction {
+                    logTimeSpent("Getting file by id") {
+                        val fileDAO = FileDAO.findById(fileId)
+                        if (fileDAO != null) {
+                            fileDTO = fileDAO.toFileDTO()
+                            Logger.trace("Setting fileDTO and DAO to request attribute")
+                            ctx.fileDAOFromId = fileDAO
+                            ctx.fileDTOFromId = fileDTO
+                            fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO!!)
+                        }
+                    }
+                }
+
+                if (fileDTO != null && !fileDTO!!.canBeViewedByUserId(ctx.currentUserDTO?.id)) {
+                    Logger.error("File not found: access manager")
+                    throw NotFoundResponse("File not found")
+                }
+            }
+            ctx.attribute("fileQueryTime", userQueryTime)
         }
         handler.handle(ctx)
     }

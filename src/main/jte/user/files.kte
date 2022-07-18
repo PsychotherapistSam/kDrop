@@ -21,7 +21,7 @@ content = @`
         <h1>Your Files</h1>
     @endif
 
-    @if(page.breadcrumbVisible)
+    @if(page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true)
         @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
@@ -33,7 +33,7 @@ content = @`
             </div>
             This ${typeString} is publically accessible to all people who have access to the link.
             @if(page.parent!!.isFolder)
-            All files or folders in this folder will inherit this access by default.
+                All files or folders in this folder will inherit this access by default.
             @endif
             You can change this behavior by setting the access of this ${typeString} to private.
         </div>
@@ -44,7 +44,7 @@ content = @`
         @template.components.files.fileUploadComp(parent = page.parent, page = page)
     @else
         <div class="ui basic fitted segment">
-            <a href="/api/v1/files/${page.parent!!.id.value.toString()}"
+            <a href="/api/v1/files/${page.parent!!.id.toString()}"
                class="ui huge fluid icon button"
                download>
                 <i class="ui download icon"></i>
@@ -53,12 +53,12 @@ content = @`
             @if(!page.context!!.isLoggedIn || page.context!!.preferencesString!!.split(",").contains("file-previews"))
                 <div class="ui basic fitted segment">
                     @if(page.parent!!.mimeType == "application/pdf" || page.parent!!.mimeType == "application/json" ||page.parent!!.mimeType == "text/plain")
-                    <iframe src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                    <iframe src="/api/v1/files/${page.parent!!.id.toString()}"
                             style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
                     @elseif(page.parent!!.mimeType == "video/mp4")
                     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
                     <video controls crossorigin playsinline id="plyr">
-                        <source src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                        <source src="/api/v1/files/${page.parent!!.id.toString()}"
                                 type="${page.parent!!.mimeType}">
                     </video>
                     <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.js"></script>
@@ -71,7 +71,7 @@ content = @`
                     @elseif(page.parent!!.mimeType.split("/")[0] == "audio")
                     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.css">
                     <audio controls id="plyr">
-                        <source src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                        <source src="/api/v1/files/${page.parent!!.id.toString()}"
                                 type="${page.parent!!.mimeType}">
                     </audio>
                     <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.2/dist/plyr.min.js"></script>
@@ -83,7 +83,7 @@ content = @`
                     </script>
                     @elseif(page.parent!!.mimeType.split("/")[0] == "image")
                     <img class="ui centered image"
-                         src="/api/v1/files/${page.parent!!.id.value.toString()}"
+                         src="/api/v1/files/${page.parent!!.id.toString()}"
                          alt="${page.parent!!.name}">
                     @endif
                 </div>
@@ -144,7 +144,7 @@ content = @`
     </script>
 `,
 extraContent = @`
-    @if(page.breadcrumbVisible && page.parent == null || page.parent!!.isFolder)
+    @if(page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true && page.parent == null || page.parent?.isFolder == true)
         @template.components.files.modals()
         @template.components.files.fileListContextMenuComp(parent = page.parent)
     @endif
