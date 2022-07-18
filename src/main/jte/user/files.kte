@@ -144,7 +144,7 @@ content = @`
     </script>
 `,
 extraContent = @`
-    @if(page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true && page.parent == null || page.parent?.isFolder == true)
+    @if(page.currentUserDTO != null && ( page.parent == null || page.parent?.isFolder == true))
         @template.components.files.modals()
         @template.components.files.fileListContextMenuComp(parent = page.parent)
     @endif
