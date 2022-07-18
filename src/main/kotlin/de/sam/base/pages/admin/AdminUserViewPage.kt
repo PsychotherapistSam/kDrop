@@ -4,17 +4,14 @@ import de.sam.base.Page
 import de.sam.base.database.UserDTO
 import io.javalin.http.Context
 
-class AdminUserViewPage : Page() {
+class AdminUserViewPage : Page(
+    name = "User",
+    title = "Admin - User",
+    templateName = "admin/user_view.kte",
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "User"
-    override var title: String = "Admin - User"
-    override var pageDescription: String
-        get() = name
-        set(value) {}
-    override var templateName: String = "admin/user_view.kte"
 
     var selectedUserDTO: UserDTO? = null
 

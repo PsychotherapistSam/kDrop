@@ -12,17 +12,14 @@ import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.measureNanoTime
 
-class AdminUsersPage : Page() {
+class AdminUsersPage : Page(
+    name = "Users",
+    title = "Admin - Users",
+    templateName = "admin/users.kte",
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "Users"
-    override var title: String = "Admin - Users"
-    override var pageDescription: String
-        get() = name
-        set(value) {}
-    override var templateName: String = "admin/users.kte"
 
     var userDTOs = listOf<UserDTO>()
     var currenTablePage = 0

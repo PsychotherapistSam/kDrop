@@ -8,11 +8,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
 
-abstract class Page : Handler {
-    abstract var name: String
-    abstract var title: String
-    abstract var pageDescription: String
-    abstract var templateName: String
+abstract class Page(
+    var name: String,
+    var title: String = name,
+    var pageDescription: String = name,
+    var templateName: String
+) : Handler {
 
     var pageDiff: Long = 0
     private var templateStartTime: Long? = null // = System.nanoTime()

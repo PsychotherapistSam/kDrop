@@ -8,17 +8,13 @@ import de.sam.base.utils.isLoggedIn
 import io.javalin.http.Context
 import io.javalin.http.ForbiddenResponse
 
-class UserRegistrationPage : Page() {
+class UserRegistrationPage : Page(
+    name = "Registration",
+    templateName = "user/registration.kte",
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "Register"
-    override var title: String
-        get() = name
-        set(value) {}
-    override var pageDescription: String = "User Registration"
-    override var templateName: String = "user/registration.kte"
 
     override fun handle(ctx: Context) {
         if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {

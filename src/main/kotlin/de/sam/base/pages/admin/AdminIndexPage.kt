@@ -8,17 +8,14 @@ import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.measureNanoTime
 
-class AdminIndexPage : Page() {
+class AdminIndexPage : Page(
+    name = "Admin Overview",
+    title = "Admin - Overview",
+    templateName = "admin/index.kte"
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "Admin Overview"
-    override var title: String = "Admin - Overview"
-    override var pageDescription: String
-        get() = name
-        set(value) {}
-    override var templateName: String = "admin/index.kte"
 
     var userCount = 0
     var fileCount = 0

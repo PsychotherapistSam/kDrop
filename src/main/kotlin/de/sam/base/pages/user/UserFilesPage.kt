@@ -16,17 +16,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
 
-class UserFilesPage : Page() {
+class UserFilesPage : Page(
+    name = "My Files",
+    templateName = "user/files.kte",
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "My Files"
-    override var title: String = name
-    override var pageDescription: String
-        get() = name
-        set(_) {}
-    override var templateName: String = "user/files.kte"
 
     var parent: FileDAO? = null
     var fileIsOwnedByCurrentUser = false
@@ -55,6 +51,7 @@ class UserFilesPage : Page() {
                 }
 
                 logTimeSpent("checking for file access") {
+                    // TODO: move this to the access manager
                     fileIsOwnedByCurrentUser =
                         ctx.currentUserDTO != null && parent != null && ctx.isLoggedIn && parent!!.owner.id.value == ctx.currentUserDTO!!.id
 

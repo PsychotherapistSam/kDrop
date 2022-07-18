@@ -204,6 +204,7 @@ class FileController {
     fun getSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter") ?: throw NotFoundResponse("File not found")
 
+        // TODO: move this to the access manager
         // the file is private and the user isn't logged in or the file isn't owned by the user
         if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
             throw NotFoundResponse("File not found")
@@ -290,6 +291,8 @@ class FileController {
         }
 
         val tempZipFile = File("./upload/temp/${UUID.randomUUID()}.zip")
+
+        Logger.debug("Zipping ${fileList.size} files to ${tempZipFile.absolutePath}")
 
         // only let users create one zip at a time, reducing the possibility of a dos
         usersCurrentlyZipping.add(userId)

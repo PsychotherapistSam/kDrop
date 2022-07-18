@@ -7,17 +7,13 @@ import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
 import io.javalin.http.Context
 
-class UserLoginPage : Page() {
+class UserLoginPage : Page(
+    name = "Login",
+    templateName = "user/login.kte",
+) {
     companion object {
         lateinit var ROUTE: String
     }
-
-    override var name: String = "Login"
-    override var title: String
-        get() = name
-        set(value) {}
-    override var pageDescription: String = "User Login"
-    override var templateName: String = "user/login.kte"
 
     var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
