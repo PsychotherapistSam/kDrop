@@ -76,14 +76,14 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 }
 
 
-fun FileDAO.toFileDTO(): FileDTO {
+fun FileDAO.toDTO(): FileDTO {
     return FileDTO(
         this.id.value,
         this.name,
         this.path,
         this.mimeType,
-        this.parent?.toFileDTO(),
-        this.owner.toUser(),
+        this.parent?.toDTO(),
+        this.owner.toDTO(),
         this.size,
         this.sizeHR,
         this.password,

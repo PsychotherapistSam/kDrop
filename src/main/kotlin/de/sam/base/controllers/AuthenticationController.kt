@@ -6,7 +6,7 @@ import com.password4j.types.Argon2
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UserDTO
-import de.sam.base.database.toUser
+import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
@@ -84,7 +84,7 @@ class AuthenticationController {
 
                     // only set the session when it is not requested to leave it out.
                     if (ctx.header("No-Session") == null) {
-                        ctx.currentUserDTO = userDAO.toUser()
+                        ctx.currentUserDTO = userDAO.toDTO()
                     }
                     ctx.status(200)
                 }

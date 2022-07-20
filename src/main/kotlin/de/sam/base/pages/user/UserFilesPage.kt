@@ -4,7 +4,7 @@ import de.sam.base.Page
 import de.sam.base.database.FileDAO
 import de.sam.base.database.FileDTO
 import de.sam.base.database.FilesTable
-import de.sam.base.database.toFileDTO
+import de.sam.base.database.toDTO
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
 import de.sam.base.utils.fileDAOFromId
@@ -16,7 +16,6 @@ import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
-import java.util.*
 import kotlin.system.measureNanoTime
 
 class UserFilesPage : Page(
@@ -72,7 +71,7 @@ class UserFilesPage : Page(
                             .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId?.id) }
 //                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId) }
 //                            .filter { it.parent?.id?.value == parent?.id }
-                            .map { it.toFileDTO() }
+                            .map { it.toDTO() }
                             .sortedWith { a, b ->
                                 sortingDirection.compare(a, b)
                                 //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)

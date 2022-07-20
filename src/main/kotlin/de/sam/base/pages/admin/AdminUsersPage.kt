@@ -4,7 +4,7 @@ import de.sam.base.Page
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.UsersTable
-import de.sam.base.database.toUser
+import de.sam.base.database.toDTO
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.SortOrder
@@ -42,7 +42,7 @@ class AdminUsersPage : Page(
                     userDTOs = userData
                         .orderBy(UsersTable.registrationDate to SortOrder.ASC)
                         .limit(maxTablePageSize, maxTablePageSize * currenTablePage)
-                        .map { it.toUser() }
+                        .map { it.toDTO() }
                 }
             }
         }

@@ -70,7 +70,7 @@ class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
 }
 
 
-fun UserDAO.toUser(): UserDTO {
+fun UserDAO.toDTO(): UserDTO {
     return UserDTO(
         this.id.value,
         this.name,

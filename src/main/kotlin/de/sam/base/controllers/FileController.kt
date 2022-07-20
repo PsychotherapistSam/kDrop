@@ -48,7 +48,7 @@ class FileController {
             val owner = UserDAO.findById(userId)!!
             val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
 
-            if (parentFile != null && !parentFile.toFileDTO().isOwnedByUserId(userId)) {
+            if (parentFile != null && !parentFile.toDTO().isOwnedByUserId(userId)) {
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
             }
 
@@ -129,7 +129,7 @@ class FileController {
                     var parentsParent = parent
                     while (parentsParent != null) {
                         Logger.debug("updating folder ${parentsParent.name} which was ${parentsParent.sizeHR}")
-                        parentsParent.size = calculateFileSize(parentsParent, owner.toUser())
+                        parentsParent.size = calculateFileSize(parentsParent, owner.toDTO())
                         // + files.sumByLong { it.size }
                         parentsParent.sizeHR = humanReadableByteCountBin(parentsParent.size)
                         Logger.debug("folder is now ${parentsParent.sizeHR}")
@@ -156,7 +156,7 @@ class FileController {
         val children = arrayListOf<FileDAO>()
         logTimeSpent("getting children of ${file.name}") {
             FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
-                if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
+                if (!child.toDTO().canBeViewedByUserId(user.id)) {
                     return@forEach
                 }
                 children.add(child)
@@ -233,7 +233,7 @@ class FileController {
         val fileList = arrayListOf<Pair<File, String>>()
         transaction {
             FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (!file.toFileDTO().canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
+                if (!file.toDTO().canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
                     return@forEach
                 }
 
@@ -300,7 +300,7 @@ class FileController {
     private fun getChildren(file: FileDAO, user: UserDTO, namePrefix: String): Collection<Pair<File, String>> {
         val children = arrayListOf<Pair<File, String>>()
         FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
-            if (!child.toFileDTO().canBeViewedByUserId(user.id)) {
+            if (!child.toDTO().canBeViewedByUserId(user.id)) {
                 return@forEach
             }
             if (child.isFolder) {
@@ -434,7 +434,7 @@ class FileController {
             val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
             val parent = if (parentId != null) FileDAO.findById(parentId) else null
 
-            if (parent != null && !parent.toFileDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+            if (parent != null && !parent.toDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
             }
 

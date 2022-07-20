@@ -7,7 +7,7 @@ import de.sam.base.config.Configuration
 import de.sam.base.database.UserDAO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.UsersTable
-import de.sam.base.database.toUser
+import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
@@ -99,7 +99,7 @@ class UserController {
                 }
                 // updates the user in the current session (e.g. updating username etc), but only when it is not done by an admin
                 if (isSelf) {
-                    ctx.currentUserDTO = user.toUser()
+                    ctx.currentUserDTO = user.toDTO()
                 }
             }
         }
@@ -126,7 +126,7 @@ class UserController {
                         logTimeSpent("Getting user by id") {
                             val userDao = UserDAO.findById(it)
                             if (userDao != null) {
-                                ctx.attribute("requestUserParameter", userDao.toUser())
+                                ctx.attribute("requestUserParameter", userDao.toDTO())
                                 return@transaction true
                             } else {
                                 return@transaction false
@@ -162,7 +162,7 @@ fun validateUsername(
                 .firstOrNull()
         }
         if (userDao != null)
-            userDTO = userDao.toUser()
+            userDTO = userDao.toDTO()
 
         validator = if (userHasToExist) {
             Validator.create(String::class.java, username, fieldName)

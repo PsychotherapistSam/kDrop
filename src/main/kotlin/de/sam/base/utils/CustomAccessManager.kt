@@ -3,7 +3,7 @@ package de.sam.base.utils
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.FileDAO
 import de.sam.base.database.FileDTO
-import de.sam.base.database.toFileDTO
+import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.security.AccessManager
@@ -105,7 +105,7 @@ class CustomAccessManager : AccessManager {
                     logTimeSpent("Getting file by id") {
                         val fileDAO = FileDAO.findById(fileId)
                         if (fileDAO != null) {
-                            fileDTO = fileDAO.toFileDTO()
+                            fileDTO = fileDAO.toDTO()
                             Logger.trace("Setting fileDTO and DAO to request attribute")
                             ctx.fileDAOFromId = fileDAO
                             ctx.fileDTOFromId = fileDTO
