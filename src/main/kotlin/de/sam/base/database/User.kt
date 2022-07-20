@@ -39,12 +39,6 @@ class UserDTO(
         return this.preferences.split(",").contains(preferences)
     }
 
-    fun getDAO(): UserDAO? {
-        return transaction {
-            UserDAO.findById(this@UserDTO.id)
-        }
-    }
-
 //    fun getPreference(preference: String): String? {
 //        val prefs = preferences.split(",")
 //        val index = prefs.indexOf(preference)
@@ -54,7 +48,12 @@ class UserDTO(
 //        return prefs[index + 1]
 //    }
 }
-
+// Extract this from the serializable object.
+fun UserDTO.getDAO(): UserDAO? {
+    return transaction {
+        UserDAO.findById(this@getDAO.id)
+    }
+}
 
 object UsersTable : UUIDTable("t_users") {
     val name = varchar("name", 50)

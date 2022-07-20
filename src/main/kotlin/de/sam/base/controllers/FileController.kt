@@ -21,7 +21,6 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -172,9 +171,10 @@ class FileController {
         if (!systemFile.exists()) {
             throw NotFoundResponse("File not found")
         }
+        val isDirectDownload = ctx.queryParam("download") != null
+
         // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-        val dispositionType =
-            if (ctx.queryParam("download") == null) "inline" else "attachment"
+        val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
         ctx.header("Content-Type", file.mimeType)
         ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
@@ -185,17 +185,18 @@ class FileController {
         // ctx.header("Cache-Control", "public, max-age=31536000")
 
         val wasRangedStream = CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
-        Logger.error("content length: " + ctx.contentLength())
-        if (!wasRangedStream) {
+        if (isDirectDownload && !wasRangedStream) {
             transaction {
-                DownloadLogDAO.new {
-                    this.file = ctx.fileDAOFromId
-                    this.user = ctx.currentUserDTO?.getDAO()
-                    this.ip = ctx.ip()
-                    this.downloadDate = DateTime(System.nanoTime() - (System.nanoTime() - ctx.requestStartTime))
-                    this.readBytes = ctx.contentLength().toLong()
-                    this.readDuration = System.nanoTime() - ctx.requestStartTime
-                    this.userAgent = ctx.header("User-Agent") ?: "unknown"
+                logTimeSpent("adding file log entry") {
+                    DownloadLogDAO.new {
+                        this.file = ctx.fileDAOFromId
+                        this.user = ctx.currentUserDTO?.getDAO()
+                        this.ip = ctx.ip()
+                        this.readDuration = System.nanoTime() - ctx.requestStartTime
+                        this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
+                        this.readBytes = file.size
+                        this.userAgent = ctx.header("User-Agent") ?: "unknown"
+                    }
                 }
             }
         }

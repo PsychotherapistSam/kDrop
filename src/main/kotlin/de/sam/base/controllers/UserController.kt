@@ -4,10 +4,7 @@ import com.password4j.Argon2Function
 import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration
-import de.sam.base.database.UserDAO
-import de.sam.base.database.UserDTO
-import de.sam.base.database.UsersTable
-import de.sam.base.database.toDTO
+import de.sam.base.database.*
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
