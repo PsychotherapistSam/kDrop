@@ -29,3 +29,6 @@ var Context.fileDTOFromId: FileDTO?
 var Context.fileDAOFromId: FileDAO?
     get() = this.attribute<FileDAO>("requestFileDAOParameter")
     set(value) = this.attribute("requestFileDAOParameter", value)
+
+val Context.requestStartTime: Long
+    get() = this.attribute("javalin-request-log-start-time") as Long? ?: 0L

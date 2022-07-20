@@ -1,11 +1,8 @@
 package de.sam.base.controllers
 
 import de.sam.base.database.*
-import de.sam.base.utils.CustomSeekableWriter
-import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
-import de.sam.base.utils.fileDTOFromId
-import de.sam.base.utils.humanReadableByteCountBin
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.util.FileUtil
 import io.javalin.http.BadRequestResponse
@@ -24,6 +21,7 @@ import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -45,7 +43,7 @@ class FileController {
             throw BadRequestResponse("Early EOF")
         }
         transaction {
-            val owner = UserDAO.findById(userId)!!
+            val owner = ctx.currentUserDTO!!.getDAO()!!
             val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
 
             if (parentFile != null && !parentFile.toDTO().isOwnedByUserId(userId)) {
@@ -186,7 +184,22 @@ class FileController {
         ctx.header("Date", file.created.toString())
         // ctx.header("Cache-Control", "public, max-age=31536000")
 
-        CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
+        val wasRangedStream = CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
+        Logger.error("content length: " + ctx.contentLength())
+        if (!wasRangedStream) {
+            transaction {
+                DownloadLogDAO.new {
+                    this.file = ctx.fileDAOFromId
+                    this.user = ctx.currentUserDTO?.getDAO()
+                    this.ip = ctx.ip()
+                    this.downloadDate = DateTime(System.nanoTime() - (System.nanoTime() - ctx.requestStartTime))
+                    this.readBytes = ctx.contentLength().toLong()
+                    this.readDuration = System.nanoTime() - ctx.requestStartTime
+                    this.userAgent = ctx.header("User-Agent") ?: "unknown"
+                }
+            }
+        }
+
         // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
     }
 

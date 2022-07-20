@@ -9,11 +9,11 @@ import kotlin.math.min
 
 object CustomSeekableWriter {
     private var chunkSize = 128000 * 32
-    fun write(ctx: Context, inputStream: InputStream, contentType: String, totalBytes: Long) {
+    fun write(ctx: Context, inputStream: InputStream, contentType: String, totalBytes: Long): Boolean {
         if (ctx.header(Header.RANGE) == null) {
             ctx.header(Header.CONTENT_TYPE, contentType)
             ctx.result(inputStream)
-            return
+            return false
         }
         val requestedRange = ctx.header(Header.RANGE)!!.split("=")[1].split("-").filter { it.isNotEmpty() }
         val from = requestedRange[0].toLong()
@@ -28,6 +28,7 @@ object CustomSeekableWriter {
         ctx.header(Header.CONTENT_RANGE, "bytes $from-$to/$totalBytes")
         ctx.header(Header.CONTENT_LENGTH, "${min(to - from + 1, totalBytes)}")
         ctx.res.outputStream.write(inputStream, from, to)
+        return true
     }
 
     private fun OutputStream.write(

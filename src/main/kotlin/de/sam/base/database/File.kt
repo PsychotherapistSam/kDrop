@@ -8,6 +8,8 @@ import org.joda.time.DateTime
 import java.io.Serializable
 import java.util.*
 
+//TODO: theoretically doesnt need to be serializable & dto since it is only used in the server and not a session attribute
+
 class FileDTO(
     var id: UUID,
     var name: String,

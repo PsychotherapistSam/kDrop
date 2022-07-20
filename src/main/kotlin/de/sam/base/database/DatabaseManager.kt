@@ -26,6 +26,7 @@ class DatabaseManager {
             // create users table
             SchemaUtils.create(UsersTable)
             SchemaUtils.create(FilesTable)
+            SchemaUtils.create(DownloadLogTable)
         }
     }
 }

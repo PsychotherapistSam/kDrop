@@ -35,7 +35,7 @@ class UserController {
         val isSelf = ctx.currentUserDTO!!.id == selectedUserDTO.id
 
         transaction {
-            val user = UserDAO.findById(selectedUserDTO.id) ?: throw NotFoundResponse("User not found")
+            val user = selectedUserDTO.getDAO() ?: throw NotFoundResponse("User not found")
             ctx.formParamMap().forEach { (key, value) ->
                 when (key) {
                     "username" -> {
@@ -86,7 +86,8 @@ class UserController {
                     else -> {
                         if (ctx.isLoggedIn) {
                             if (Preferences.preferencesList.any { it.first == key && it.second == Boolean }) {
-                                val preferences = user.preferences.split(",").filter { it.isNotBlank() }.distinct().toMutableList()
+                                val preferences =
+                                    user.preferences.split(",").filter { it.isNotBlank() }.distinct().toMutableList()
                                 if (value.first().toBoolean()) {
                                     preferences.add(key)
                                 } else {

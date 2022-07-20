@@ -2,6 +2,7 @@ package de.sam.base
 
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.requestStartTime
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import java.math.BigDecimal
@@ -28,7 +29,7 @@ abstract class Page(
 //        val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
 //        println("pageDiff: ${nanoToMilli(pageDiff)}; templateDiff: ${nanoToMilli(templateDiff)}; total: ${nanoToMilli(pageDiff + templateDiff)}")
 //        return nanoToMilli(pageDiff + templateDiff)
-        val startTime = context?.attribute("javalin-request-log-start-time") as Long? ?: System.nanoTime()
+        val startTime = context!!.requestStartTime
         return nanoToMilli(System.nanoTime() - startTime)
     }
 

@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.UUIDTable
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.Serializable
 import java.util.*
@@ -36,6 +37,12 @@ class UserDTO(
 
     fun hasPreferences(preference: String): Boolean {
         return this.preferences.split(",").contains(preferences)
+    }
+
+    fun getDAO(): UserDAO? {
+        return transaction {
+            UserDAO.findById(this@UserDTO.id)
+        }
     }
 
 //    fun getPreference(preference: String): String? {
