@@ -103,10 +103,9 @@
                 </td>
                 @if(!ctx.isMobileUser)
                     <td class="right aligned collapsing">
+                        <!-- <i class="red info circle link icon"></i>-->
                         @if(fileDTO.private)
-                            <div class="ui basic fitted segment">
-                                <i class="lock icon"></i>
-                            </div>
+                            <i class="lock icon"></i>
                         @else
                             <i class="open lock icon"></i>
                         @endif
