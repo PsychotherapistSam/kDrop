@@ -1,5 +1,7 @@
 package de.sam.base.controllers
 
+import com.google.common.hash.Hashing
+import com.google.common.io.Files
 import de.sam.base.database.*
 import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
@@ -72,8 +74,10 @@ class FileController {
                 }
 
                 val targetFile = File("./upload/${file.id}")
-                FileUtil.streamToFile(it.content, targetFile.path)
 
+                logTimeSpent("downloading the file from the user") {
+                    FileUtil.streamToFile(it.content, targetFile.path)
+                }
                 logTimeSpent("hashing file") {
                     file.hash = targetFile.sha512()
                 }
@@ -471,6 +475,9 @@ class FileController {
 }
 
 private fun File.sha512(): String {
+
+    // This is very memory intensive (loading the whole file into memory)
+    /*
     val digest = MessageDigest.getInstance("SHA-512")
     val hash = digest.digest(this.readBytes())
     // convert byte array to Hex string
@@ -480,7 +487,10 @@ private fun File.sha512(): String {
         if (hex.length == 1) hexString.append('0')
         hexString.append(hex)
     }
-    return hexString.toString()
+    return hexString.toString()*/
+
+    // https://stackoverflow.com/a/31732451/11324248 with the note from https://stackoverflow.com/a/31732333/11324248
+    return Files.asByteSource(this).hash(Hashing.sha512()).toString()
 }
 
 private fun String.isValidUUID(): Boolean {

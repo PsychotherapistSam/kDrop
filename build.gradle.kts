@@ -50,6 +50,9 @@ dependencies {
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-impl
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation("com.google.guava:guava:31.1-jre")
+
 
 }
 
