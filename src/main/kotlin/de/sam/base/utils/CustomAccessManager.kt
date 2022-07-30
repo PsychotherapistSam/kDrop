@@ -8,6 +8,7 @@ import de.sam.base.users.UserRoles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.security.AccessManager
 import io.javalin.core.security.RouteRole
+import io.javalin.core.util.Header
 import io.javalin.http.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
@@ -24,7 +25,7 @@ class CustomAccessManager : AccessManager {
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
         val routeRolesMap = routeRoles.map { it as UserRoles }
-        val userAgentHeader = ctx.header("User-Agent") ?: throw BadRequestResponse("User-Agent is missing")
+        val userAgentHeader = ctx.header(Header.USER_AGENT) ?: throw BadRequestResponse("User-Agent is missing")
         // Redirect safari users to a firefox download
         /*if (userAgentHeader.contains("Safari")) {
             ctx.redirect("https://firefox.com/download")

@@ -22,6 +22,7 @@ import gg.jte.TemplateEngine
 import gg.jte.resolve.DirectoryCodeResolver
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
+import io.javalin.core.util.Header
 import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
@@ -121,7 +122,7 @@ class WebServer {
 
         Logger.debug("Registering Javalin exception handlers")
         app.exception(HttpResponseException::class.java) { e, ctx ->
-            if (ctx.header("Accept")?.contains("application/json") == true
+            if (ctx.header(Header.ACCEPT)?.contains("application/json") == true
                 || ctx.header("x-client")?.equals("web/api") == true
             ) {
                 ctx.status(e.status)

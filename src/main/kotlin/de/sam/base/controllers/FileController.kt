@@ -7,6 +7,7 @@ import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.core.util.FileUtil
+import io.javalin.core.util.Header
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
@@ -30,7 +31,7 @@ import kotlin.time.measureTime
 class FileController {
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 5L // 1024 MB || 5 GiB
-        if (ctx.header("Content-Length") != null && ctx.header("Content-Length")!!.toLong() > maxFileSize) {
+        if (ctx.header(Header.CONTENT_LENGTH) != null && ctx.header(Header.CONTENT_LENGTH)!!.toLong() > maxFileSize) {
             throw BadRequestResponse("File too big, max size is ${humanReadableByteCountBin(maxFileSize)}")
         }
 
@@ -180,12 +181,12 @@ class FileController {
         // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
-        ctx.header("Content-Type", file.mimeType)
-        ctx.header("Content-Disposition", "${dispositionType}; filename=${file.name}")
-        ctx.header("Content-Length", file.size.toString())
+        ctx.header(Header.CONTENT_TYPE, file.mimeType)
+        ctx.header(Header.CONTENT_DISPOSITION, "${dispositionType}; filename=${file.name}")
+        ctx.header(Header.CONTENT_LENGTH, file.size.toString())
 
         // date header for the generated etags
-        ctx.header("Date", file.created.toString())
+        ctx.header(Header.DATE, file.created.toString())
         // ctx.header("Cache-Control", "public, max-age=31536000")
 
         val wasRangedStream = CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
@@ -199,7 +200,7 @@ class FileController {
                         this.readDuration = System.nanoTime() - ctx.requestStartTime
                         this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
                         this.readBytes = file.size
-                        this.userAgent = ctx.header("User-Agent") ?: "unknown"
+                        this.userAgent = ctx.header(Header.USER_AGENT) ?: "unknown"
                     }
                 }
             }
@@ -287,12 +288,12 @@ class FileController {
         if (tempZipFile.exists()) {
             // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
 
-            ctx.header("Content-Type", "application/zip")
+            ctx.header(Header.CONTENT_TYPE, "application/zip")
             ctx.header(
-                "Content-Disposition",
+                Header.CONTENT_DISPOSITION,
                 "attachment; filename=download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip"
             )
-            ctx.header("Content-Length", tempZipFile.length().toString())
+            ctx.header(Header.CONTENT_LENGTH, tempZipFile.length().toString())
 
             ctx.result(FileInputStream(tempZipFile))
         } else {
