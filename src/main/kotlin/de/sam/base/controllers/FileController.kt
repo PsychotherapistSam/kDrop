@@ -181,30 +181,40 @@ class FileController {
         // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
-        ctx.header(Header.CONTENT_TYPE, file.mimeType)
-        ctx.header(Header.CONTENT_DISPOSITION, "${dispositionType}; filename=${file.name}")
-        ctx.header(Header.CONTENT_LENGTH, file.size.toString())
-
         // date header for the generated etags
         ctx.header(Header.DATE, file.created.toString())
+        if (file.hash != null) {
+            ctx.header(Header.ETAG, file.hash!!)
+        }
         // ctx.header("Cache-Control", "public, max-age=31536000")
 
-        val wasRangedStream = CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
-        if (isDirectDownload && !wasRangedStream) {
-            transaction {
-                logTimeSpent("adding file log entry") {
-                    DownloadLogDAO.new {
-                        this.file = ctx.fileDAOFromId
-                        this.user = ctx.currentUserDTO?.getDAO()
-                        this.ip = ctx.ip()
-                        this.readDuration = System.nanoTime() - ctx.requestStartTime
-                        this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
-                        this.readBytes = file.size
-                        this.userAgent = ctx.header(Header.USER_AGENT) ?: "unknown"
+        if (ctx.header(Header.RANGE) == null) {
+            ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
+
+//            ctx.header(Header.CONTENT_TYPE, file.mimeType)
+//            ctx.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=${file.name}")
+//            ctx.header(Header.CONTENT_LENGTH, file.size.toString())
+//            ctx.result(FileInputStream(systemFile))
+
+            if (isDirectDownload) {
+                transaction {
+                    logTimeSpent("adding file log entry") {
+                        DownloadLogDAO.new {
+                            this.file = ctx.fileDAOFromId
+                            this.user = ctx.currentUserDTO?.getDAO()
+                            this.ip = ctx.ip()
+                            this.readDuration = System.nanoTime() - ctx.requestStartTime
+                            this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
+                            this.readBytes = file.size
+                            this.userAgent = ctx.header(Header.USER_AGENT) ?: "unknown"
+                        }
                     }
                 }
             }
+        } else {
+            CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
         }
+
 
         // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
     }
@@ -276,26 +286,23 @@ class FileController {
         usersCurrentlyZipping.add(userId)
 
         val nanoTime = measureNanoTime {
-            zipFiles(fileList, tempZipFile)
+            try {
+                zipFiles(fileList, tempZipFile)
+            } finally {
+                usersCurrentlyZipping.remove(userId)
+            }
         }
-
-        usersCurrentlyZipping.remove(userId)
 
         val milliTime = nanoTime / 1000000.0
         Logger.debug("Zipping took $milliTime ms")
         Logger.debug("Zipping done")
 
         if (tempZipFile.exists()) {
-            // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-
-            ctx.header(Header.CONTENT_TYPE, "application/zip")
-            ctx.header(
-                Header.CONTENT_DISPOSITION,
-                "attachment; filename=download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip"
+            ctx.resultFile(
+                tempZipFile,
+                "download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip",
+                "application/zip"
             )
-            ctx.header(Header.CONTENT_LENGTH, tempZipFile.length().toString())
-
-            ctx.result(FileInputStream(tempZipFile))
         } else {
             throw NotFoundResponse("File not found")
         }
@@ -473,6 +480,14 @@ class FileController {
             ctx.json(mapOf("id" to file.id.toString()))
         }
     }
+}
+
+private fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
+    // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
+    this.header(Header.CONTENT_TYPE, mimeType)
+    this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
+    this.header(Header.CONTENT_LENGTH, file.length().toString())
+    this.result(FileInputStream(file))
 }
 
 private fun File.sha512(): String {

@@ -98,7 +98,8 @@ class WebServer {
                 it.aliasCheck = null // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
             }
 
-            javalinConfig.autogenerateEtags = true
+            // dos with large files
+            javalinConfig.autogenerateEtags = false
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
