@@ -21,7 +21,7 @@ import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
 class CustomAccessManager : AccessManager {
-    val fileCache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
+    val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
         val routeRolesMap = routeRoles.map { it as UserRoles }
@@ -91,31 +91,31 @@ class CustomAccessManager : AccessManager {
 
         if (routeRolesMap.contains(UserRoles.FILE_ACCESS_CHECK)) {
             val userQueryTime = measureNanoTime {
-                var fileDTO: FileDTO? = null
                 val fileId = ctx.pathParamAsClass<UUID>("fileId")
                     .get()
 
-                if (fileCache.containsKey(fileId)) {
-                    if (System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
-                        ctx.fileDTOFromId = fileCache[fileId]!!.second
-                    } else {
+                if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
+                    ctx.fileDAOFromId = fileCache[fileId]!!.second
+                    ctx.fileDTOFromId = fileCache[fileId]!!.third
+                } else {
+                    if (fileCache.containsKey(fileId)) {
                         fileCache.remove(fileId)
                     }
-                }
-                transaction {
-                    logTimeSpent("Getting file by id") {
-                        val fileDAO = FileDAO.findById(fileId)
-                        if (fileDAO != null) {
-                            fileDTO = fileDAO.toDTO()
-                            Logger.trace("Setting fileDTO and DAO to request attribute")
-                            ctx.fileDAOFromId = fileDAO
-                            ctx.fileDTOFromId = fileDTO
-                            fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO!!)
+                    transaction {
+                        logTimeSpent("Getting file by id") {
+                            val fileDAO = FileDAO.findById(fileId)
+                            if (fileDAO != null) {
+                                val fileDTO = fileDAO.toDTO()
+                                Logger.trace("Setting fileDTO and DAO to request attribute")
+                                ctx.fileDAOFromId = fileDAO
+                                ctx.fileDTOFromId = fileDTO
+                                fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO!!)
+                            }
                         }
                     }
                 }
 
-                if (fileDTO != null && !fileDTO!!.canBeViewedByUserId(ctx.currentUserDTO?.id)) {
+                if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.canBeViewedByUserId(ctx.currentUserDTO?.id)) {
                     Logger.error("File not found: access manager")
                     throw NotFoundResponse("File not found")
                 }
