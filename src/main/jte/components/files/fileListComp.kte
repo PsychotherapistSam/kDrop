@@ -103,7 +103,8 @@
                 </td>
                 @if(!ctx.isMobileUser)
                     <td class="right aligned collapsing">
-                        <!-- <i class="red info circle link icon"></i>-->
+<%--                        <i class="red info circle link icon"></i>--%>
+<%--                        <i class="lock link icon" _="on click toggle .open on me"></i>--%>
                         @if(fileDTO.private)
                             <i class="lock icon"></i>
                         @else
