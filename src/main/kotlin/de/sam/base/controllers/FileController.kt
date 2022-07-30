@@ -181,12 +181,11 @@ class FileController {
         // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
-        // date header for the generated etags
-        ctx.header(Header.DATE, file.created.toString())
-        if (file.hash != null) {
-            ctx.header(Header.ETAG, file.hash!!)
-        }
-        // ctx.header("Cache-Control", "public, max-age=31536000")
+//        ctx.header(Header.DATE, file.created.toString())
+//        if (file.hash != null) {
+//            ctx.header("SHA512", file.hash!!)
+//        }
+        ctx.header("Cache-Control", "max-age=31536000, immutable")
 
         if (ctx.header(Header.RANGE) == null) {
             ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
