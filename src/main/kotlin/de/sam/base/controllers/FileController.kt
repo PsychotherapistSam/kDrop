@@ -66,7 +66,7 @@ class FileController {
                     this.size = it.size
                     this.sizeHR = humanReadableByteCountBin(it.size)
                     this.password = null
-                    this.private = true
+                    this.private = parentFile?.private ?: false
                     this.created = DateTime.now()
                     this.isFolder = false
                 }
@@ -461,7 +461,7 @@ class FileController {
                 this.size = 0
                 this.sizeHR = "0 B"
                 this.password = null
-                this.private = true
+                this.private = parent?.private ?: false
                 this.created = DateTime.now()
                 this.isFolder = true
             }

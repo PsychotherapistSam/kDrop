@@ -14,6 +14,7 @@
 page = page,
 content = @`
     !{val currentIsFolder = page.parent == null || page.parent!!.isFolder}
+    !{val fileIsOwnedByCurrentUser = page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true}
 
     @if(!currentIsFolder && page.parent != null)
         <h1>${page.parent!!.name}</h1>
@@ -21,11 +22,11 @@ content = @`
         <h1>Your Files</h1>
     @endif
 
-    @if(page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true)
+    @if(fileIsOwnedByCurrentUser)
         @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
-    @if(page.parent != null && !page.parent!!.private && page.fileIsOwnedByCurrentUser)
+    @if(page.parent?.private == false && fileIsOwnedByCurrentUser)
         !{val typeString = if(page.parent!!.isFolder) "folder" else "file"}
         <div class="ui warning message">
             <div class="header">

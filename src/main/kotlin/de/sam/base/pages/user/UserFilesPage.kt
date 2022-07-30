@@ -27,7 +27,6 @@ class UserFilesPage : Page(
     }
 
     var parent: FileDTO? = null
-    var fileIsOwnedByCurrentUser = false
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
