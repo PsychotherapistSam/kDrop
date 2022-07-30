@@ -95,8 +95,9 @@ class CustomAccessManager : AccessManager {
                     .get()
 
                 if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
-                    ctx.fileDAOFromId = fileCache[fileId]!!.second
-                    ctx.fileDTOFromId = fileCache[fileId]!!.third
+                    val fileCacheEntry = fileCache[fileId]!!
+                    ctx.fileDAOFromId = fileCacheEntry.second
+                    ctx.fileDTOFromId = fileCacheEntry.third
                 } else {
                     if (fileCache.containsKey(fileId)) {
                         fileCache.remove(fileId)
