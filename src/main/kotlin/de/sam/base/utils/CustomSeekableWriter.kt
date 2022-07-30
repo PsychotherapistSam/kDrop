@@ -20,7 +20,7 @@ object CustomSeekableWriter {
         val to = when {
             from + chunkSize > totalBytes -> totalBytes - 1 // chunk bigger than file, write all
             requestedRange.size == 2 -> requestedRange[1].toLong() // chunk smaller than file, to/from specified
-            else -> from + chunkSize - 1 // chunk smaller than file, to/from not specified
+            else ->  totalBytes - 1 // chunk smaller than file, to/from not specified -> return full header (jdownloader2 compatability)
         }
         ctx.status(206)
         ctx.header(Header.CONTENT_TYPE, contentType)
