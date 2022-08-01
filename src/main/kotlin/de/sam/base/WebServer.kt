@@ -1,8 +1,10 @@
 package de.sam.base
 
+import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.FileController
+import de.sam.base.controllers.ShareController
 import de.sam.base.controllers.UserController
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.IndexPage
@@ -27,6 +29,7 @@ import io.javalin.core.util.RouteOverviewPlugin
 import io.javalin.core.validation.JavalinValidation
 import io.javalin.http.HttpResponseException
 import io.javalin.http.staticfiles.Location
+import io.javalin.plugin.json.JavalinJackson
 import io.javalin.plugin.rendering.template.JavalinJte
 import org.tinylog.kotlin.Logger
 import java.nio.file.Path
@@ -100,6 +103,9 @@ class WebServer {
 
             // dos with large files
             javalinConfig.autogenerateEtags = false
+
+            val jackson = JavalinJackson.defaultMapper().apply { registerModule(JodaModule()) }
+            javalinConfig.jsonMapper(JavalinJackson(jackson))
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
@@ -195,7 +201,17 @@ class WebServer {
                     }
                 }
                 path("/directories") {
+                    //TODO: move this to the files post (uploadFile) but accept no file if it has to be a directory
                     post("/", FileController()::createDirectory, UserRoles.USER)
+                }
+
+                path("/share") {
+                    post("/", ShareController()::create, UserRoles.USER)
+                    path("/{shareId}") {
+                        get("/", ShareController()::getOne, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
+                        delete("/", ShareController()::delete, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
+                    }
+//                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
                 }
             }
         }

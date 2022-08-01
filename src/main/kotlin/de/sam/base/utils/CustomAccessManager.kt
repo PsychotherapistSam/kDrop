@@ -3,6 +3,7 @@ package de.sam.base.utils
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.FileDAO
 import de.sam.base.database.FileDTO
+import de.sam.base.database.ShareDAO
 import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.logging.logTimeSpent
@@ -122,6 +123,33 @@ class CustomAccessManager : AccessManager {
                 }
             }
             ctx.attribute("fileQueryTime", userQueryTime)
+        }
+
+        if (routeRolesMap.contains(UserRoles.SHARE_ACCESS_CHECK)) {
+            val shareQueryTime = measureNanoTime {
+                val shareId = ctx.pathParamAsClass<UUID>("shareId").get()
+
+                transaction {
+                    logTimeSpent("Getting share by id") {
+                        val shareDAO = ShareDAO.findById(shareId)
+
+                        if (shareDAO == null) {
+                            Logger.info("Share not found: access manager (actually not found)")
+                            throw NotFoundResponse("Share not found")
+                        }
+
+                        if (ctx.method().equals("delete", true) && ctx.currentUserDTO?.id != shareDAO.user.id.value) {
+                            Logger.info("Share not found: access manager (user not owner)")
+                            throw NotFoundResponse("Share not found")
+                        }
+
+                        val shareDTO = shareDAO.toDTO()
+                        Logger.trace("Setting shareDTO and DAO to request attribute")
+                        ctx.share = shareDAO to shareDTO
+                    }
+                }
+            }
+            ctx.attribute("shareQueryTime", shareQueryTime)
         }
         handler.handle(ctx)
     }

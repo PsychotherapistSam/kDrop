@@ -1,8 +1,6 @@
 package de.sam.base.utils
 
-import de.sam.base.database.FileDAO
-import de.sam.base.database.FileDTO
-import de.sam.base.database.UserDTO
+import de.sam.base.database.*
 import io.javalin.http.Context
 
 // https://github.com/tipsy/javalinstagram/blob/7d03477b89a21addc8cf734b52b292828d48eefe/src/main/kotlin/javalinstagram/Extensions.kt#L7
@@ -32,3 +30,7 @@ var Context.fileDAOFromId: FileDAO?
 
 val Context.requestStartTime: Long
     get() = this.attribute("javalin-request-log-start-time") as Long? ?: 0L
+
+var Context.share: Pair<ShareDAO, ShareDTO>?
+    get() = this.attribute<Pair<ShareDAO, ShareDTO>>("requestShareParameter")
+    set(value) = this.attribute("requestShareParameter", value)

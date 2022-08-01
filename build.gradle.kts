@@ -33,6 +33,8 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.3")
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-joda
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.3")
 
     // https://mvnrepository.com/artifact/com.password4j/password4j
     implementation("com.password4j:password4j:1.5.4")
@@ -52,8 +54,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation("com.google.guava:guava:31.1-jre")
-
-
 }
 
 tasks.test {
