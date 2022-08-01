@@ -14,13 +14,16 @@
                 <a class="item context-item" data-action="new-folder">
                     <i class="folder icon"></i>Folder
                 </a>
-                <a class="item context-item" data-action="new-share">
-                    <i class="share icon"></i>Share
-                </a>
+                <%--                <a class="item context-item" data-action="new-share">--%>
+                <%--                    <i class="share icon"></i>Share--%>
+                <%--                </a>--%>
             </div>
         </div>
         <a class="item context-item" data-action="preview" id="contextMenuPreviewButton">
             <i class="image icon"></i> Preview
+        </a>
+        <a class="item context-item" data-action="new-share">
+            <i class="share alternate icon"></i>Share
         </a>
         <a class="item context-item" data-action="download">
             <i class="download icon"></i> Download
