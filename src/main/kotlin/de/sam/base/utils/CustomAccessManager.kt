@@ -1,12 +1,10 @@
 package de.sam.base.utils
 
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.FileDAO
-import de.sam.base.database.FileDTO
-import de.sam.base.database.ShareDAO
-import de.sam.base.database.toDTO
+import de.sam.base.database.*
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.logging.logTimeSpent
+import de.sam.base.utils.string.isUUID
 import io.javalin.core.security.AccessManager
 import io.javalin.core.security.RouteRole
 import io.javalin.core.util.Header
@@ -127,11 +125,19 @@ class CustomAccessManager : AccessManager {
 
         if (routeRolesMap.contains(UserRoles.SHARE_ACCESS_CHECK)) {
             val shareQueryTime = measureNanoTime {
-                val shareId = ctx.pathParamAsClass<UUID>("shareId").get()
+                val shareId = ctx.pathParamAsClass<String>("shareId").get()
 
                 transaction {
                     logTimeSpent("Getting share by id") {
-                        val shareDAO = ShareDAO.findById(shareId)
+                        val shareDAO = if (shareId.isUUID) {
+                            ShareDAO.find { SharesTable.id eq UUID.fromString(shareId) }
+                                .limit(1)
+                                .firstOrNull()
+                        } else {
+                            ShareDAO.find { SharesTable.vanityName eq shareId }
+                                .limit(1)
+                                .firstOrNull()
+                        }
 
                         if (shareDAO == null) {
                             Logger.info("Share not found: access manager (actually not found)")
