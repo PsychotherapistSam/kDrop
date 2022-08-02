@@ -22,7 +22,7 @@
         <a class="item context-item" data-action="preview" id="contextMenuPreviewButton">
             <i class="image icon"></i> Preview
         </a>
-        <a class="item context-item" data-action="new-share">
+        <a class="item context-item" data-action="shares">
             <i class="share alternate icon"></i>Share
         </a>
         <a class="item context-item" data-action="download">
@@ -656,6 +656,9 @@
                                  }
                              });*/
                         }
+                        break;
+                    case "shares":
+                        showShareListModal(rows[0]);
                         break;
                     case "new-folder":
                     @if(parent != null)

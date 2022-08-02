@@ -1,0 +1,84 @@
+@import de.sam.base.database.ShareDAO
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.utils.toRecentTimeString
+
+@param shares: List<ShareDAO>
+
+<div class="ui relaxed divided list" style="margin-bottom: unset">
+    @if(shares.isNotEmpty())
+        @for(share in shares)
+            <div class="item" data-id="${share.id.value.toString()}">
+                <div class="right floated content">
+                    <div class="ui compact secondary shareEdit button">Edit</div>
+                    <div class="ui compact red shareDelete button">Delete</div>
+                </div>
+                <div class="content">
+                    !{val name = if(share.vanityName.isNullOrEmpty()) share.id.value.toString() else share.vanityName}
+                    <a class="header" href="/s/${name}" target="_blank">
+                        /s/${name}
+                    </a>
+                    <div class="description">Created ${share.creationDate.toRecentTimeString()}</div>
+                </div>
+            </div>
+        @endfor
+    @else
+        <div class="ui basic placeholder segment">
+            <div class="ui icon header" style="margin: unset">
+                <i class="file icon"></i>
+                This folder has not been shared.
+            </div>
+        </div>
+    @endif
+</div>
+<script>
+    $(".shareDelete").click(function (e) {
+        const element = e.target;
+
+        $(element).addClass("loading");
+
+        const id = $(element).closest(".item").attr("data-id");
+        const fileId = $(element).closest(".modal").attr("data-file-id");
+
+        $.ajax({
+            url: "/api/v1/shares/" + id,
+            method: "DELETE",
+            success: function () {
+                $(element).removeClass("loading");
+                reloadShareListModal(fileId);
+                $('body').toast({
+                    class: 'success',
+                    message: 'Deleted share successfully'
+                });
+            }
+        });
+        console.log(id);
+    });
+</script>
+<%--        <div class="ui divided items">--%>
+<%--            @for(i in 0..2)--%>
+<%--                <div class="item">--%>
+<%--                    <div class="content">--%>
+<%--                        <a class="header">12 Years a Slave</a>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
+<%--            @endfor--%>
+<%--            <div class="item">--%>
+<%--                <div class="content">--%>
+<%--                    <a class="header">My Neighbor Totoro</a>--%>
+<%--                </div>--%>
+<%--            </div>--%>
+<%--            <div class="item">--%>
+<%--                <div class="content">--%>
+<%--                    <a class="header">Watchmen</a>--%>
+<%--                </div>--%>
+<%--            </div>--%>
+<%--        </div>--%>
+<%--        <div class="ui divider"></div>--%>
+<%--        <div class="ui basic fitted clearing segment">--%>
+<%--            <div class="ui right floated compact secondary button">--%>
+<%--                Add new--%>
+<%--                <i class="right plus icon"></i>--%>
+<%--            </div>--%>
+<%--        </div>--%>
+<%--        <div class="ui green active centered inline loader" id="downlaodModalLoader"></div>--%>
+

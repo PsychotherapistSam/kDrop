@@ -1,0 +1,53 @@
+@import de.sam.base.pages.user.UserFilesPage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.users.UserRoles
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.pages.user.UserSharePage
+@import de.sam.base.utils.*
+@import de.sam.base.utils.isLoggedIn
+@import de.sam.base.utils.preferencesString
+@import de.sam.base.utils.toReadableTimeString
+@import de.sam.base.utils.toRecentTimeString
+
+@param page: UserSharePage
+
+@template.layout.page(
+page = page,
+content = @`
+    !{val currentIsFolder = page.file == null || page.file!!.isFolder}
+    !{val fileIsOwnedByCurrentUser = page.file?.isOwnedByUserId(page.currentUserDTO?.id) == true}
+
+    @if(!currentIsFolder && page.file != null)
+        <h1>${page.file!!.name}</h1>
+    @else
+        <h1>Your Files</h1>
+    @endif
+
+    @if(page.file?.private == false && fileIsOwnedByCurrentUser)
+        !{val typeString = if(currentIsFolder) "folder" else "file"}
+        <div class="ui warning message">
+            <div class="header">
+                This ${typeString} is publically accessible!
+            </div>
+            This ${typeString} is publically accessible to all people who have access to the link.
+            @if(currentIsFolder)
+                All files or folders in this folder will inherit this access by default.
+            @endif
+            You can change this behavior by setting the access of this ${typeString} to private.
+        </div>
+    @endif
+
+<%--    @if(currentIsFolder)--%>
+<%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!, file = page.file)--%>
+<%--        @template.components.files.fileUploadComp(file = page.file, page = page)--%>
+<%--    @else--%>
+        @template.components.files.fileDownloadComponent(file = page.file!!, ctx = page.context!!, share = true, shareId = page.context!!.share!!.second.id.toString())
+<%--    @endif--%>
+
+`,
+extraContent = @`
+<%--    @if(page.currentUserDTO != null && ( page.file == null || page.file?.isFolder == true))--%>
+<%--        @template.components.files.modals()--%>
+<%--        @template.components.files.fileListContextMenuComp(file = page.file)--%>
+<%--    @endif--%>
+`)

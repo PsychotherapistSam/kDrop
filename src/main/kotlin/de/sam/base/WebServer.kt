@@ -12,10 +12,7 @@ import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
-import de.sam.base.pages.user.UserEditPage
-import de.sam.base.pages.user.UserFilesPage
-import de.sam.base.pages.user.UserLoginPage
-import de.sam.base.pages.user.UserRegistrationPage
+import de.sam.base.pages.user.*
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.session.Session
@@ -152,6 +149,7 @@ class WebServer {
                     get("/", UserFilesPage(), UserRoles.USER)
                     path("/{fileId}") {
                         get("/", UserFilesPage(), UserRoles.FILE_ACCESS_CHECK)
+                        get("/shares", UserSharePage()::shareList, UserRoles.FILE_ACCESS_CHECK)
                     }
                 }
             }
@@ -166,6 +164,7 @@ class WebServer {
                     }
                 }
             }
+            get("/s/{shareId}", UserSharePage(), UserRoles.SHARE_ACCESS_CHECK)
         }
 
         // https://stackoverflow.com/a/7260540
@@ -205,11 +204,13 @@ class WebServer {
                     post("/", FileController()::createDirectory, UserRoles.USER)
                 }
 
-                path("/share") {
+                path("/shares") {
                     post("/", ShareController()::create, UserRoles.USER)
                     path("/{shareId}") {
                         get("/", ShareController()::getOne, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
+                        get("/download", UserSharePage()::downloadFile, UserRoles.SHARE_ACCESS_CHECK)
                         delete("/", ShareController()::delete, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
+
                     }
 //                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
                 }

@@ -113,69 +113,6 @@
     </div>
 </div>
 
-<div class="ui small modal" id="shareModal">
-    <div class="header">Edit File or Folder Shares</div>
-    <div class="content">
-        <div class="ui relaxed divided list">
-            !{val random = kotlin.random.Random.nextInt(0,6)}
-            @if(random > 0)
-                @for(i in 0..random)
-                    <div class="item">
-                        <div class="right floated content">
-                            <div class="ui compact secondary button">Edit</div>
-                            <div class="ui compact red button">Delete</div>
-                        </div>
-                        <div class="content">
-                            <a class="header">Semantic-Org/Semantic-UI</a>
-                            <div class="description">Created 10 mins ago</div>
-                        </div>
-                    </div>
-                @endfor
-            @else
-                <div class="ui basic placeholder segment">
-                    <div class="ui icon header" style="margin: unset">
-                        <i class="file icon"></i>
-                        This folder has not been shared.
-                    </div>
-                </div>
-            @endif
-        </div>
-        <%--        <div class="ui divided items">--%>
-        <%--            @for(i in 0..2)--%>
-        <%--                <div class="item">--%>
-        <%--                    <div class="content">--%>
-        <%--                        <a class="header">12 Years a Slave</a>--%>
-        <%--                    </div>--%>
-        <%--                </div>--%>
-        <%--            @endfor--%>
-        <%--            <div class="item">--%>
-        <%--                <div class="content">--%>
-        <%--                    <a class="header">My Neighbor Totoro</a>--%>
-        <%--                </div>--%>
-        <%--            </div>--%>
-        <%--            <div class="item">--%>
-        <%--                <div class="content">--%>
-        <%--                    <a class="header">Watchmen</a>--%>
-        <%--                </div>--%>
-        <%--            </div>--%>
-        <%--        </div>--%>
-        <%--        <div class="ui divider"></div>--%>
-        <%--        <div class="ui basic fitted clearing segment">--%>
-        <%--            <div class="ui right floated compact secondary button">--%>
-        <%--                Add new--%>
-        <%--                <i class="right plus icon"></i>--%>
-        <%--            </div>--%>
-        <%--        </div>--%>
-        <%--        <div class="ui green active centered inline loader" id="downlaodModalLoader"></div>--%>
-    </div>
-    <div class="actions">
-        <div class="ui compact secondary button">
-            Add Share
-            <i class="right plus icon"></i>
-        </div>
-        <div class="ui compact secondary deny button">Cancel</div>
-    </div>
-</div>
 
 <!-- remove blank space on images that are sized weirdly -->
 <style>
@@ -324,21 +261,116 @@
             type: 'image'
         }, 0);
     }
+</script>
 
-    function showShareModal() {
+
+<div class="ui small modal" id="shareModal" data-file-id="">
+    <div class="header">Edit File or Folder Shares</div>
+    <div class="content">
+
+    </div>
+    <div class="actions">
+        <div class="ui compact secondary button" _="on click call showShareCreationModal(the closest @data-file-id)">
+            Add Share
+            <i class="right plus icon"></i>
+        </div>
+        <div class="ui compact secondary deny button">Close</div>
+    </div>
+</div>
+<script>
+    function showShareListModal(element) {
         const modal = $("#shareModal");
-        const form = $("#fileEditForm");
 
-        $(modal).modal({
-            duration: 250,
-        }).modal('show');
+        const fileId = element.getAttribute("data-id");
+
+        modal.attr("data-file-id", fileId);
+
+        htmx.ajax('GET', '/user/files/' + fileId + '/shares', "#shareModal > .content").then(() => {
+            $(modal).modal({
+                duration: 250,
+                allowMultiple: true
+            }).modal('show');
+        });
         return true;
     }
 
-    showShareModal();
-
-    function hideShareModal() {
-        $('#shareModal').modal('hide');
+    function reloadShareListModal(fileId) {
+        htmx.ajax('GET', '/user/files/' + fileId + '/shares', "#shareModal > .content")
     }
 
+    function hideShareListModal() {
+        $('#shareModal').modal('hide');
+    }
+</script>
+
+<div class="ui tiny modal" id="shareCreationModal" data-folder-id="">
+    <div class="header">Create File or Folder Shares</div>
+    <div class="content">
+        <form class="ui form" id="shareCreationForm"
+              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+            <!-- onsubmit="$('#fileEditModal').find('button.approve').first().click(); return false;" -->
+            <div class="field">
+                <label for="vanityName">Vanity Name (optional)</label>
+                <input type="text" name="vanityName" id="vanityName" placeholder="Name" tabindex="1">
+            </div>
+
+            <div class="field">
+                <label for="maxDownloads">Downloads (optional)</label>
+                <input type="number" name="maxDownloads" id="maxDownloads" placeholder="0" tabindex="1">
+            </div>
+
+        </form>
+    </div>
+    <div class="actions">
+        <button class="ui compact green approve button">Create</button>
+        <button class="ui compact secondary deny button">Close</button>
+    </div>
+</div>
+<script>
+    function showShareCreationModal(fileId) {
+        const modal = $("#shareCreationModal");
+
+        modal.attr("data-file-id", fileId);
+        console.log(fileId)
+        // htmx.ajax('GET', '/user/files/' + fileId + '/shares', "#shareModal > .content").then(() => {
+        $(modal).modal({
+            duration: 250,
+            allowMultiple: true,
+            onApprove: function () {
+                modal.find(".approve.button").addClass("loading")
+                $.ajax({
+                    url: "/api/v1/shares",
+                    type: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    data: $("#shareCreationForm").serialize() + "&fileId=" + fileId,
+                    success: function () {
+                        modal.find(".approve.button").removeClass("loading")
+                        modal.modal('hide');
+                        modal.find("button.approve").first().removeClass("loading")
+                        $("#shareCreationForm").trigger("reset");
+                        reloadShareListModal(fileId)
+                    },
+                    error: function (data) {
+                        modal.find(".approve.button").removeClass("loading")
+                        const responseJSON = data.responseJSON
+                        $("#shareCreationForm").trigger("reset");
+                        $('body').toast({
+                            class: 'error',
+                            message: responseJSON[0]
+                        });
+                    },
+                });
+                return false;
+            }
+        }).modal('show');
+        // });
+        return true;
+    }
+
+
+    function hideShareCreationModal() {
+        $('#shareCreationModal').modal('hide');
+    }
 </script>

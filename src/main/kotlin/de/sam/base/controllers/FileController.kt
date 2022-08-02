@@ -481,7 +481,7 @@ class FileController {
     }
 }
 
-private fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
+fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
     // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
     this.header(Header.CONTENT_TYPE, mimeType)
     this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
