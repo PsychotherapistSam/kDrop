@@ -29,6 +29,36 @@ class UserLoginPage : Page(
                     return@prolongAtLeast
                 }
 
+//                val captchaSolution =
+//                    ctx.formParamAsClass<String>("frc-captcha-solution")
+//                        .check({ it.isNotBlank() }, "solving the captcha is required")
+//                        .get()
+//
+//                val client = OkHttpClient()
+//
+//                val request = okhttp3.Request.Builder()
+//                    .url("https://api.friendlycaptcha.com/api/v1/siteverify")
+//                    .post(
+//                        okhttp3.FormBody.Builder()
+//                            .add("solution", captchaSolution)
+//                            .add("secret", "A10D4MO727BTS570TEQRRPMG6AUUT0OLNC1AG3QCK9K7MBO95VKI21KD1K")
+//                            .add("sitekey", "FCMSCT79EL4FHOUU")
+//                            .build()
+//                    )
+//                    .build()
+//
+//
+//                val response = client.newCall(request).execute()
+//                val json = response.body?.string() ?: throw InternalServerErrorResponse("no response body")
+//
+//                // handle response using fasterxml json
+//                val mapper = ObjectMapper()
+//                val jsonNode = mapper.readTree(json)
+//                val success = jsonNode.get("success").asBoolean()
+//                if (!success) {
+//                    throw BadRequestResponse("captcha solution is invalid")
+//                }
+
                 val attempt = validateLoginAttempt(ctx.formParam("username"), ctx.formParam("password"))
                 // first = user, second = errors
                 if (attempt.second.isNotEmpty()) {

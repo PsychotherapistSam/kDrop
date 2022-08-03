@@ -7,6 +7,13 @@
 @template.layout.page(
 page = page,
 content = @`
+<%--    <script--%>
+<%--            type="module"--%>
+<%--            src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.5/widget.module.min.js"--%>
+<%--            async--%>
+<%--            defer--%>
+<%--    ></script>--%>
+<%--    <script  src="https://cdn.jsdelivr.net/npm/friendly-challenge@0.9.5/widget.min.js" async defer></script>--%>
     <br>
     <div class="ui grid">
         <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
@@ -25,6 +32,9 @@ content = @`
                     <input type="password" name="password" id="password" placeholder="Password"
                            tabindex="2">
                 </div>
+<%--                <div class="field">--%>
+<%--                    <div class="frc-captcha" data-sitekey="FCMSCT79EL4FHOUU"></div>--%>
+<%--                </div>--%>
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">
