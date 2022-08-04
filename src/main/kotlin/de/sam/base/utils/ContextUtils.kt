@@ -34,3 +34,10 @@ val Context.requestStartTime: Long
 var Context.share: Pair<ShareDAO, ShareDTO>?
     get() = this.attribute<Pair<ShareDAO, ShareDTO>>("requestShareParameter")
     set(value) = this.attribute("requestShareParameter", value)
+
+//TODO: fix actual redirecting, this doesnt seem to work.
+fun Context.hxRedirect(route: String) {
+    // would love to use redirect & push url but that's not how it works. redirect aborts everything else and forces a browser redirect
+//    this.redirect(route)
+    this.header("HX-Redirect", route)
+}

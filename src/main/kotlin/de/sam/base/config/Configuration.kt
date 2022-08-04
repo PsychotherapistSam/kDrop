@@ -17,6 +17,7 @@ class Configuration {
     var description: String = ""
     var passwordPepper: String = UUID.randomUUID().toString()
     var database = Database()
+    var captcha = Captcha()
     var allowUserRegistration: Boolean = false
     var devEnvironment = true
     var logLevel = "TRACE"
@@ -27,6 +28,14 @@ class Configuration {
         var username: String = "postgres"
         var password: String = "postgres"
         var database: String = "base"
+    }
+
+    class Captcha {
+        var enabled: Boolean = false
+        var service: String = ""
+        var siteKey: String = ""
+        var secretKey: String = ""
+        var locations: List<String> = arrayListOf("registration")
     }
 
     companion object {

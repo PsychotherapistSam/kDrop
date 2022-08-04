@@ -142,6 +142,7 @@ class WebServer {
             get("/login", UserLoginPage())
             post("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())
+            post("/registration", UserRegistrationPage())
             path("/user") {
                 get("/settings", UserEditPage(), UserRoles.USER)
                 path("/files") {
@@ -171,7 +172,7 @@ class WebServer {
         app.routes {
             path("/api/v1") {
                 path("/session") {
-                    post(AuthenticationController()::loginRequest)
+//                    post(AuthenticationController()::loginRequest)
                     delete(AuthenticationController()::logoutRequest)
                     // crud
                 }

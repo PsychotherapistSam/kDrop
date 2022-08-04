@@ -14,11 +14,15 @@ import de.sam.base.utils.prolongAtLeast
 import io.javalin.core.validation.ValidationError
 import io.javalin.http.Context
 import io.javalin.http.HttpCode
+import io.javalin.http.InternalServerErrorResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 class AuthenticationController {
-    private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
+
+    companion object {
+        val argon2Instance: Argon2Function = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
+    }
 
     fun loginRequest(ctx: Context) {
         // hide discrepancy on whether an account exists or not to prevent account enumeration
@@ -42,6 +46,9 @@ class AuthenticationController {
     }
 
     fun registrationRequest(ctx: Context) {
+
+        throw InternalServerErrorResponse("not yet supported")
+
         if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
             ctx.json("You are already registered.")
             ctx.status(HttpCode.FORBIDDEN)
@@ -99,6 +106,21 @@ class AuthenticationController {
 
 fun validateLoginAttempt(username: String?, password: String?): Pair<UserDTO?, List<String>> {
     val usernameValidation = validateUsername(username)
+    val usernameErrors = usernameValidation.first
+    val user = usernameValidation.second
+    if (usernameErrors.isNotEmpty()) {
+        return Pair(null, usernameErrors.map { it.message }) // don't bother with password validation
+    }
+
+    val passwordValidation = validatePassword(user, password)
+    if (passwordValidation.isNotEmpty()) {
+        return Pair(null, passwordValidation.map { it.message })
+    }
+    return Pair(user, listOf())
+}
+
+fun validateRegistrationAttempt(username: String?, password: String?): Pair<UserDTO?, List<String>> {
+    val usernameValidation = validateUsername(username, false)
     val usernameErrors = usernameValidation.first
     val user = usernameValidation.second
     if (usernameErrors.isNotEmpty()) {

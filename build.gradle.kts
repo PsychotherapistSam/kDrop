@@ -55,8 +55,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.guava/guava
     implementation("com.google.guava:guava:31.1-jre")
 
-//    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
-//    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
 }
 

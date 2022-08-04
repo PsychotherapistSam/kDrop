@@ -1,8 +1,11 @@
 package de.sam.base.pages.user
 
 import de.sam.base.Page
+import de.sam.base.captcha.Captcha
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.validateLoginAttempt
 import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.hxRedirect
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
 import io.javalin.http.Context
@@ -29,35 +32,19 @@ class UserLoginPage : Page(
                     return@prolongAtLeast
                 }
 
-//                val captchaSolution =
-//                    ctx.formParamAsClass<String>("frc-captcha-solution")
-//                        .check({ it.isNotBlank() }, "solving the captcha is required")
-//                        .get()
-//
-//                val client = OkHttpClient()
-//
-//                val request = okhttp3.Request.Builder()
-//                    .url("https://api.friendlycaptcha.com/api/v1/siteverify")
-//                    .post(
-//                        okhttp3.FormBody.Builder()
-//                            .add("solution", captchaSolution)
-//                            .add("secret", "A10D4MO727BTS570TEQRRPMG6AUUT0OLNC1AG3QCK9K7MBO95VKI21KD1K")
-//                            .add("sitekey", "FCMSCT79EL4FHOUU")
-//                            .build()
-//                    )
-//                    .build()
-//
-//
-//                val response = client.newCall(request).execute()
-//                val json = response.body?.string() ?: throw InternalServerErrorResponse("no response body")
-//
-//                // handle response using fasterxml json
-//                val mapper = ObjectMapper()
-//                val jsonNode = mapper.readTree(json)
-//                val success = jsonNode.get("success").asBoolean()
-//                if (!success) {
-//                    throw BadRequestResponse("captcha solution is invalid")
-//                }
+                if (config.captcha.enabled && config.captcha.locations.contains("login")) {
+                    when (config.captcha.service.lowercase()) {
+                        "recaptcha" -> {
+                            val captchaErrors = Captcha.validate(ctx)
+                            if (captchaErrors.isNotEmpty()) {
+                                //TODO: reset username field if captcha is not valid
+                                lastTryUsername = ctx.formParam("username") ?: ""
+                                errors.addAll(captchaErrors)
+                                return@prolongAtLeast
+                            }
+                        }
+                    }
+                }
 
                 val attempt = validateLoginAttempt(ctx.formParam("username"), ctx.formParam("password"))
                 // first = user, second = errors
@@ -75,12 +62,4 @@ class UserLoginPage : Page(
         }
         super.handle(ctx)
     }
-}
-
-//TODO: fix actual redirecting, this doesnt seem to work.
-private fun Context.hxRedirect(route: String) {
-    this.redirect(route)
-    this.header("HX-Push", route)
-    /*HX-Push - pushes a new URL into the browser’s address bar
-    HX-Redirect*/
 }

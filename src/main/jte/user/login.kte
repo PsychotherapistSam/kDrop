@@ -32,9 +32,12 @@ content = @`
                     <input type="password" name="password" id="password" placeholder="Password"
                            tabindex="2">
                 </div>
-<%--                <div class="field">--%>
-<%--                    <div class="frc-captcha" data-sitekey="FCMSCT79EL4FHOUU"></div>--%>
-<%--                </div>--%>
+                @if(config.captcha.enabled && config.captcha.locations.contains("login"))
+                    <div class="field">
+                        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+                        <div class="g-recaptcha" data-sitekey="${config.captcha.siteKey}"></div>
+                    </div>
+                @endif
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">
@@ -46,7 +49,6 @@ content = @`
                 @endif
                 <button hx-post="${UserLoginPage.ROUTE}"
                         hx-target="body"
-                        hx-push-url="/"
                         class="ui secondary compact button"
                         tabindex="3">Log in
                 </button>

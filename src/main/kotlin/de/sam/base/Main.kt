@@ -1,6 +1,5 @@
 package de.sam.base
 
-import de.sam.base.config.Configuration
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.DatabaseManager
 import org.tinylog.kotlin.Logger
