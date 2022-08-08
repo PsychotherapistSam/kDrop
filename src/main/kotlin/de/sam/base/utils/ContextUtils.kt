@@ -41,3 +41,7 @@ fun Context.hxRedirect(route: String) {
 //    this.redirect(route)
     this.header("HX-Redirect", route)
 }
+
+var Context.isBot: Boolean?
+    get() = this.attribute<Boolean>("isBot")
+    set(value) = this.attribute("isBot", value)

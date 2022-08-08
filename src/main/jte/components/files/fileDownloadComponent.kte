@@ -83,14 +83,6 @@
                 </td>
             </tr>
             <tr>
-                <td>Public</td>
-                @if(file.private)
-                    <td>No</td>
-                @else
-                    <td>Yes</td>
-                @endif
-            </tr>
-            <tr>
                 <td>ID</td>
                 <td>${file.id.toString()}</td>
             </tr>

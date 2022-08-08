@@ -41,13 +41,13 @@ class CustomAccessManager : AccessManager {
         // Register bots
         val listOfBotUserAgents = listOf("Googlebot")
         if (listOfBotUserAgents.any { it in userAgentHeader }) {
-            ctx.attribute("isBot", true)
+            ctx.isBot = true
         }
 
         val time = measureTime {
             val info = UAgentInfo(userAgentHeader, ctx.header("Accepts"))
             info.initDeviceScan()
-            ctx.attribute("isMobile", info.isTierIphone)
+            ctx.isMobileUser = info.isTierIphone
         }
         Logger.debug("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
 
@@ -122,7 +122,7 @@ class CustomAccessManager : AccessManager {
                     }
                 }
 
-                if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.canBeViewedByUserId(ctx.currentUserDTO?.id)) {
+                if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
                     Logger.error("File not found: access manager")
                     throw NotFoundResponse("File not found")
                 }

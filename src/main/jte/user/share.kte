@@ -1,5 +1,6 @@
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.database.FileDTO
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.pages.user.UserSharePage
@@ -23,7 +24,7 @@ content = @`
         <h1>Your Files</h1>
     @endif
 
-    @if(page.file?.private == false && fileIsOwnedByCurrentUser)
+    @if(fileIsOwnedByCurrentUser)
         !{val typeString = if(currentIsFolder) "folder" else "file"}
         <div class="ui warning message">
             <div class="header">
@@ -37,12 +38,17 @@ content = @`
         </div>
     @endif
 
-<%--    @if(currentIsFolder)--%>
-<%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!, file = page.file)--%>
-<%--        @template.components.files.fileUploadComp(file = page.file, page = page)--%>
-<%--    @else--%>
+    @if(currentIsFolder)
+        <div class="ui warning message">
+            <div class="header">
+                Folder shares are currently disabled.
+            </div>
+            Beacuse we do not have a good way to share folders yet, you are currently not able to do so. This will be a feature in the future.
+        </div>
+<%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = "", sortBy = "", ctx = page.context!!, parent = page.file, share = page.context!!.share!!.second)--%>
+    @else
         @template.components.files.fileDownloadComponent(file = page.file!!, ctx = page.context!!, share = true, shareId = page.context!!.share!!.second.id.toString())
-<%--    @endif--%>
+    @endif
 
 `,
 extraContent = @`

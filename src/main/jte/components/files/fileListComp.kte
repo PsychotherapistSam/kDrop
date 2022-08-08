@@ -1,9 +1,11 @@
 @import de.sam.base.database.FileDAO
 @import de.sam.base.database.FileDTO
+@import de.sam.base.database.ShareDTO
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.utils.toRecentTimeString
 @import de.sam.base.utils.humanReadableByteCountBin
 @import de.sam.base.pages.displayLoader
+@import de.sam.base.utils.*
 @import org.joda.time.format.DateTimeFormat
 @import de.sam.base.utils.file.sorting.FileSortingDirection
 @import de.sam.base.utils.isMobileUser
@@ -15,16 +17,21 @@
 @param sortBy: String
 @param ctx: Context
 @param parent: FileDTO?
+@param share: ShareDTO? = null
+
+!{val fileUrl = if(share != null) "/api/v1/shares/${share.id}/download" else "/api/v1/files/${parent?.id ?: ""}"}
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
-        <div class=" column">
-            <div class="ui secondary compact animated button" id="fileUploadModal">
-                <div class="visible content">Upload File(s)</div>
-                <div class="hidden content">
-                    <i class="upload icon"></i>
+        <div class="column">
+            @if(share == null)
+                <div class="ui secondary compact animated button" id="fileUploadModal">
+                    <div class="visible content">Upload File(s)</div>
+                    <div class="hidden content">
+                        <i class="upload icon"></i>
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
         <div class="right aligned column">
             <div class="ui basic fitted segment">
@@ -73,7 +80,6 @@
         </th>
         <th>Name</th>
         @if(!ctx.isMobileUser)
-            <th class="right aligned" data-tooltip="LOCK = This file is private" data-inverted="">Public</th>
             <th class="right aligned">Size</th>
         @endif
         <th class="right aligned">Modified</th>
@@ -84,7 +90,6 @@
                 data-id="${fileDTO.id.toString()}"
                 data-name="${fileDTO.name}"
                 data-folder="${fileDTO.isFolder}"
-                data-public="${!fileDTO.private}"
                 data-mime="${fileDTO.mimeType}">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
@@ -102,15 +107,6 @@
                     </a>
                 </td>
                 @if(!ctx.isMobileUser)
-                    <td class="right aligned collapsing">
-<%--                        <i class="red info circle link icon"></i>--%>
-<%--                        <i class="lock link icon" _="on click toggle .open on me"></i>--%>
-                        @if(fileDTO.private)
-                            <i class="lock icon"></i>
-                        @else
-                            <i class="open lock icon"></i>
-                        @endif
-                    </td>
                     <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
                 @endif
                 <td class="right aligned collapsing"
@@ -126,24 +122,26 @@
             <i class="file icon"></i>
             This folder is empty.
         </div>
-        <div class="inline">
-            <div class="ui secondary compact button"
-                 _="on click call uppy.getPlugin('Dashboard').openModal()">
-                Upload File(s)
-            </div>
-            @if(parent != null)
-                <div class="ui secondary compact button"
-                     _="on click call promptFolderCreation('${parent!!.id.toString()}')">
-                    Create a subfolder
-                </div>
-            @else
-                <div class="ui secondary compact button"
-                     _="on click call promptFolderCreation()">
-                    Create a subfolder
-                </div>
-            @endif
+        @if(share == null)
 
-        </div>
+            <div class="inline">
+                <div class="ui secondary compact button"
+                     _="on click call uppy.getPlugin('Dashboard').openModal()">
+                    Upload File(s)
+                </div>
+                @if(parent != null)
+                    <div class="ui secondary compact button"
+                         _="on click call promptFolderCreation('${parent!!.id.toString()}')">
+                        Create a subfolder
+                    </div>
+                @else
+                    <div class="ui secondary compact button"
+                         _="on click call promptFolderCreation()">
+                        Create a subfolder
+                    </div>
+                @endif
+            </div>
+        @endif
     </div>
 
     <script>

@@ -20,15 +20,10 @@ class FileDTO(
     var size: Long,
     var sizeHR: String,
     var password: String?,
-    var private: Boolean,
     var created: DateTime,
     var isFolder: Boolean,
     var hash: String?
 ) : Serializable {
-    fun canBeViewedByUserId(id: UUID?): Boolean {
-        return !private || id != null && owner.id == id
-    }
-
     fun isOwnedByUserId(id: UUID?): Boolean {
         return id != null && owner.id == id
     }
@@ -89,7 +84,6 @@ fun FileDAO.toDTO(): FileDTO {
         this.size,
         this.sizeHR,
         this.password,
-        this.private,
         this.created,
         this.isFolder,
         this.hash

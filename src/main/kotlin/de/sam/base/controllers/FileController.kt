@@ -158,7 +158,7 @@ class FileController {
         val children = arrayListOf<FileDAO>()
         logTimeSpent("getting children of ${file.name}") {
             FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
-                if (!child.toDTO().canBeViewedByUserId(user.id)) {
+                if (!child.toDTO().isOwnedByUserId(user.id)) {
                     return@forEach
                 }
                 children.add(child)
@@ -222,7 +222,7 @@ class FileController {
         val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
 
         // the file is private and the user isn't logged in or the file isn't owned by the user
-        if (file.private && (ctx.currentUserDTO == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id))) {
+        if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
             throw NotFoundResponse("File not found")
         }
         transaction {
@@ -261,7 +261,7 @@ class FileController {
         val fileList = arrayListOf<Pair<File, String>>()
         transaction {
             FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-                if (!file.toDTO().canBeViewedByUserId(ctx.currentUserDTO!!.id)) {
+                if (!file.toDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                     return@forEach
                 }
 
@@ -325,7 +325,7 @@ class FileController {
     private fun getChildren(file: FileDAO, user: UserDTO, namePrefix: String): Collection<Pair<File, String>> {
         val children = arrayListOf<Pair<File, String>>()
         FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
-            if (!child.toDTO().canBeViewedByUserId(user.id)) {
+            if (!child.toDTO().isOwnedByUserId(user.id)) {
                 return@forEach
             }
             if (child.isFolder) {

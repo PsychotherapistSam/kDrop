@@ -26,7 +26,7 @@ content = @`
         @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
-    @if(page.parent?.private == false && fileIsOwnedByCurrentUser)
+    @if(fileIsOwnedByCurrentUser && false) <!-- fileHasAShare -->
         !{val typeString = if(page.parent!!.isFolder) "folder" else "file"}
         <div class="ui warning message">
             <div class="header">

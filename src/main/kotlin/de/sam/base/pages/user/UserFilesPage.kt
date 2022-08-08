@@ -45,7 +45,7 @@ class UserFilesPage : Page(
             parent = ctx.fileDTOFromId
 
             transaction {
-                if (parent != null && parent!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
+                if (parent != null) {
                     logTimeSpent("the breadcrumb traversal") {
                         // recursive list parents for breadcrumb
                         var breadcrumb = parent
