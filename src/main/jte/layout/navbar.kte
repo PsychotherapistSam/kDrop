@@ -8,6 +8,7 @@
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.user.*
 @import de.sam.base.pages.user.UserFilesPage
 
 @param page: Page
@@ -51,6 +52,11 @@
                                href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
                                 <i class="settings icon"></i>
                                 Settings
+                            </a>
+                            <a class="@if(page is UserPaymentPage) active @endif item"
+                               href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
+                                <i class="money icon"></i>
+                                Payments
                             </a>
                             <div class="divider"></div>
                             @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
@@ -126,6 +132,11 @@
                        href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
                         <i class="settings icon"></i>
                         Settings
+                    </a>
+                    <a class="@if(page is UserPaymentPage) active @endif item"
+                       href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
+                        <i class="money icon"></i>
+                        Payments
                     </a>
                     <div class="ui fitted divider"></div>
                     @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)

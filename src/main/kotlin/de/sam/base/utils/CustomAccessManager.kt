@@ -23,6 +23,11 @@ class CustomAccessManager : AccessManager {
     val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
+
+        //TODO: change this, without this an error get's thrown from stripejs
+        ctx.header(Header.CONTENT_SECURITY_POLICY, "default-src *")
+
+
         val routeRolesMap = routeRoles.map { it as UserRoles }
         val userAgentHeader = ctx.header(Header.USER_AGENT) ?: throw BadRequestResponse("User-Agent is missing")
         // Redirect safari users to a firefox download

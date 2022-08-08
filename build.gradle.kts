@@ -18,12 +18,12 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation("io.javalin:javalin:4.6.1")
+    implementation("io.javalin:javalin:4.6.4")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:1.7.36")
     // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.0.3")
-    implementation("gg.jte:jte-kotlin:2.0.3")
+    implementation("gg.jte:jte:2.1.2")
+    implementation("gg.jte:jte-kotlin:2.1.2")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
@@ -37,7 +37,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.3")
 
     // https://mvnrepository.com/artifact/com.password4j/password4j
-    implementation("com.password4j:password4j:1.5.4")
+    implementation("com.password4j:password4j:1.6.0")
 
     // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
     implementation("org.ocpsoft.prettytime:prettytime:5.0.3.Final")
@@ -58,6 +58,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
+    // https://mvnrepository.com/artifact/com.stripe/stripe-java
+    implementation("com.stripe:stripe-java:21.0.0")
 }
 
 tasks.test {

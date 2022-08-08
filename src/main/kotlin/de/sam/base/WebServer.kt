@@ -2,10 +2,7 @@ package de.sam.base
 
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.controllers.AuthenticationController
-import de.sam.base.controllers.FileController
-import de.sam.base.controllers.ShareController
-import de.sam.base.controllers.UserController
+import de.sam.base.controllers.*
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.IndexPage
 import de.sam.base.pages.admin.AdminIndexPage
@@ -145,6 +142,7 @@ class WebServer {
             post("/registration", UserRegistrationPage())
             path("/user") {
                 get("/settings", UserEditPage(), UserRoles.USER)
+                get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
                     //TODO:  seperate this to two different pages
                     get("/", UserFilesPage(), UserRoles.USER)
@@ -214,6 +212,10 @@ class WebServer {
 
                     }
 //                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
+                }
+                path("/payments") {
+                    post("/create-intent", PaymentController()::createIntent, UserRoles.USER)
+                    get("/finish", PaymentController()::finishPayment, UserRoles.USER)
                 }
             }
         }
