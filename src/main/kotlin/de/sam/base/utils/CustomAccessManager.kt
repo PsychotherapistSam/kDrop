@@ -24,8 +24,10 @@ class CustomAccessManager : AccessManager {
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
 
-        //TODO: change this, without this an error get's thrown from stripejs
-        ctx.header(Header.CONTENT_SECURITY_POLICY, "default-src *")
+        if (ctx.path().startsWith("/api/v1/payments")) {
+            //TODO: change this, without this an error get's thrown from stripejs
+            ctx.header(Header.CONTENT_SECURITY_POLICY, "default-src *")
+        }
 
 
         val routeRolesMap = routeRoles.map { it as UserRoles }
@@ -85,10 +87,10 @@ class CustomAccessManager : AccessManager {
                     hashMapOf("minimumRole" to minRole!!.name)
                 ) //You need to be at least $minRole")
             }
-/*                    // check if ctx.currentUser.roles has any role in routeRolesMap
-                    if (!routeRolesMap.any { ctx.currentUser!!.roles.contains(it) }) {
-                        throw UnauthorizedResponse("You are not authorized to access this resource")
-                    }*/
+            /*                    // check if ctx.currentUser.roles has any role in routeRolesMap
+                                if (!routeRolesMap.any { ctx.currentUser!!.roles.contains(it) }) {
+                                    throw UnauthorizedResponse("You are not authorized to access this resource")
+                                }*/
         }
 
         //TODO: check access to parent file/folder
