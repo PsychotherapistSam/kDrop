@@ -48,11 +48,24 @@
         position: absolute;
         z-index: 10;
         width: 240px;
+        animation: fadeIn 0.2s;
+        transition: 0.2s;
     }
 
     .context-menu--active {
         display: block;
     }
+
+
+    @keyframes fadeIn {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
 
     .ds-selectable {
         -webkit-touch-callout: none;
@@ -67,6 +80,8 @@
         /* Internet Explorer/Edge */
         user-select: none;
         /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+
+        transition: 0.3s;
     }
 
 
@@ -466,6 +481,8 @@
         if (menuState !== 0) {
             menuState = 0;
             menu.classList.remove(contextMenuActive);
+            menu.style.top = "";
+            menu.style.left = "";
 
             // ds.clearSelection();
 
@@ -506,6 +523,7 @@
         menu.style.top = clickCoordsY + "px";
         // }
     }
+
 
     /**
      * Dummy action function that logs an action when a menu item link is clicked
