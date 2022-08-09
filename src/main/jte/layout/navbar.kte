@@ -15,242 +15,229 @@
 
 !{val currentUser: UserDTO? = page.currentUserDTO}
 
-<!--Start: Nav  -->
-<div class="ui medium borderless menu"
+<!-- Source for the whole hamburger menu thingy: https://github.com/natzar/Semantic-ui-hamburger-menu -->
+
+<div class="ui medium stackable borderless menu"
      hx-target="body"
      hx-push-url="true">
-    <div class="ui container grid">
+
+    <div class="ui container">
         <!--Start: Desktop Nav-->
-        <div class="computer only row">
-            <a class="header item" href="/" hx-get="/">${config.name}</a>
-            <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}" hx-get="${IndexPage.ROUTE}">Home</a>
+        <a class="header item" href="/" hx-get="/">${config.name}</a>
+        <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}"
+           hx-get="${IndexPage.ROUTE}">Home</a>
 
-            <div class="right menu">
-                @if(currentUser != null)
-                    !{val highestRole = currentUser.getHighestRole()}
+        <div class="right menu">
+            @if(currentUser != null)
+                !{val highestRole = currentUser.getHighestRole()}
 
-                    @if(highestRole.powerLevel > 1)
-                        <a class="disabled vertically fitted item">
-                            <div class="ui ${highestRole.color} label">
-                                ${highestRole.name}
-                            </div>
-                        </a>
-                    @endif
-
-                    <div class="ui dropdown item">
-                        ${currentUser.name}<i class="dropdown icon"></i>
-                        <div class="menu">
-                            <div class="header">
-                                Signed in as ${currentUser.name}
-                            </div>
-                            <a class="@if(page is UserFilesPage) active @endif item"
-                               href="${UserFilesPage.ROUTE}">
-                                <i class="folder icon"></i>
-                                My Files
-                            </a>
-                            <a class="@if(page is UserEditPage) active @endif item"
-                               href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
-                                <i class="settings icon"></i>
-                                Settings
-                            </a>
-                            <a class="@if(page is UserPaymentPage) active @endif item"
-                               href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
-                                <i class="money icon"></i>
-                                Payments
-                            </a>
-                            <div class="divider"></div>
-                            @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
-                                <div class="header">
-                                    Administration
-                                </div>
-                                <a class="@if(page is AdminIndexPage) active @endif item"
-                                   href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
-                                    <i class="shield icon"></i>
-                                    Overview
-                                </a>
-                                <a class="@if(page is AdminUsersPage) active @endif item"
-                                   href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
-                                    <i class="users icon"></i>
-                                    Users
-                                </a>
-                                <div class="item">
-                                    <i class="exclamation triangle icon"></i>
-                                    Reports
-                                </div>
-                                <div class="divider"></div>
-                            @endif
-                            <a class="logout item">
-                                <i class="sign out triangle icon"></i>
-                                Sign Out
-                            </a>
-                        </div>
-                    </div>
-                @else
-                    <a class="@if(page is UserLoginPage) active @endif item"
-                       href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
-                    @if(config.allowUserRegistration)
-                        <a class="@if(page is UserRegistrationPage) active @endif item"
-                           href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
-                    @else
-                        <a class="disabled item" href="${UserRegistrationPage.ROUTE}">Register</a>
-                    @endif
-                @endif
-            </div>
-        </div>
-        <!--End: Desktop Nav-->
-
-        <!--Start: Mobile Nav-->
-        <div class="tablet mobile only row">
-            <a class="header item" href="/" hx-get="/">${config.name}</a>
-            <div class="right menu">
-                <a class="menu item">
-                    <div class="ui basic icon toggle button">
-                        <i class="content icon"></i>
-                    </div>
-                </a>
-            </div>
-            <div class="ui vertical fluid menu">
-                <a class="@if(page is IndexPage) active @endif item"
-                   href="${IndexPage.ROUTE}" hx-get="${IndexPage.ROUTE}">Index</a>
-
-                <div class="ui fitted divider"></div>
-
-                @if(currentUser != null)
-                    !{val highestRole = currentUser.getHighestRole()}
-                    <div class="ui item">
-                        ${currentUser.name}
+                @if(highestRole.powerLevel > 1)
+                    <a class="disabled vertically fitted item">
                         <div class="ui ${highestRole.color} label">
                             ${highestRole.name}
                         </div>
-                    </div>
-                    <a class="@if(page is UserFilesPage) active @endif item"
-                       href="${UserFilesPage.ROUTE}" >
-                        <i class="folder icon"></i>
-                        My Files
                     </a>
-                    <a class="@if(page is UserEditPage) active @endif item"
-                       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
-                        <i class="settings icon"></i>
-                        Settings
-                    </a>
-                    <a class="@if(page is UserPaymentPage) active @endif item"
-                       href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
-                        <i class="money icon"></i>
-                        Payments
-                    </a>
-                    <div class="ui fitted divider"></div>
-                    @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
-                        <a class="@if(page is AdminIndexPage) active @endif item"
-                           href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
-                            <i class="shield icon"></i>
-                            Overview
-                        </a>
-                        <a class="@if(page is AdminIndexPage) active @endif item"
-                           href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
-                            <i class="users icon"></i>
-                            Users
-                        </a>
-                        <div class="item">
-                            <i class="exclamation triangle icon"></i>
-                            Reports
-                        </div>
-                        <div class="ui fitted divider"></div>
-                    @endif
-                    <a class="logout item">
-                        <i class="sign out triangle icon"></i>
-                        Sign Out
-                    </a>
-                @else
-                    <a class="@if(page is UserLoginPage) active @endif item"
-                       href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
-                    @if(config.allowUserRegistration)
-                        <a class="@if(page is UserRegistrationPage) active @endif item"
-                           href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
-                    @else
-                        <a class="disabled item">Register</a>
-                    @endif
-
                 @endif
-                <!-- <div class="ui fluid popup bottom left transition visible">
-               <div class="ui four column relaxed equal height divided grid">
-                 <div class="column">
-                   <h4 class="ui header">Fabrics</h4>
-                   <div class="ui link list">
-                     <a class="item">Cashmere</a>
-                     <a class="item">Linen</a>
-                     <a class="item">Cotton</a>
-                     <a class="item">Viscose</a>
-                   </div>
-                 </div>
-                 <div class="column">
-                   <h4 class="ui header">Size</h4>
-                   <div class="ui link list">
-                     <a class="item">Small</a>
-                     <a class="item">Medium</a>
-                     <a class="item">Large</a>
-                     <a class="item">Plus Sizes</a>
-                   </div>
-                 </div>
-                 <div class="column">
-                   <h4 class="ui header">Colored</h4>
-                   <div class="ui link list">
-                     <a class="item">Neutrals</a>
-                     <a class="item">Brights</a>
-                     <a class="item">Pastels</a>
-                   </div>
-                 </div>
-                 <div class="column">
-                   <h4 class="ui header">Types</h4>
-                   <div class="ui link list">
-                     <a class="item">Knitwear</a>
-                     <a class="item">Outerwear</a>
-                     <a class="item">Pants</a>
-                     <a class="item">Shoes</a>
-                   </div>
-                 </div>
-               </div>
-             </div>-->
-            </div>
-            <!--
-    <div class="ui vertical accordion borderless fluid menu">
-    <a class="ui item"></a>
-        <a class="@if(page.name == "index") active @endif item" href="${IndexPage.ROUTE}">Posts</a>
-        <a class="@if(page.name == "placeholder") active @endif item" href="#">Videos</a>
-      <div class="item">
-        <div class="title">
-          Sam<i class="dropdown icon"></i>
+
+                <div class="ui dropdown item">
+                    ${currentUser.name}<i class="dropdown icon"></i>
+                    <div class="menu">
+                        <div class="header">
+                            Signed in as ${currentUser.name}
+                        </div>
+                        <a class="@if(page is UserFilesPage) active @endif item"
+                           href="${UserFilesPage.ROUTE}">
+                            <i class="folder icon"></i>
+                            My Files
+                        </a>
+                        <a class="@if(page is UserEditPage) active @endif item"
+                           href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
+                            <i class="settings icon"></i>
+                            Settings
+                        </a>
+                        <a class="@if(page is UserPaymentPage) active @endif item"
+                           href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
+                            <i class="money icon"></i>
+                            Payments
+                        </a>
+                        <div class="divider"></div>
+                        @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
+                            <div class="header">
+                                Administration
+                            </div>
+                            <a class="@if(page is AdminIndexPage) active @endif item"
+                               href="${AdminIndexPage.ROUTE}" hx-get="${AdminIndexPage.ROUTE}">
+                                <i class="shield icon"></i>
+                                Overview
+                            </a>
+                            <a class="@if(page is AdminUsersPage) active @endif item"
+                               href="${AdminUsersPage.ROUTE}" hx-get="${AdminUsersPage.ROUTE}">
+                                <i class="users icon"></i>
+                                Users
+                            </a>
+                            <div class="item">
+                                <i class="exclamation triangle icon"></i>
+                                Reports
+                            </div>
+                            <div class="divider"></div>
+                        @endif
+                        <a class="logout item">
+                            <i class="sign out triangle icon"></i>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            @else
+                <a class="@if(page is UserLoginPage) active @endif item"
+                   href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
+                @if(config.allowUserRegistration)
+                    <a class="@if(page is UserRegistrationPage) active @endif item"
+                       href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
+                @else
+                    <a class="disabled item" href="${UserRegistrationPage.ROUTE}">Register</a>
+                @endif
+            @endif
         </div>
-        <div class="content">
-          <div class="item">
-            <i class="file icon"></i>
-            My Files
-          </div>
-          <div class="ui divider"></div>
-          <div class="item">
-            <i class="terminal icon"></i>
-            Console
-          </div>
-          <div class="item">
-            <i class="users icon"></i>
-            View Users
-          </div>
-          <div class="item">
-            <i class="exclamation triangle icon"></i>
-            Reports
-          </div>
-          <div class="divider"></div>
-          <div class="item">
-            <i class="sign out triangle icon"></i>
-            Sign Out
-          </div>
+        <div class="hamburger">
+            <span class="hamburger-bun"></span>
+            <span class="hamburger-patty"></span>
+            <span class="hamburger-bun"></span>
         </div>
-      </div>
-    </div>-->
-        </div>
-        <!--End: Mobile Nav-->
     </div>
 </div>
-<!--End: Nav  -->
+
+<script>
+    $(document).ready(function () {
+        $('.hamburger').click(function (e) {
+            var menuuu = $(this).parent().parent();
+            if (!$(this).hasClass('active')) {
+                $(this).addClass('active');
+                menuuu.addClass('open');
+            } else {
+                $(this).removeClass('active');
+                menuuu.removeClass('open');
+            }
+            e.preventDefault();
+        });
+    })
+</script>
+
+<style>
+
+    /*
+    Semantic UI Hamburger Menu (not oficial)
+    I understand why Semantic UI creators doesn't want to add more responsive debt to core project. I respect the nature of Semantic UI project because I love what these guys created there. But I need a Hamburger Menu. Maybe you too.
+    By @betoayesa.
+    **This file include some responsive helper clases from  https://github.com/Semantic-Org/Semantic-UI/issues/1114
+    */
+
+    /* make home / header button not take up the whole space when the hamburger is open, which makes it easy to missclick */
+    .header.item {
+        max-width: fit-content;
+    }
+
+    /* Hamburger Clases Implemented for Mobile Only. Up to you to add it for other breakpoints */
+
+
+    /* Hamburger hidden by default */
+
+    .hamburger {
+        display: none
+    }
+
+
+    /* Mobile */
+    @media only screen and (max-width: 767px) {
+        [class*="mobile hidden"],
+        [class*="tablet only"]:not(.mobile),
+        [class*="computer only"]:not(.mobile),
+        [class*="large screen only"]:not(.mobile),
+        [class*="widescreen only"]:not(.mobile),
+        [class*="or lower hidden"] {
+            display: none !important;
+        }
+
+        .hamburger {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            right: 9px;
+            top: 13px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .hamburger span {
+            display: block;
+            height: 3px;
+            background: #000;
+            margin: 0 0 3px;
+        }
+
+        .hamburger:hover {
+            opacity: 1;
+            filter: alpha(opacity=100);
+            transition-duration: .2s;
+        }
+
+        .hamburger.active {
+
+        }
+
+        .hamburger-bun {
+            transition: all .2s ease-out;
+        }
+
+        .hamburger.active .hamburger-bun {
+            margin: 0;
+            transform-origin: center center;
+        }
+
+        .hamburger.active .hamburger-bun:first-child {
+            transform: rotate(45deg);
+            margin-top: 3px;
+        }
+
+        .hamburger.active .hamburger-bun:last-child {
+            transform: rotate(-45deg);
+            margin-top: -3px;
+        }
+
+        .hamburger.active .hamburger-patty {
+            display: none;
+        }
+
+        .ui.stackable.menu .item:not(.header) {
+            display: none;
+        }
+
+        .ui.stackable.menu.open .item {
+            display: block;
+        }
+
+        .ui.stackable.menu.open {
+            height: inherit
+        }
+    }
+
+    /* Fix inverted menu dropdowns */
+    .ui.menu.inverted .ui.dropdown .menu.inverted > .item {
+        background: #1b1c1d;
+        color: white;
+    }
+
+    .ui.menu.inverted .dropdown.item .menu {
+        background: #1b1c1d;
+        color: white;
+    }
+
+    .ui.menu.inverted .ui.dropdown .menu > .item:hover {
+        color: rgba(0, 0, 0, .05) !important;
+        cursor: pointer;
+        background: rgba(0, 0, 0, .95) !important;
+    }
+</style>
+
 <!-- nonce -->
 <script>
     $(".ui.dropdown").dropdown();
