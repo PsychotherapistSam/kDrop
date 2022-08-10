@@ -39,7 +39,7 @@
                     </a>
                 @endif
 
-                <div class="ui dropdown item">
+                <div class="ui dropdown item" id="menuDropdown">
                     ${currentUser.name}<i class="dropdown icon"></i>
                     <div class="menu">
                         <div class="header">
@@ -105,22 +105,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    $(document).ready(function () {
-        $('.hamburger').click(function (e) {
-            var menuuu = $(this).parent().parent();
-            if (!$(this).hasClass('active')) {
-                $(this).addClass('active');
-                menuuu.addClass('open');
-            } else {
-                $(this).removeClass('active');
-                menuuu.removeClass('open');
-            }
-            e.preventDefault();
-        });
-    })
-</script>
 
 <style>
 
@@ -240,7 +224,9 @@
 
 <!-- nonce -->
 <script>
-    $(".ui.dropdown").dropdown();
+    var menuDropdown = $("#menuDropdown");
+    menuDropdown.dropdown();
+
     $(".ui.toggle.button").click(function () {
         $(".ui.vertical.menu").fadeToggle();
     });
@@ -255,5 +241,21 @@
             },
         });
     });
+
+    $('.hamburger').click(function (e) {
+        console.log("clicked hamburger menu buton")
+        var menuuu = $(this).parent().parent();
+        if (!$(this).hasClass('active')) {
+            $(this).addClass('active');
+            menuuu.addClass('open');
+            menuDropdown.dropdown("show");
+        } else {
+            $(this).removeClass('active');
+            menuuu.removeClass('open');
+            menuDropdown.dropdown("hide");
+        }
+        e.preventDefault();
+    });
+
 </script>
 
