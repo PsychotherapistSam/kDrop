@@ -12,6 +12,7 @@ import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.kotlin.utils.addToStdlib.sumByLong
 import org.joda.time.DateTime
@@ -20,7 +21,6 @@ import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
-import java.security.MessageDigest
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
@@ -407,12 +407,18 @@ class FileController {
                     return@forEach
                 }
 
+                fun deleteFile(file: FileDAO) {
+                    // delete all logs
+                    DownloadLogTable.deleteWhere { DownloadLogTable.file eq file.id }
+                    file.delete()
+                    deletedFileIDs.add(file.id.value)
+                }
+
                 if (file.isFolder) {
                     logTimeSpent("recursively deleting folder ${file.name}") {
                         val folderFiles = FileDAO.find { FilesTable.parent eq file.id }.toList().map { it.id.value }
                         deleteFileList(folderFiles, user)
-                        file.delete()
-                        deletedFileIDs.add(file.id.value)
+                        deleteFile(file)
                     }
                 } else {
                     logTimeSpent("deleting file ${file.name}") {
@@ -421,8 +427,7 @@ class FileController {
                             systemFile.delete()
                         }
                         if (!systemFile.exists()) {
-                            file.delete()
-                            deletedFileIDs.add(file.id.value)
+                            deleteFile(file)
                         }
                     }
                 }
