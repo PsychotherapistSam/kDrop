@@ -3,7 +3,7 @@
 @import de.sam.base.pages.IndexPage
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.pages.user.UserRegistrationPage
-@import de.sam.base.pages.user.UserEditPage
+@import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles

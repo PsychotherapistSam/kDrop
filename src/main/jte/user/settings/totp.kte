@@ -1,0 +1,82 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.user.settings.UserEditPage
+@import de.sam.base.pages.admin.AdminUserEditPage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.users.UserRoles
+@import de.sam.base.database.UserDTO
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.pages.user.settings.UserTOTPSettingsPage
+@import de.sam.base.utils.currentUserDTO
+@import de.sam.base.utils.preferences.Preferences
+@import de.sam.base.utils.preferencesString
+@import de.sam.base.utils.totpSecret
+
+@param page: UserTOTPSettingsPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <h1>TOTP Settings</h1>
+    <div hx-get="${UserEditPage.ROUTE}" hx-target="body" hx-push-url="true" class="ui secondary compact button"
+            tabindex="2">
+        Back
+    </div>
+    @if(page.context!!.currentUserDTO!!.totpSecret.isNullOrBlank())
+        <div class="ui placeholder segment">
+            <div class="ui three column center aligned stackable grid">
+                <div class="middle aligned column">
+                    <p>Scan this code with your authenticator</p>
+                    <img class="ui medium rounded centered image" src="${page.qrCodeDaraUri}"
+                         alt="${page.context!!.totpSecret}"/>
+                </div>
+                <div class="one wide column">
+                    <div class="ui vertical divider">
+                        Or
+                    </div>
+                </div>
+                <div class="middle aligned column">
+                    <p>Enter this code into your authenticator</p>
+                    <pre>${page.context!!.totpSecret}</pre>
+                </div>
+            </div>
+        </div>
+        <div class="ui basic fitted segment">
+            <form class="ui form" _="${displayLoader}">
+                <!-- error or success class -->
+                <div class="field">
+                    <label for="totp">Enter your generated TOTP</label>
+                    <input type="number" name="totp" id="totp" value=""
+                           placeholder="TOTP"
+                           tabindex="0">
+                </div>
+                @if(page.error.isNotBlank())
+                    <div class="ui negative message">
+                        ${page.error}
+                    </div>
+                @endif
+                <button hx-post="" hx-target="body" class="ui secondary compact button" tabindex="2">
+                    Submit
+                </button>
+            </form>
+        </div>
+    @else
+        @if(page.context!!.queryParam("success") != null)
+            <div class="ui positive message">
+                <div class="header">Success</div>
+                <div class="content">You have successfully enrolled your TOTP device. On this page you can also remove
+                    it again, should you want that.
+                </div>
+            </div>
+        @endif
+        <div class="ui negative message">
+            <div class="header">TOTP Deletion</div>
+            <div class="content">Deleting your TOTP device will make your account less secure. If you delete your device
+                you have to enroll a new one.
+            </div>
+        </div>
+        <div hx-delete="" hx-target="body" class="ui negative compact button" tabindex="2">
+            Delete
+        </div>
+    @endif
+`
+)

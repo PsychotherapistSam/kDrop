@@ -1,4 +1,4 @@
-package de.sam.base.pages.user
+package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
 

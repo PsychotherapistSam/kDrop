@@ -60,6 +60,10 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
     implementation("com.stripe:stripe-java:21.0.0")
+
+    // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
+    implementation("dev.samstevens.totp:totp:1.7.1")
+
 }
 
 tasks.test {

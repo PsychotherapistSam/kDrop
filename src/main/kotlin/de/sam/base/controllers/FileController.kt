@@ -45,7 +45,7 @@ class FileController {
             throw BadRequestResponse("Early EOF")
         }
         transaction {
-            val owner = ctx.currentUserDTO!!.getDAO()!!
+            val owner = ctx.currentUserDTO!!.fetchDAO()!!
             val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
 
             if (parentFile != null && !parentFile.toDTO().isOwnedByUserId(userId)) {
@@ -200,7 +200,7 @@ class FileController {
                     logTimeSpent("adding file log entry") {
                         DownloadLogDAO.new {
                             this.file = ctx.fileDAOFromId
-                            this.user = ctx.currentUserDTO?.getDAO()
+                            this.user = ctx.currentUserDTO?.fetchDAO()
                             this.ip = ctx.ip()
                             this.readDuration = System.nanoTime() - ctx.requestStartTime
                             this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)

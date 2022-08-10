@@ -103,7 +103,7 @@ class UserSharePage : Page(
 //                    logTimeSpent("adding file log entry") {
 //                        DownloadLogDAO.new {
 //                            this.file = ctx.fileDAOFromId
-//                            this.user = ctx.currentUserDTO?.getDAO()
+//                            this.user = ctx.currentUserDTO?.fetchDAO()
 //                            this.ip = ctx.ip()
 //                            this.readDuration = System.nanoTime() - ctx.requestStartTime
 //                            this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)

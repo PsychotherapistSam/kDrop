@@ -45,3 +45,12 @@ fun Context.hxRedirect(route: String) {
 var Context.isBot: Boolean?
     get() = this.attribute<Boolean>("isBot")
     set(value) = this.attribute("isBot", value)
+
+var Context.totpSecret: String?
+    get() = this.sessionAttribute<String>("totpSecret")
+    set(value) = this.sessionAttribute("totpSecret", value)
+
+fun Context.validateTOTP(code: String): Boolean {
+    val secret = this.totpSecret ?: return false
+    return verifier.isValidCode(secret, code)
+}

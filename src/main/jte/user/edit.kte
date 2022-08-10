@@ -1,5 +1,5 @@
 @import de.sam.base.Page
-@import de.sam.base.pages.user.UserEditPage
+@import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.admin.AdminUserEditPage
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
@@ -125,6 +125,12 @@ content = @`
             </div>
         </form>
     </div>
+
+    <h4 class="ui horizontal divider header">
+        <i class="lock icon"></i>
+        Security
+    </h4>
+    <a hx-get="./totp" hx-target="body" hx-push-url="true" class="ui secondary button">View TOTP Settings</a>
 
     <script>
         $(".ui.dropdown").dropdown();

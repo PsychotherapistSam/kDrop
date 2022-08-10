@@ -10,6 +10,8 @@ import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.*
+import de.sam.base.pages.user.settings.UserEditPage
+import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.session.Session
@@ -141,7 +143,12 @@ class WebServer {
             get("/registration", UserRegistrationPage())
             post("/registration", UserRegistrationPage())
             path("/user") {
-                get("/settings", UserEditPage(), UserRoles.USER)
+                path("/settings") {
+                    get("/", UserEditPage(), UserRoles.USER)
+                    get("/totp", UserTOTPSettingsPage(), UserRoles.USER)
+                    post("/totp", UserTOTPSettingsPage(), UserRoles.USER)
+                    delete("/totp", UserTOTPSettingsPage(), UserRoles.USER)
+                }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
                     //TODO:  seperate this to two different pages

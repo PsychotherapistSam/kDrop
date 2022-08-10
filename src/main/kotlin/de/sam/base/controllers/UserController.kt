@@ -32,7 +32,7 @@ class UserController {
         val isSelf = ctx.currentUserDTO!!.id == selectedUserDTO.id
 
         transaction {
-            val user = selectedUserDTO.getDAO() ?: throw NotFoundResponse("User not found")
+            val user = selectedUserDTO.fetchDAO() ?: throw NotFoundResponse("User not found")
             ctx.formParamMap().forEach { (key, value) ->
                 when (key) {
                     "username" -> {

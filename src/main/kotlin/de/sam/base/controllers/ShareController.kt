@@ -3,7 +3,7 @@ package de.sam.base.controllers
 import de.sam.base.database.FileDAO
 import de.sam.base.database.ShareDAO
 import de.sam.base.database.SharesTable
-import de.sam.base.database.getDAO
+import de.sam.base.database.fetchDAO
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.share
 import de.sam.base.utils.string.isUUID
@@ -50,7 +50,7 @@ class ShareController {
             }
             val share = ShareDAO.new {
                 this.file = fileDAO
-                this.user = ctx.currentUserDTO!!.getDAO()!!
+                this.user = ctx.currentUserDTO!!.fetchDAO()!!
                 this.creationDate = DateTime.now()
                 this.maxDownloads = maxDownloads.get()
                 this.downloadCount = 0
