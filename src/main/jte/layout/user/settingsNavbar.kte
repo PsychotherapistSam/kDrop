@@ -1,0 +1,25 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.user.settings.UserEditPage
+@import de.sam.base.pages.user.settings.UserTOTPSettingsPage
+@import de.sam.base.users.UserRoles
+
+@param page: Page
+
+<div class="ui secondary pointing menu" hx-target="body" hx-push-url="true">
+    <a class="@if(page is UserEditPage) active @endif item"
+       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
+        General Settings
+    </a>
+    <a class="@if(page is UserTOTPSettingsPage) active @endif item"
+       href="${UserTOTPSettingsPage.ROUTE}" hx-get="${UserTOTPSettingsPage.ROUTE}">
+        TOTP
+    </a>
+    @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
+        <a class="right item"
+           href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+           hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+           hx-target="body" hx-push-url="true">
+            View your Settings as Admin
+        </a>
+    @endif
+</div>

@@ -16,11 +16,8 @@
 @template.layout.page(
 page = page,
 content = @`
-    <h1>TOTP Settings</h1>
-    <div hx-get="${UserEditPage.ROUTE}" hx-target="body" hx-push-url="true" class="ui secondary compact button"
-            tabindex="2">
-        Back
-    </div>
+    <h1>Settings</h1>
+    @template.layout.user.settingsNavbar(page=page)
     @if(page.context!!.currentUserDTO!!.totpSecret.isNullOrBlank())
         <div class="ui placeholder segment">
             <div class="ui three column center aligned stackable grid">

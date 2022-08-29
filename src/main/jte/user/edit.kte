@@ -4,6 +4,7 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 @import de.sam.base.database.UserDTO
+@import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 @import de.sam.base.utils.preferences.Preferences
 @import de.sam.base.utils.preferencesString
 
@@ -21,19 +22,11 @@
 @template.layout.page(
 page = page,
 content = @`
+    <h1>Settings</h1>
     @if(viewedByAdmin)
         @template.layout.admin.navbar(page=page)
     @else
-        <h1>Account Settings
-            @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
-                <a class="ui compact secondary right floated button"
-                   href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
-                   hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
-                   hx-target="body" hx-push-url="true">
-                    View as Admin
-                </a>
-            @endif
-        </h1>
+        @template.layout.user.settingsNavbar(page=page)
     @endif
     <h4 class="ui horizontal divider header">
         <i class="user icon"></i>
