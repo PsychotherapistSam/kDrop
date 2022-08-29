@@ -28,7 +28,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.3.6")
+    implementation("org.postgresql:postgresql:42.4.2")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
@@ -45,7 +45,7 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation("commons-io:commons-io:2.11.0")
 
-    val tinylog = "2.5.0-M2.1"
+    val tinylog = "2.5.0"
     // Tinylog
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
@@ -59,7 +59,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:21.0.0")
+    implementation("com.stripe:stripe-java:21.4.0")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
