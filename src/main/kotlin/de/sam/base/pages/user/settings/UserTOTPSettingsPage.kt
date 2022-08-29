@@ -30,13 +30,19 @@ class UserTOTPSettingsPage : Page(
     var qrCodeDaraUri: String = ""
     var error: String = ""
 
+    var userHasTOTP: Boolean = false
+    var creationSuccess: Boolean = false
 
     override fun handle(ctx: Context) {
         qrCodeDaraUri = ""
         error = ""
+        creationSuccess = false
+        transaction {
+            val user = ctx.currentUserDTO!!.fetchDAO()!!
 
-        if (ctx.currentUserDTO!!.totpSecret.isNullOrBlank()) {
-            if (ctx.method() == "POST") {
+            userHasTOTP = user.totpSecret != null
+
+            if (ctx.method() == "POST" && !userHasTOTP) {
                 val totp = ctx.formParamAsClass<String>("totp")
                     .check({ it.length < 20 }, "Your TOTP is incorrect.")
                     .check({ ctx.validateTOTP(it) }, "Your TOTP is incorrect.")
@@ -45,41 +51,42 @@ class UserTOTPSettingsPage : Page(
                 if (totp.second != null) {
                     error = totp.second!!
                 } else {
-                    transaction {
-                        val user = ctx.currentUserDTO!!.fetchDAO()!!
-                        user.totpSecret = ctx.totpSecret
-                        ctx.currentUserDTO = user.toDTO()
-                        ctx.totpSecret = ""
-                        ctx.hxRedirect("?success=true")
-                    }
+                    user.totpSecret = ctx.totpSecret
 
+                    ctx.currentUserDTO = user.toDTO()
+                    ctx.totpSecret = null
+                    creationSuccess = true
+                    userHasTOTP = true
                 }
-            } else if (ctx.totpSecret == null) {
+            } else if (ctx.method() == "DELETE") {
+                user.totpSecret = null
+
+                ctx.currentUserDTO = user.toDTO()
+                ctx.totpSecret = null
+                userHasTOTP = false
+            }
+
+            // user doesn't yet have saved a secret
+            if (!userHasTOTP) {
                 val secretGenerator: SecretGenerator = DefaultSecretGenerator()
                 ctx.totpSecret = secretGenerator.generate()
-            }
-            val data = QrData.Builder()
-                .label(ctx.currentUserDTO!!.name)
-                .secret(ctx.totpSecret)
-                .issuer(config.name)
-                .algorithm(HashingAlgorithm.SHA1)
-                .digits(6)
-                .period(30)
-                .build()
 
-            val generator = ZxingPngQrGenerator();
-            val imageData = generator.generate(data)
+                // generate a QR code
+                val data = QrData.Builder()
+                    .label(ctx.currentUserDTO!!.name)
+                    .secret(ctx.totpSecret)
+                    .issuer(config.name)
+                    .algorithm(HashingAlgorithm.SHA1)
+                    .digits(6)
+                    .period(30)
+                    .build()
 
-            val mimeType: String = generator.imageMimeType
+                val generator = ZxingPngQrGenerator();
+                val imageData = generator.generate(data)
 
-            qrCodeDaraUri = getDataUriForImage(imageData, mimeType)
-        } else {
-            if (ctx.method() == "DELETE") {
-                transaction {
-                    val user = ctx.currentUserDTO!!.fetchDAO()!!
-                    user.totpSecret = null
-                    ctx.currentUserDTO = user.toDTO()
-                }
+                val mimeType: String = generator.imageMimeType
+
+                qrCodeDaraUri = getDataUriForImage(imageData, mimeType)
             }
         }
         super.handle(ctx)

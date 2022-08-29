@@ -18,7 +18,7 @@ page = page,
 content = @`
     <h1>Settings</h1>
     @template.layout.user.settingsNavbar(page=page)
-    @if(page.context!!.currentUserDTO!!.totpSecret.isNullOrBlank())
+    @if(!page.userHasTOTP)
         <div class="ui placeholder segment">
             <div class="ui three column center aligned stackable grid">
                 <div class="middle aligned column">
@@ -57,13 +57,14 @@ content = @`
             </form>
         </div>
     @else
-        @if(page.context!!.queryParam("success") != null)
+        @if(page.creationSuccess)
             <div class="ui positive message">
                 <div class="header">Success</div>
                 <div class="content">You have successfully enrolled your TOTP device. On this page you can also remove
                     it again, should you want that.
                 </div>
             </div>
+            <div class="ui divider"></div>
         @endif
         <div class="ui negative message">
             <div class="header">TOTP Deletion</div>
