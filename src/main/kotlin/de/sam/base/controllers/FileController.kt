@@ -410,6 +410,8 @@ class FileController {
                 fun deleteFile(file: FileDAO) {
                     // delete all logs
                     DownloadLogTable.deleteWhere { DownloadLogTable.file eq file.id }
+                    // delete all shares
+                    SharesTable.deleteWhere { SharesTable.file eq file.id }
                     file.delete()
                     deletedFileIDs.add(file.id.value)
                 }
