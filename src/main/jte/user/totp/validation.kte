@@ -1,0 +1,44 @@
+@import de.sam.base.pages.user.UserTOTPValidatePage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.displayLoader
+
+@param page: UserTOTPValidatePage
+
+@template.layout.page(
+page = page,
+content = @`
+    <br>
+    <div class="ui grid">
+        <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
+            <div class="ui center aligned basic fitted segment">
+                <h1>${page.name}</h1>
+            </div>
+            <div class="ui message">
+                <div class="header">
+                    Enter Your Two-factor Authentication Code
+                </div>
+                <p>You can find your Two-factor Authentication Code in your mobile app.</p>
+            </div>
+            <form class="ui form" _="${displayLoader}">
+                <div class="field">
+                    <label for="totp">TOTP</label>
+                    <input type="text" name="totp" id="totp" placeholder="XXXXXX" tabindex="1">
+                </div>
+                @if(page.error.isNotEmpty())
+                    <div class="ui negative message">
+                        <ul class="list">
+                            <li>${page.error}</li>
+                        </ul>
+                    </div>
+                @endif
+                <button hx-post="${UserTOTPValidatePage.ROUTE}"
+                        hx-target="body"
+                        class="ui secondary compact button"
+                        tabindex="2">Validate
+                </button>
+            </form>
+        </div>
+    </div>
+`
+)
+

@@ -41,7 +41,7 @@ content = @`
             <form class="ui form" _="${displayLoader}">
                 <!-- error or success class -->
                 <div class="field">
-                    <label for="totp">Enter your generated TOTP</label>
+                    <label for="totp">Verify your TOTP</label>
                     <input type="number" name="totp" id="totp" value=""
                            placeholder="TOTP"
                            tabindex="0">
@@ -52,7 +52,7 @@ content = @`
                     </div>
                 @endif
                 <button hx-post="" hx-target="body" class="ui secondary compact button" tabindex="2">
-                    Submit
+                    Verify
                 </button>
             </form>
         </div>

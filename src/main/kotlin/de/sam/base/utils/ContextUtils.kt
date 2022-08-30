@@ -9,8 +9,12 @@ var Context.currentUserDTO: UserDTO?
     set(user) = this.sessionAttribute("user", user)
 
 var Context.isLoggedIn: Boolean
-    get() = this.currentUserDTO != null
+    get() = this.currentUserDTO != null && !needsToVerifyTOTP
     set(value) = throw UnsupportedOperationException("Cannot set isLoggedIn")
+
+var Context.needsToVerifyTOTP: Boolean
+    get() = this.sessionAttribute<Boolean>("needsToVerifyTOTP") ?: false
+    set(value) = this.sessionAttribute("needsToVerifyTOTP", value)
 
 var Context.preferencesString: String?
     get() = this.currentUserDTO?.preferences ?: ""
@@ -51,6 +55,9 @@ var Context.totpSecret: String?
     set(value) = this.sessionAttribute("totpSecret", value)
 
 fun Context.validateTOTP(code: String): Boolean {
-    val secret = this.totpSecret ?: return false
+    return validateTOTP(code, this.totpSecret ?: return false)
+}
+
+fun Context.validateTOTP(code: String, secret: String): Boolean {
     return verifier.isValidCode(secret, code)
 }

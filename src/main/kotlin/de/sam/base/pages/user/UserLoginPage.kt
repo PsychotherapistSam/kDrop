@@ -4,10 +4,7 @@ import de.sam.base.Page
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.validateLoginAttempt
-import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.hxRedirect
-import de.sam.base.utils.isLoggedIn
-import de.sam.base.utils.prolongAtLeast
+import de.sam.base.utils.*
 import io.javalin.http.Context
 
 class UserLoginPage : Page(
@@ -59,7 +56,14 @@ class UserLoginPage : Page(
                 ctx.req.getSession(true)
 
                 ctx.currentUserDTO = attempt.first
-                ctx.hxRedirect("/")
+
+                if (!attempt.first?.totpSecret.isNullOrBlank()) {
+                    ctx.needsToVerifyTOTP = true
+                    ctx.hxRedirect(UserTOTPValidatePage.ROUTE)
+                } else {
+                    ctx.hxRedirect("/")
+                }
+
                 //ctx.redirect("/")
                 return@prolongAtLeast
             }

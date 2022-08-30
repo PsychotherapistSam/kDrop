@@ -158,6 +158,10 @@ class WebServer {
                         get("/shares", UserSharePage()::shareList, UserRoles.FILE_ACCESS_CHECK)
                     }
                 }
+                path("/totp") {
+                    get("/validate", UserTOTPValidatePage())
+                    post("/validate", UserTOTPValidatePage())
+                }
             }
             path("/admin") {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)

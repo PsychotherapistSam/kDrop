@@ -4,10 +4,7 @@ import de.sam.base.Page
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.fetchDAO
 import de.sam.base.database.toDTO
-import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.hxRedirect
-import de.sam.base.utils.totpSecret
-import de.sam.base.utils.validateTOTP
+import de.sam.base.utils.*
 import dev.samstevens.totp.code.*
 import dev.samstevens.totp.qr.QrData
 import dev.samstevens.totp.qr.ZxingPngQrGenerator
@@ -90,20 +87,5 @@ class UserTOTPSettingsPage : Page(
             }
         }
         super.handle(ctx)
-    }
-
-    private fun <T> Validator<T>.getFirstError(): Pair<Validator<T>, String?> {
-        if (this.errors().isNotEmpty()) {
-            val errors = this.errors()
-            var errorMessage = errors.values.first()[0].message
-
-            errorMessage = when (errorMessage) {
-                "TYPE_CONVERSION_FAILED" -> "The value you entered is not valid."
-                else -> errorMessage
-            }
-
-            return Pair(this, errorMessage)
-        }
-        return Pair(this, null)
     }
 }
