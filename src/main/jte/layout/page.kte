@@ -11,16 +11,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
-        paceOptions = {
-            ajax: true, // disabled
-            document: true, // disabled
-            eventLag: false, // disabled
-            restartOnRequestAfter: true,
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@latest/pace-theme-default.min.css">
+<%--    <script>--%>
+<%--        paceOptions = {--%>
+<%--            ajax: true, // disabled--%>
+<%--            document: true, // disabled--%>
+<%--            eventLag: false, // disabled--%>
+<%--            restartOnRequestAfter: true,--%>
+<%--        }--%>
+<%--    </script>--%>
+<%--    <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>--%>
+<%--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@latest/pace-theme-default.min.css">--%>
 
     <!-- Standard Meta -->
     <meta charset="utf-8"/>
