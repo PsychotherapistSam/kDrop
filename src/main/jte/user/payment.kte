@@ -9,27 +9,30 @@
 page = page,
 content = @`
     <script src="https://js.stripe.com/v3/"></script>
-    <div class="ui red  segment">
-        <form id="payment-form">
-            <div id="payment-element">
-                <!--Stripe.js injects the Payment Element-->
+    <div class="ui grid">
+        <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
+            <div id="payment-segment" class="ui loading center aligned basic fitted segment">
+                <h1 class="ui header">Payment</h1>
+                <form id="payment-form">
+                    <div id="payment-element">
+                        <!--Stripe.js injects the Payment Element-->
+                    </div>
+                    <button class="ui button" id="submit">
+                        <div class="spinner hidden" id="spinner"></div>
+                        <span id="button-text">Pay now</span>
+                    </button>
+                    <div id="payment-message" class="hidden"></div>
+                </form>
             </div>
-            <button id="submit">
-                <div class="spinner hidden" id="spinner"></div>
-                <span id="button-text">Pay now</span>
-            </button>
-            <div id="payment-message" class="hidden"></div>
-        </form>
+        </div>
     </div>
-
     <script>
-        const stripe = Stripe("pk_test_51ItxUbFFToSW5DS8htVSE59fQJuwKqL9DRMzxn1jPCAbawe7zAwcUhkPjnICPVjSEtmOWReDXlnsFz3yGSWYYIys004xgQwW3w");
-
+        var stripe = Stripe("pk_test_51ItxUbFFToSW5DS8htVSE59fQJuwKqL9DRMzxn1jPCAbawe7zAwcUhkPjnICPVjSEtmOWReDXlnsFz3yGSWYYIys004xgQwW3w");
 
         // The items the customer wants to buy
-        const items = [{id: "xl-tshirt"}];
+        var items = [{id: "xl-tshirt"}];
 
-        let elements;
+        var elements = [];
 
         initialize();
         checkStatus();
@@ -41,29 +44,33 @@ content = @`
         // Fetches a payment intent and captures the client secret
         async function initialize() {
 
-            const response = await fetch("/api/v1/payments/create-intent", {
+            var response = await fetch("/api/v1/payments/create-intent", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({items}),
             });
-            const responseJson = await response.json()
+            var responseJson = await response.json()
 
-            var clientSecret = responseJson.client_secret
+            var clientSecret = responseJson.client_secret;
 
-            const appearance = {
+            var appearance = {
                 theme: 'flat',
             };
             elements = stripe.elements({appearance, clientSecret});
 
-            const paymentElement = elements.create("payment");
+            var paymentElement = elements.create("payment");
             paymentElement.mount("#payment-element");
+
+            setTimeout(function () {
+                $("#payment-segment").removeClass("loading");
+            }, 200);
         }
 
         async function handleSubmit(e) {
             e.preventDefault();
             setLoading(true);
 
-            const {error} = await stripe.confirmPayment({
+            var {error} = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
                     // Make sure to change this to your payment completion page
@@ -89,7 +96,7 @@ content = @`
 
         // Fetches the payment intent status after payment submission
         async function checkStatus() {
-            const clientSecret = new URLSearchParams(window.location.search).get(
+            var clientSecret = new URLSearchParams(window.location.search).get(
                 "payment_intent_client_secret"
             );
 
@@ -97,7 +104,7 @@ content = @`
                 return;
             }
 
-            const {paymentIntent} = await stripe.retrievePaymentIntent(clientSecret);
+            var {paymentIntent} = await stripe.retrievePaymentIntent(clientSecret);
 
             switch (paymentIntent.status) {
                 case "succeeded":
@@ -118,7 +125,7 @@ content = @`
         // ------- UI helpers -------
 
         function showMessage(messageText) {
-            const messageContainer = document.querySelector("#payment-message");
+            var messageContainer = document.querySelector("#payment-message");
 
             messageContainer.classList.remove("hidden");
             messageContainer.textContent = messageText;
@@ -132,11 +139,13 @@ content = @`
         // Show a spinner on payment submission
         function setLoading(isLoading) {
             if (isLoading) {
+                $("#payment-segment").addClass("loading");
                 // Disable the button and show a spinner
                 document.querySelector("#submit").disabled = true;
                 document.querySelector("#spinner").classList.remove("hidden");
                 document.querySelector("#button-text").classList.add("hidden");
             } else {
+                $("#payment-segment").removeClass("loading");
                 document.querySelector("#submit").disabled = false;
                 document.querySelector("#spinner").classList.add("hidden");
                 document.querySelector("#button-text").classList.remove("hidden");

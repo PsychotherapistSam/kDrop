@@ -4,13 +4,12 @@ import de.sam.base.Page
 import io.javalin.http.Context
 
 class UserPaymentPage : Page(
-    name = "Login",
+    name = "Payments",
     templateName = "user/payment.kte",
 ) {
     companion object {
         lateinit var ROUTE: String
     }
-
 
     override fun handle(ctx: Context) {
         super.handle(ctx)
