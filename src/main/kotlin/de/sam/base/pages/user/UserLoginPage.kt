@@ -23,9 +23,10 @@ class UserLoginPage : Page(
         lastTryUsername = ""
 
         if (ctx.method() == "POST") {
+            val returnToUrl = ctx.loginReturnUrl ?: UserFilesPage.ROUTE
             prolongAtLeast(2000) {
                 if (ctx.isLoggedIn) {
-                    ctx.hxRedirect("/")
+                    ctx.hxRedirect(returnToUrl)
                     return@prolongAtLeast
                 }
 
@@ -61,7 +62,7 @@ class UserLoginPage : Page(
                     ctx.needsToVerifyTOTP = true
                     ctx.hxRedirect(UserTOTPValidatePage.ROUTE)
                 } else {
-                    ctx.hxRedirect("/")
+                    ctx.hxRedirect(returnToUrl)
                 }
 
                 //ctx.redirect("/")

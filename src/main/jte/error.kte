@@ -18,7 +18,9 @@ content = @`
                     <p>
                         ${page.e.message}
                         @if(page.e.status == 401 && page.currentUserDTO == null)
-                            <br>You can log in <a href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}" hx-target="body" hx-push-url="true">here</a>.
+                            <br>You can log in <a href="${UserLoginPage.ROUTE}"
+                                                  hx-get="${UserLoginPage.ROUTE}"
+                                                  hx-target="body" hx-push-url="true">here</a>.
                         @endif
                     </p>
 

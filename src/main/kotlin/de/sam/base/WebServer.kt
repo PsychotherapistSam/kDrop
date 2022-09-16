@@ -4,7 +4,6 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.*
 import de.sam.base.pages.ErrorPage
-import de.sam.base.pages.IndexPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
@@ -137,7 +136,7 @@ class WebServer {
 
         Logger.debug("Registering Javalin routes")
         app.routes {
-            get("/", IndexPage(), UserRoles.USER)
+//            get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
             post("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())

@@ -61,3 +61,7 @@ fun Context.validateTOTP(code: String): Boolean {
 fun Context.validateTOTP(code: String, secret: String): Boolean {
     return verifier.isValidCode(secret, code)
 }
+
+var Context.loginReturnUrl: String?
+    get() = this.sessionAttribute<String>("loginReturnUrl")
+    set(value) = this.sessionAttribute("loginReturnUrl", value)

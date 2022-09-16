@@ -23,9 +23,8 @@
 
     <div class="ui container">
         <!--Start: Desktop Nav-->
-        <a class="header item" href="/" hx-get="/">${config.name}</a>
-        <a class="@if(page is IndexPage) active @endif item" href="${IndexPage.ROUTE}"
-           hx-get="${IndexPage.ROUTE}">Home</a>
+        <a class="header item" href="${UserFilesPage.ROUTE}">${config.name}</a>
+        <a class="@if(page is UserFilesPage) active @endif item" href="${UserFilesPage.ROUTE}">My Files</a>
 
         <div class="right menu">
             @if(currentUser != null)
