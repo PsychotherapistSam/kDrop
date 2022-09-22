@@ -83,7 +83,7 @@ content = @`
                     <div class="field">
                         <div class="ui toggle secondary checkbox">
                             <input type="checkbox" name="${preferenceTriple.first}" class="custom-preference"
-                                   checked="${page.context!!.preferencesString!!.split(",").contains(preferenceTriple.first)}">
+                                   checked="${page.ctx.preferencesString!!.split(",").contains(preferenceTriple.first)}">
                             <!-- hx-put="/clicked" hx-trigger="change" hx-params="public" hx-swap="none"  -->
                             <label>${preferenceTriple.third}</label>
                         </div>

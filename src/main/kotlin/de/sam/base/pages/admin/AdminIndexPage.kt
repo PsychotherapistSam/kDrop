@@ -4,7 +4,6 @@ import de.sam.base.Page
 import de.sam.base.database.FileDAO
 import de.sam.base.database.UserDAO
 import de.sam.base.utils.logging.logTimeSpent
-import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.system.measureNanoTime
 
@@ -19,7 +18,8 @@ class AdminIndexPage : Page(
 
     var userCount = 0
     var fileCount = 0
-    override fun handle(ctx: Context) {
+
+    override fun get() {
         pageDiff = measureNanoTime {
             transaction {
                 logTimeSpent("Getting user count") {
@@ -30,6 +30,5 @@ class AdminIndexPage : Page(
                 }
             }
         }
-        super.handle(ctx)
     }
 }

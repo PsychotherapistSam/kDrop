@@ -41,10 +41,10 @@ content = @`
     @endif
 
     @if(currentIsFolder)
-        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.context!!, parent = page.parent)
+        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.ctx, parent = page.parent)
         @template.components.files.fileUploadComp(parent = page.parent, page = page)
     @else
-        @template.components.files.fileDownloadComponent(file = page.parent!!, ctx = page.context!!)
+        @template.components.files.fileDownloadComponent(file = page.parent!!, ctx = page.ctx)
     @endif
 
     <script>

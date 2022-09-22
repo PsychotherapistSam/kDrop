@@ -13,7 +13,6 @@ import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.hxRedirect
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
-import io.javalin.http.Context
 import io.javalin.http.ForbiddenResponse
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -29,7 +28,7 @@ class UserRegistrationPage : Page(
     var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
 
-    override fun handle(ctx: Context) {
+    override fun before() {
         errors.clear()
         lastTryUsername = ""
 
@@ -38,60 +37,58 @@ class UserRegistrationPage : Page(
         } else if (!ctx.isLoggedIn && !Configuration.config.allowUserRegistration) {
             throw ForbiddenResponse("User registration is currently disabled.")
         }
+    }
 
-        if (ctx.method() == "POST") {
-            prolongAtLeast(2000) {
-                if (ctx.isLoggedIn) {
-                    ctx.hxRedirect("/")
-                    return@prolongAtLeast
-                }
+    override fun post() {
+        prolongAtLeast(2000) {
+            if (ctx.isLoggedIn) {
+                ctx.hxRedirect("/")
+                return@prolongAtLeast
+            }
 
-                val username = ctx.formParam("username")
-                val password = ctx.formParam("password")
+            val username = ctx.formParam("username")
+            val password = ctx.formParam("password")
 
-                if (Configuration.config.captcha.enabled && Configuration.config.captcha.locations.contains("registration")) {
-                    when (Configuration.config.captcha.service.lowercase()) {
-                        "recaptcha" -> {
-                            val captchaErrors = Captcha.validate(ctx)
-                            if (captchaErrors.isNotEmpty()) {
-                                //TODO: reset username field if captcha is not valid
-                                lastTryUsername = username ?: ""
-                                errors.addAll(captchaErrors)
-                                return@prolongAtLeast
-                            }
+            if (Configuration.config.captcha.enabled && Configuration.config.captcha.locations.contains("registration")) {
+                when (Configuration.config.captcha.service.lowercase()) {
+                    "recaptcha" -> {
+                        val captchaErrors = Captcha.validate(ctx)
+                        if (captchaErrors.isNotEmpty()) {
+                            //TODO: reset username field if captcha is not valid
+                            lastTryUsername = username ?: ""
+                            errors.addAll(captchaErrors)
+                            return@prolongAtLeast
                         }
                     }
                 }
+            }
 
-                val attempt = validateRegistrationAttempt(username, password)
-                // first = user, second = errors
-                if (attempt.second.isNotEmpty()) {
-                    lastTryUsername = username ?: ""
-                    errors.add(attempt.second.first())
-                    return@prolongAtLeast
-                }
-
-                val userDAO = transaction {
-                    return@transaction UserDAO.new {
-                        this.name = username!!
-                        this.password = Password.hash(password)
-                            .addSalt("${this.id}") // argon2id salts the passwords on itself, but better safe than sorry
-                            .addPepper(Configuration.config.passwordPepper)
-                            .with(argon2Instance)
-                            .result
-                        this.roles = UserRoles.USER.name
-                        this.hidden = false
-                        this.preferences = ""
-                        this.registrationDate = DateTime.now()
-                    }
-                }
-                ctx.currentUserDTO = userDAO.toDTO()
-                ctx.hxRedirect("/")
-                //ctx.redirect("/")
+            val attempt = validateRegistrationAttempt(username, password)
+            // first = user, second = errors
+            if (attempt.second.isNotEmpty()) {
+                lastTryUsername = username ?: ""
+                errors.add(attempt.second.first())
                 return@prolongAtLeast
             }
-        }
 
-        super.handle(ctx)
+            val userDAO = transaction {
+                return@transaction UserDAO.new {
+                    this.name = username!!
+                    this.password = Password.hash(password)
+                        .addSalt("${this.id}") // argon2id salts the passwords on itself, but better safe than sorry
+                        .addPepper(Configuration.config.passwordPepper)
+                        .with(argon2Instance)
+                        .result
+                    this.roles = UserRoles.USER.name
+                    this.hidden = false
+                    this.preferences = ""
+                    this.registrationDate = DateTime.now()
+                }
+            }
+            ctx.currentUserDTO = userDAO.toDTO()
+            ctx.hxRedirect("/")
+            //ctx.redirect("/")
+            return@prolongAtLeast
+        }
     }
 }

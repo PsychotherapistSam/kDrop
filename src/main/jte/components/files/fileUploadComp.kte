@@ -18,7 +18,7 @@
         inline: false,
         trigger: "#fileUploadModal",
         closeModalOnClickOutside: true,
-        @if(page.context!!.isLoggedIn && page.context!!.preferencesString!!.split(",").contains("dark-mode"))
+        @if(page.ctx.isLoggedIn && page.ctx.preferencesString!!.split(",").contains("dark-mode"))
         theme: 'dark',
         @endif
         showProgressDetails: true,

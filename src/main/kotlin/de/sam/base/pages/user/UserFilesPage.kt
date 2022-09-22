@@ -11,12 +11,10 @@ import de.sam.base.utils.fileDAOFromId
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
-import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
-import kotlin.system.measureNanoTime
 
 class UserFilesPage : Page(
     name = "My Files",
@@ -33,55 +31,55 @@ class UserFilesPage : Page(
     var sortByName: String = FileSortingDirection.sortDirections.first().prettyName
     var sortBy: String = FileSortingDirection.sortDirections.first().name
 
-    override fun handle(ctx: Context) {
-        pageDiff = measureNanoTime {
-            breadcrumbs.clear()
+    override fun before() {
+        breadcrumbs.clear()
+    }
 
-            val sortingDirection =
-                FileSortingDirection.sortDirections.first {
-                    it.name == (ctx.queryParam("sort") ?: "name")
-                }
+    override fun get() {
+        val sortingDirection =
+            FileSortingDirection.sortDirections.first {
+                it.name == (ctx.queryParam("sort") ?: "name")
+            }
 
-            parent = ctx.fileDTOFromId
+        parent = ctx.fileDTOFromId
 
-            transaction {
-                if (parent != null) {
-                    logTimeSpent("the breadcrumb traversal") {
-                        // recursive list parents for breadcrumb
-                        var breadcrumb = parent
-                        while (breadcrumb != null) {
-                            breadcrumbs.add(breadcrumb)
-                            breadcrumb = breadcrumb.parent
-                        }
-                        // reverse list because the traversal is backwards
-                        breadcrumbs.reverse()
+        transaction {
+            if (parent != null) {
+                logTimeSpent("the breadcrumb traversal") {
+                    // recursive list parents for breadcrumb
+                    var breadcrumb = parent
+                    while (breadcrumb != null) {
+                        breadcrumbs.add(breadcrumb)
+                        breadcrumb = breadcrumb.parent
                     }
-                }
-
-                // parent == null defualts to root folder
-                if (parent == null || parent!!.isFolder) {
-                    if (!ctx.isLoggedIn) {
-                        Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
-                        throw NotFoundResponse("File not found")
-                    }
-
-                    logTimeSpent("getting the file list") {
-                        fileDTOs = FileDAO
-                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId?.id) }
-//                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId) }
-//                            .filter { it.parent?.id?.value == parent?.id }
-                            .map { it.toDTO() }
-                            .sortedWith { a, b ->
-                                sortingDirection.compare(a, b)
-                                //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
-                                // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
-                                //  IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
-                            }
-                    }
+                    // reverse list because the traversal is backwards
+                    breadcrumbs.reverse()
                 }
             }
-            ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
+
+            // parent == null defualts to root folder
+            if (parent == null || parent!!.isFolder) {
+                if (!ctx.isLoggedIn) {
+                    Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
+                    throw NotFoundResponse("File not found")
+                }
+
+                logTimeSpent("getting the file list") {
+                    fileDTOs = FileDAO
+                        .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId?.id) }
+//                            .find { FilesTable.owner eq ctx.currentUserDTO!!.id and FilesTable.parent.eq(ctx.fileDAOFromId) }
+//                            .filter { it.parent?.id?.value == parent?.id }
+                        .map { it.toDTO() }
+                        .sortedWith { a, b ->
+                            sortingDirection.compare(a, b)
+                            //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
+                            // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
+                            //  IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
+                        }
+                }
+            }
         }
+        ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
 
         if (ctx.queryParam("table") != null) {
             ctx.render(
@@ -95,7 +93,6 @@ class UserFilesPage : Page(
             )
             return
         }
-        super.handle(ctx)
     }
 }
 

@@ -24,7 +24,7 @@ content = @`
                 <div class="middle aligned column">
                     <p>Scan this code with your authenticator</p>
                     <img class="ui medium rounded centered image" src="${page.qrCodeDaraUri}"
-                         alt="${page.context!!.totpSecret}"/>
+                         alt="${page.ctx.totpSecret}"/>
                 </div>
                 <div class="one wide column">
                     <div class="ui vertical divider">
@@ -33,7 +33,7 @@ content = @`
                 </div>
                 <div class="middle aligned column">
                     <p>Enter this code into your authenticator</p>
-                    <pre>${page.context!!.totpSecret}</pre>
+                    <pre>${page.ctx.totpSecret}</pre>
                 </div>
             </div>
         </div>

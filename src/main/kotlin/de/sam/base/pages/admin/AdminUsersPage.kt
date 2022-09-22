@@ -6,7 +6,6 @@ import de.sam.base.database.UserDTO
 import de.sam.base.database.UsersTable
 import de.sam.base.database.toDTO
 import de.sam.base.utils.logging.logTimeSpent
-import io.javalin.http.Context
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -26,7 +25,7 @@ class AdminUsersPage : Page(
     val maxTablePageSize = 10
     var searchQuery = ""
 
-    override fun handle(ctx: Context) {
+    override fun get() {
         searchQuery = ctx.queryParam("search") ?: ""
         currenTablePage = ctx.queryParam("page")?.toInt() ?: 0
 
@@ -59,7 +58,5 @@ class AdminUsersPage : Page(
             )
             return
         }
-
-        super.handle(ctx)
     }
 }

@@ -3,7 +3,10 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.controllers.resultFile
 import de.sam.base.database.*
-import de.sam.base.utils.*
+import de.sam.base.utils.CustomSeekableWriter
+import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.fileDTOFromId
+import de.sam.base.utils.share
 import io.javalin.core.util.Header
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
@@ -12,7 +15,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
 import java.io.File
 import java.io.FileInputStream
-import kotlin.system.measureNanoTime
 
 class UserSharePage : Page(
     name = "Shared File",
@@ -25,38 +27,12 @@ class UserSharePage : Page(
     var file: FileDTO? = null
     var fileDTOs = listOf<FileDTO>()
 
-    override fun handle(ctx: Context) {
-        pageDiff = measureNanoTime {
-//            val shareId = ctx.pathParam("shareId")
-            transaction {
-//                val share = if (shareId.isUUID) {
-//                    ShareDAO.find { SharesTable.id eq UUID.fromString(shareId) }
-//                        .limit(1)
-//                        .firstOrNull()
-//                } else {
-//                    ShareDAO.find { SharesTable.vanityName eq shareId }
-//                        .limit(1)
-//                        .firstOrNull()
-//                }
-//
-                val fileDAO =
-                    FileDAO.findById(ctx.share!!.first.file.id) ?: throw NotFoundResponse("File not found")
-                file = fileDAO.toDTO()
-//                if (file?.isFolder == true) {
-//                    logTimeSpent("getting the file list") {
-//                        val sortingDirection = FileSortingDirection.sortDirections.first { it.name == "name" }
-//
-//                        fileDTOs = FileDAO
-//                            .find { FilesTable.parent eq fileDAO.id }
-//                            .map { it.toDTO() }
-//                            .sortedWith { a, b ->
-//                                sortingDirection.compare(a, b)
-//                            }
-//                    }
-//                }
-            }
+    override fun get() {
+        transaction {
+            val fileDAO =
+                FileDAO.findById(ctx.share!!.first.file.id) ?: throw NotFoundResponse("File not found")
+            file = fileDAO.toDTO()
         }
-        super.handle(ctx)
     }
 
     fun shareList(ctx: Context) {

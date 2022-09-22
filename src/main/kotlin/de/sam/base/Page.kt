@@ -2,12 +2,13 @@ package de.sam.base
 
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.requestStartTime
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 abstract class Page(
     var name: String,
@@ -20,21 +21,15 @@ abstract class Page(
     private var templateStartTime: Long? = null // = System.nanoTime()
     var currentUserDTO: UserDTO? = null // = ctx.currentUser
 
-    var context: Context? = null
+    lateinit var ctx: Context
+    var renderTemplate = true
 
-    //TODO: nonces
-    //  val nonce = ctx.attribute<String>("nonce")
+    private var pagePreTime = 0L
+    private var pageRenderStart = 0L
 
     fun getRenderTime(): String {
-//        val templateDiff = System.nanoTime() - (templateStartTime ?: System.nanoTime())
-//        println("pageDiff: ${nanoToMilli(pageDiff)}; templateDiff: ${nanoToMilli(templateDiff)}; total: ${nanoToMilli(pageDiff + templateDiff)}")
-//        return nanoToMilli(pageDiff + templateDiff)
-        val startTime = context!!.requestStartTime
-        return nanoToMilli(System.nanoTime() - startTime)
-    }
-
-    fun getPageDiff(): String {
-        return nanoToMilli(pageDiff)
+        val pageRenderTime = System.nanoTime() - pageRenderStart
+        return nanoToMilli(pagePreTime + pageRenderTime)
     }
 
     private fun nanoToMilli(time: Long): String {
@@ -49,10 +44,36 @@ abstract class Page(
         //  ctx.render(templateName, Collections.singletonMap("page", this))
     }*/
 
-    override fun handle(ctx: Context) {
-        context = ctx
-        currentUserDTO = ctx.currentUserDTO
+    @OptIn(ExperimentalTime::class)
+    override fun handle(context: Context) {
+        this.ctx = context
+        currentUserDTO = this.ctx.currentUserDTO
         templateStartTime = System.nanoTime()
+
+        pagePreTime = measureTime {
+            before()
+            when (this.ctx.method()) {
+                "GET" -> get()
+                "POST" -> post()
+                "DELETE" -> delete()
+            }
+            after()
+        }.inWholeNanoseconds
+
+        if (renderTemplate) {
+            pageRenderStart = System.nanoTime()
+            render()
+        }
+    }
+
+    fun render() {
         ctx.render(templateName, Collections.singletonMap("page", this))
     }
+
+    open fun before() {}
+    open fun get() {}
+    open fun post() {}
+    open fun delete() {}
+    open fun after() {}
+
 }
