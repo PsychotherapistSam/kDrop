@@ -55,6 +55,18 @@ jobs:
         # A file, directory or wildcard pattern that describes what to upload
         path: /home/runner/work/kopimi-share/kopimi-share/build/libs/*.jar
         # The desired behavior if no files are found using the provided path.
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+    - name: Adding Known Hosts
+      run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      
+    - name: Deploy with rsync
+      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./home/runner/work/kopimi-share/kopimi-share/build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare/dist
+
+      
 #    - name: Build with Gradle
 #      uses: gradle/gradle-build-action@v2
 #      with:
