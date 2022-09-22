@@ -18,9 +18,7 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 11
@@ -28,8 +26,31 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'          
-    - name: Build with Gradle
-      uses: gradle/gradle-build-action@v2
+    - uses: burrunan/gradle-cache-action@v1
+      name: Build kopimi-share
       with:
-        gradle-version: release-candidate
+        # If you have multiple jobs, use distinct job-id in in case you want to split caches
+        # For instance, jobs with different JDK versions can't share caches
+        # RUNNER_OS is added to job-id automatically
+        job-id: jdk18
+        # Specifies arguments for Gradle execution
+        # If arguments is missing or empty, then Gradle is not executed
         arguments: shadowJar
+        # arguments can be multi-line for better readability
+        # arguments: |
+        #  --no-paralell
+        #  build
+        #  -x test
+        # Gradle version to use for execution:
+        #   wrapper (default), current, rc, nightly, release-nightly, or
+        #   versions like 6.6 (see https://services.gradle.org/versions/all)
+        gradle-version: wrapper
+        # Properties are passed as -Pname=value
+        #properties: |
+        #  kotlin.js.compiler=ir
+        #  kotlin.parallel.tasks.in.project=true
+#    - name: Build with Gradle
+#      uses: gradle/gradle-build-action@v2
+#      with:
+#        gradle-version: release-candidate
+#        arguments: shadowJar
