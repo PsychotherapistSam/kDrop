@@ -63,9 +63,28 @@ jobs:
     - name: Adding Known Hosts
       run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       
+    - name: Stop Screen
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: screen -X -S "KopimiShare" quit
+        
     - name: Deploy with rsync
-      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare/dist
-
+      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare
+      
+    - name: Start Screen
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /home/kopimishare
+          screen -dmS KopimiShare java -jar KopimiShare-1.0-SNAPSHOT-all.jar
       
 #    - name: Build with Gradle
 #      uses: gradle/gradle-build-action@v2
