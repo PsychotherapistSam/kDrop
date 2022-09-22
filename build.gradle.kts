@@ -60,11 +60,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:21.7.0")
+    implementation("com.stripe:stripe-java:21.8.0")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
 
+    // https://mvnrepository.com/artifact/io.konform/konform
+    implementation("io.konform:konform:0.4.0")
 }
 
 tasks.test {
@@ -82,6 +84,27 @@ application {
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
     manifest {
         attributes["Main-Class"] = "de.sam.base.MainKt"
+    }
+    minimize {
+        // Exclude Tinylog & slf4j; Tinylog uses reflection to load the logger implementation, they are not huge anyway
+        exclude(dependency("org.slf4j:slf4j-simple"))
+        exclude(dependency("org.tinylog:tinylog-impl"))
+        exclude(dependency("org.tinylog:tinylog-api-kotlin"))
+
+        // Exclude the postgres driver, hikari doesn't find it otherwise
+        exclude(dependency("org.postgresql:postgresql"))
+
+        // Exclude Jetbrains Exposed
+        exclude(dependency("org.jetbrains.exposed:exposed"))
+
+        // Exclude Javalin
+        exclude(dependency("io.javalin:javalin"))
+
+        // Exclude jte-Kotlin
+        exclude(dependency("gg.jte:jte-kotlin")) // Sadly, this is very large
+
+        // exclude prettytime
+        exclude(dependency("org.ocpsoft.prettytime:prettytime"))
     }
 }
 
