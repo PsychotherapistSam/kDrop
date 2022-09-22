@@ -136,6 +136,7 @@ class WebServer {
 
         Logger.debug("Registering Javalin routes")
         app.routes {
+            get("/") { ctx -> ctx.redirect(UserFilesPage.ROUTE) }
 //            get("/", IndexPage(), UserRoles.USER)
             get("/login", UserLoginPage())
             post("/login", UserLoginPage())
