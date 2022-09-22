@@ -49,6 +49,12 @@ jobs:
         #properties: |
         #  kotlin.js.compiler=ir
         #  kotlin.parallel.tasks.in.project=true
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        # A file, directory or wildcard pattern that describes what to upload
+        path: /home/runner/work/kopimi-share/kopimi-share/build/libs/*.jar
+        # The desired behavior if no files are found using the provided path.
 #    - name: Build with Gradle
 #      uses: gradle/gradle-build-action@v2
 #      with:
