@@ -5,30 +5,30 @@
 
 @param parent: FileDTO?
 @param page: Page
-<script src="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.js"></script>
-<link href="https://releases.transloadit.com/uppy/v2.12.1/uppy.min.css" rel="stylesheet">
+<script src="https://releases.transloadit.com/uppy/v3.0.1/uppy.min.js"></script>
+<link href="https://releases.transloadit.com/uppy/v3.0.1/uppy.min.css" rel="stylesheet">
 
 <script>
-    var uppy = new Uppy.Core({
+    var uppy = new Uppy.Uppy({
         debug: true,
         autoProceed: false,
     })
     uppy.use(Uppy.Dashboard, {
-        plugins: ['XHRUpload'],
         inline: false,
         trigger: "#fileUploadModal",
-        closeModalOnClickOutside: true,
+        closeModalOnClickOutside: false,
         @if(page.ctx.isLoggedIn && page.ctx.preferencesString!!.split(",").contains("dark-mode"))
         theme: 'dark',
         @endif
         showProgressDetails: true,
+        proudlyDisplayPoweredByUppy: false,
         doneButtonHandler: () => {
-            this.uppy.reset()
+            // this.uppy.reset()
             uppy.getPlugin('Dashboard').closeModal()
         },
     });
     uppy.on('dashboard:modal-closed', () => {
-        this.uppy.reset()
+        this.uppy.cancelAll({reason: 'user'})
         htmx.trigger("#refreshButton", "refreshTable");
     })
     uppy.use(Uppy.XHRUpload, {
@@ -50,6 +50,7 @@
             }
         }
     });
+
 
     document.addEventListener("dragover", event => {
         if (event.dataTransfer.types.indexOf("Files") !== -1 || event.dataTransfer.types.indexOf("application/x-moz-file") !== -1) {

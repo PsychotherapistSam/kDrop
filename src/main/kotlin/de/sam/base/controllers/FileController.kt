@@ -22,6 +22,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.util.*
+import javax.servlet.MultipartConfigElement
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 import kotlin.time.DurationUnit
@@ -39,6 +40,10 @@ class FileController {
         val parentFileId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
         val files = try {
+            ctx.req.setAttribute(
+                "org.eclipse.jetty.multipartConfig",
+                MultipartConfigElement(File("./upload/temp").absolutePath, -1, -1, 1)
+            )
             ctx.uploadedFiles()
         } catch (EofException: EOFException) {
             Logger.error("Early EOF, aborting request")

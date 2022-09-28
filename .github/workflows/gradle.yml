@@ -73,7 +73,7 @@ jobs:
         script: screen -X -S "KopimiShare" quit
         
     - name: Deploy with rsync
-      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/mnt/volume-nbg1-1/kopimishare
+      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare
       
     - name: Start Screen
       uses: appleboy/ssh-action@master
@@ -83,7 +83,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.SSH_PORT }}
         script: |
-          cd /mnt/volume-nbg1-1/kopimishare
+          cd /home/kopimishare
           screen -dmS KopimiShare java -jar KopimiShare-1.0-SNAPSHOT-all.jar
       
 #    - name: Build with Gradle
