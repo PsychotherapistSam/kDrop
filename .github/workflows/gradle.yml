@@ -20,72 +20,72 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-      - uses: burrunan/gradle-cache-action@v1
-        name: Build kopimi-share
-        with:
-          # If you have multiple jobs, use distinct job-id in in case you want to split caches
-          # For instance, jobs with different JDK versions can't share caches
-          # RUNNER_OS is added to job-id automatically
-          job-id: jdk18
-          # Specifies arguments for Gradle execution
-          # If arguments is missing or empty, then Gradle is not executed
-          arguments: shadowJar
-          # arguments can be multi-line for better readability
-          # arguments: |
-          #  --no-paralell
-          #  build
-          #  -x test
-          # Gradle version to use for execution:
-          #   wrapper (default), current, rc, nightly, release-nightly, or
-          #   versions like 6.6 (see https://services.gradle.org/versions/all)
-          gradle-version: wrapper
-          # Properties are passed as -Pname=value
-          #properties: |
-          #  kotlin.js.compiler=ir
-          #  kotlin.parallel.tasks.in.project=true
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3.1.0
-        with:
-          # A file, directory or wildcard pattern that describes what to upload
-          path: /home/runner/work/kopimi-share/kopimi-share/build/libs/*.jar
-          # The desired behavior if no files are found using the provided path.
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2
-        with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
-      - name: Adding Known Hosts
-        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Stop Screen
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: screen -X -S "KopimiShare" quit
-
-      - name: Deploy with rsync
-        run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare
-
-      - name: Start Screen
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            cd /home/kopimishare
-            screen -dmS KopimiShare java -jar KopimiShare-1.0-SNAPSHOT-all.jar
-
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'          
+    - uses: burrunan/gradle-cache-action@v1
+      name: Build kopimi-share
+      with:
+        # If you have multiple jobs, use distinct job-id in in case you want to split caches
+        # For instance, jobs with different JDK versions can't share caches
+        # RUNNER_OS is added to job-id automatically
+        job-id: jdk18
+        # Specifies arguments for Gradle execution
+        # If arguments is missing or empty, then Gradle is not executed
+        arguments: shadowJar
+        # arguments can be multi-line for better readability
+        # arguments: |
+        #  --no-paralell
+        #  build
+        #  -x test
+        # Gradle version to use for execution:
+        #   wrapper (default), current, rc, nightly, release-nightly, or
+        #   versions like 6.6 (see https://services.gradle.org/versions/all)
+        gradle-version: wrapper
+        # Properties are passed as -Pname=value
+        #properties: |
+        #  kotlin.js.compiler=ir
+        #  kotlin.parallel.tasks.in.project=true
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        # A file, directory or wildcard pattern that describes what to upload
+        path: /home/runner/work/kopimi-share/kopimi-share/build/libs/*.jar
+        # The desired behavior if no files are found using the provided path.
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+    - name: Adding Known Hosts
+      run: ssh-keyscan -p ${{ secrets.SSH_PORT }} -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      
+    - name: Stop Screen
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: screen -X -S "KopimiShare" quit
+        
+    - name: Deploy with rsync
+      run: rsync -avz -e "ssh -p ${{ secrets.SSH_PORT }}" ./build/libs/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/kopimishare
+      
+    - name: Start Screen
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          cd /home/kopimishare
+          screen -dmS KopimiShare java -jar KopimiShare-1.0-SNAPSHOT-all.jar
+      
 #    - name: Build with Gradle
 #      uses: gradle/gradle-build-action@v2
 #      with:
