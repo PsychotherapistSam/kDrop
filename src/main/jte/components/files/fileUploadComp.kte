@@ -22,7 +22,7 @@
     uppy.use(Uppy.Dashboard, {
         inline: false,
         trigger: "#fileUploadModal",
-        // closeModalOnClickOutside: false,
+        closeModalOnClickOutside: true,
         @if(page.ctx.isLoggedIn && page.ctx.preferencesString!!.split(",").contains("dark-mode"))
         theme: 'dark',
         @endif
