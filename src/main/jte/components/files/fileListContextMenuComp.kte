@@ -542,7 +542,7 @@
                 data.append("files", ids);
                 switch (link.getAttribute("data-action")) {
                     case "delete":
-                        if (rows.length > 5 || (rows.length === 1 && rows[0].getAttribute("data-folder") === "true")) {
+                        if (rows.length > 2 || (rows.length === 1 && rows[0].getAttribute("data-folder") === "true")) {
                             showFileDeletionLoadingModal(rows.length);
                         }
                         $.ajax({

@@ -8,6 +8,12 @@
 <script src="https://releases.transloadit.com/uppy/v3.0.1/uppy.min.js"></script>
 <link href="https://releases.transloadit.com/uppy/v3.0.1/uppy.min.css" rel="stylesheet">
 
+<style>
+    polygon {
+        fill: #fff;
+    }
+</style>
+
 <script>
     var uppy = new Uppy.Uppy({
         debug: true,
@@ -16,7 +22,7 @@
     uppy.use(Uppy.Dashboard, {
         inline: false,
         trigger: "#fileUploadModal",
-        closeModalOnClickOutside: false,
+        // closeModalOnClickOutside: false,
         @if(page.ctx.isLoggedIn && page.ctx.preferencesString!!.split(",").contains("dark-mode"))
         theme: 'dark',
         @endif
