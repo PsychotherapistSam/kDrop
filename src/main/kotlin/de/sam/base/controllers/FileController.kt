@@ -520,7 +520,7 @@ private fun File.sha512(): String {
     return Files.asByteSource(this).hash(Hashing.sha512()).toString()
 }
 
-private fun String.isValidUUID(): Boolean {
+public fun String.isValidUUID(): Boolean {
     try {
         UUID.fromString(this)
     } catch (exception: IllegalArgumentException) {

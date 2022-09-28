@@ -1,8 +1,10 @@
 package de.sam.base
 
 import com.stripe.Stripe
+import de.sam.base.actions.FileParityCheck
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.DatabaseManager
+import de.sam.base.utils.logging.logTimeSpent
 import org.tinylog.kotlin.Logger
 import java.io.File
 
@@ -27,4 +29,8 @@ fun main(args: Array<String>) {
     Logger.debug("Starting webserver")
     WebServer().start()
     Logger.info("Started Successfully")
+
+    logTimeSpent("Checking for files that do not exist in the database") {
+        FileParityCheck().checkIfLocalFilesExistInDatabase()
+    }
 }
