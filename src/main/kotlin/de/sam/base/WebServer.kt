@@ -19,13 +19,13 @@ import gg.jte.TemplateEngine
 import gg.jte.resolve.DirectoryCodeResolver
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.core.util.Header
-import io.javalin.core.util.RouteOverviewPlugin
-import io.javalin.core.validation.JavalinValidation
+import io.javalin.http.Header
 import io.javalin.http.HttpResponseException
 import io.javalin.http.staticfiles.Location
-import io.javalin.plugin.json.JavalinJackson
-import io.javalin.plugin.rendering.template.JavalinJte
+import io.javalin.json.JavalinJackson
+import io.javalin.plugin.bundled.RouteOverviewPlugin
+import io.javalin.rendering.template.JavalinJte
+import io.javalin.validation.JavalinValidation
 import org.tinylog.kotlin.Logger
 import java.nio.file.Path
 import java.util.*
@@ -72,23 +72,23 @@ class WebServer {
             // javalinConfig.enableWebjars()
 
             // register jte.gg template renderer
-            JavalinJte.configure(createTemplateEngine())
+            JavalinJte.init(createTemplateEngine())
             // for uuid validation
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
-            javalinConfig.sessionHandler { Session.sqlSessionHandler() }
-            javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
+            javalinConfig.jetty.sessionHandler { Session.sqlSessionHandler() }
+            javalinConfig.plugins.register(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
 
             // limit to one instance per webserver
             val customAccessManager = CustomAccessManager()
             javalinConfig.accessManager { handler, ctx, routeRoles ->
                 customAccessManager.manage(handler, ctx, routeRoles)
             }
-            javalinConfig.requestLogger { ctx, timeInMs ->
+            javalinConfig.requestLogger.http { ctx, timeInMs ->
                 Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
 
-            javalinConfig.addStaticFiles {
+            javalinConfig.staticFiles.add {
                 it.hostedPath = "/"
                 it.directory = "/public"
                 it.location = Location.CLASSPATH // Location.CLASSPATH (jar) or Location.EXTERNAL (file system)
@@ -97,7 +97,7 @@ class WebServer {
             }
 
             // dos with large files
-            javalinConfig.autogenerateEtags = false
+//            javalinConfig.autogenerateEtags = false
 
             val jackson = JavalinJackson.defaultMapper().apply { registerModule(JodaModule()) }
             javalinConfig.jsonMapper(JavalinJackson(jackson))
@@ -150,7 +150,6 @@ class WebServer {
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
-                    //TODO:  seperate this to two different pages
                     get("/", UserFilesPage(), UserRoles.USER)
                     path("/{fileId}") {
                         get("/", UserFilesPage(), UserRoles.FILE_ACCESS_CHECK)

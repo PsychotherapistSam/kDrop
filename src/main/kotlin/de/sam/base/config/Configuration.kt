@@ -21,6 +21,7 @@ class Configuration {
     var allowUserRegistration: Boolean = false
     var devEnvironment = true
     var logLevel = "TRACE"
+    var fileTempDirectory = File("./upload/tmp").canonicalPath
 
     class Database {
         var host: String = "localhost"

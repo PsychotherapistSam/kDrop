@@ -6,11 +6,9 @@ import de.sam.base.database.*
 import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
-import io.javalin.core.util.FileUtil
-import io.javalin.core.util.Header
-import io.javalin.http.BadRequestResponse
-import io.javalin.http.Context
-import io.javalin.http.NotFoundResponse
+import io.javalin.http.*
+import io.javalin.util.FileUtil
+import jakarta.servlet.MultipartConfigElement
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -22,7 +20,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.util.*
-import javax.servlet.MultipartConfigElement
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 import kotlin.time.DurationUnit
@@ -40,10 +37,11 @@ class FileController {
         val parentFileId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
 
         val files = try {
-            ctx.req.setAttribute(
-                "org.eclipse.jetty.multipartConfig",
-                MultipartConfigElement(File("./upload/temp").absolutePath, -1, -1, 1)
-            )
+            ctx.req()
+                .setAttribute(
+                    "org.eclipse.jetty.multipartConfig",
+                    MultipartConfigElement(File("./upload/temp").absolutePath, -1, -1, 1)
+                )
             ctx.uploadedFiles()
         } catch (EofException: EOFException) {
             Logger.error("Early EOF, aborting request")
@@ -66,13 +64,13 @@ class FileController {
                 }
 
                 val file = FileDAO.new {
-                    this.name = it.filename
+                    this.name = it.filename()
                     this.path = "upload/${this.id}"
-                    this.mimeType = it.contentType ?: "application/octet-stream"
+                    this.mimeType = it.contentType() ?: "application/octet-stream"
                     this.parent = parentFile
                     this.owner = owner
-                    this.size = it.size
-                    this.sizeHR = humanReadableByteCountBin(it.size)
+                    this.size = it.size()
+                    this.sizeHR = humanReadableByteCountBin(it.size())
                     this.password = null
                     this.private = parentFile?.private ?: false
                     this.created = DateTime.now()
@@ -82,7 +80,7 @@ class FileController {
                 val targetFile = File("./upload/${file.id}")
 
                 logTimeSpent("downloading the file from the user") {
-                    FileUtil.streamToFile(it.content, targetFile.path)
+                    FileUtil.streamToFile(it.content(), targetFile.path)
                 }
                 logTimeSpent("hashing file") {
                     file.hash = targetFile.sha512()

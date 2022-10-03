@@ -9,6 +9,7 @@ import de.sam.base.utils.share
 import de.sam.base.utils.string.isUUID
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
+import io.javalin.http.formParamAsClass
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.util.*

@@ -2,9 +2,9 @@ package de.sam.base.captcha
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import de.sam.base.config.Configuration
-import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.InternalServerErrorResponse
+import io.javalin.http.formParamAsClass
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -52,7 +52,7 @@ class Captcha {
             val success = jsonNode.get("success").asBoolean()
             if (!success) {
                 errors.add("The provided captcha solution is invalid")
-               // throw BadRequestResponse("captcha solution is invalid")
+                // throw BadRequestResponse("captcha solution is invalid")
             }
             return errors
         }

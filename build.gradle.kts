@@ -18,9 +18,10 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation("io.javalin:javalin:4.6.4")
+    implementation("io.javalin:javalin:5.0.1")
+    implementation("io.javalin:javalin-rendering:5.0.0")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    implementation("org.slf4j:slf4j-simple:2.0.0")
+    implementation("org.slf4j:slf4j-simple:2.0.1")
     // https://mvnrepository.com/artifact/gg.jte/jte
     implementation("gg.jte:jte:2.1.2")
     implementation("gg.jte:jte-kotlin:2.1.2")
@@ -74,7 +75,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "13"
 }
 
 application {

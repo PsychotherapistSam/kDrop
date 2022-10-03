@@ -5,6 +5,7 @@ import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.getFirstError
 import de.sam.base.utils.needsToVerifyTOTP
 import de.sam.base.utils.validateTOTP
+import io.javalin.http.formParamAsClass
 
 class UserTOTPValidatePage : Page(
     name = "Two-factor Validation",

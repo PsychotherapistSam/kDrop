@@ -7,8 +7,8 @@ import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.share
-import io.javalin.core.util.Header
 import io.javalin.http.Context
+import io.javalin.http.Header
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction

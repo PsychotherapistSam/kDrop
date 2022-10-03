@@ -5,10 +5,9 @@ import de.sam.base.database.*
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.string.isUUID
-import io.javalin.core.security.AccessManager
-import io.javalin.core.security.RouteRole
-import io.javalin.core.util.Header
 import io.javalin.http.*
+import io.javalin.security.AccessManager
+import io.javalin.security.RouteRole
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
 import java.net.URI
@@ -20,9 +19,9 @@ import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
 class CustomAccessManager : AccessManager {
-    val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
+    private val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
 
-    override fun manage(handler: Handler, ctx: Context, routeRoles: MutableSet<RouteRole>) {
+    override fun manage(handler: Handler, ctx: Context, routeRoles: Set<RouteRole>) {
 
         if (ctx.path().startsWith("/api/v1/payments")) {
             //TODO: change this, without this an error get's thrown from stripejs
@@ -93,8 +92,6 @@ class CustomAccessManager : AccessManager {
                                 }*/
         }
 
-        //TODO: check access to parent file/folder
-
         if (routeRolesMap.contains(UserRoles.FILE_ACCESS_CHECK)) {
             val userQueryTime = measureNanoTime {
                 val fileId = ctx.pathParamAsClass<UUID>("fileId")
@@ -151,7 +148,7 @@ class CustomAccessManager : AccessManager {
                             throw NotFoundResponse("Share not found")
                         }
 
-                        if (ctx.method().equals("delete", true) && ctx.currentUserDTO?.id != shareDAO.user.id.value) {
+                        if (ctx.method() == HandlerType.DELETE && ctx.currentUserDTO?.id != shareDAO.user.id.value) {
                             Logger.info("Share not found: access manager (user not owner)")
                             throw NotFoundResponse("Share not found")
                         }
@@ -166,4 +163,5 @@ class CustomAccessManager : AccessManager {
         }
         handler.handle(ctx)
     }
+
 }
