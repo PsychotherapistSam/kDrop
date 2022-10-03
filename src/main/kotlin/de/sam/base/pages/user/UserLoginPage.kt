@@ -53,8 +53,8 @@ class UserLoginPage : Page(
             }
 
             // new session id to prevent issues with persistance when old serialization objects still exist
-            ctx.req.session.invalidate()
-            ctx.req.getSession(true)
+            ctx.req().session.invalidate()
+            ctx.req().getSession(true)
 
             ctx.currentUserDTO = attempt.first
 

@@ -1,6 +1,6 @@
 package de.sam.base.users
 
-import io.javalin.core.security.RouteRole
+import io.javalin.security.RouteRole
 
 enum class UserRoles(
     var title: String,

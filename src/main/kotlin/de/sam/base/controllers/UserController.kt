@@ -10,12 +10,9 @@ import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.preferences.Preferences
-import io.javalin.core.validation.ValidationError
-import io.javalin.core.validation.Validator
-import io.javalin.http.BadRequestResponse
-import io.javalin.http.Context
-import io.javalin.http.NotFoundResponse
-import io.javalin.http.UnauthorizedResponse
+import io.javalin.http.*
+import io.javalin.validation.ValidationError
+import io.javalin.validation.Validator
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
@@ -44,6 +41,7 @@ class UserController {
                             user.name = newName
                         }
                     }
+
                     "password" -> {
                         val newPassword = value.first()
                         val passwordErrors = validatePassword(null, newPassword)
@@ -55,6 +53,7 @@ class UserController {
                             .with(argon2Instance)
                             .result
                     }
+
                     "roles" -> {
                         if (ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
                             // map either null, comma seperated list to enum list1

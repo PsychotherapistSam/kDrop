@@ -1,7 +1,7 @@
 package de.sam.base.utils
 
-import io.javalin.core.util.Header
 import io.javalin.http.Context
+import io.javalin.http.Header
 import java.io.EOFException
 import java.io.InputStream
 import java.io.OutputStream
@@ -20,14 +20,14 @@ object CustomSeekableWriter {
         val to = when {
             from + chunkSize > totalBytes -> totalBytes - 1 // chunk bigger than file, write all
             requestedRange.size == 2 -> requestedRange[1].toLong() // chunk smaller than file, to/from specified
-            else ->  totalBytes - 1 // chunk smaller than file, to/from not specified -> return full header (jdownloader2 compatability)
+            else -> totalBytes - 1 // chunk smaller than file, to/from not specified -> return full header (jdownloader2 compatability)
         }
         ctx.status(206)
         ctx.header(Header.CONTENT_TYPE, contentType)
         ctx.header(Header.ACCEPT_RANGES, "bytes")
         ctx.header(Header.CONTENT_RANGE, "bytes $from-$to/$totalBytes")
         ctx.header(Header.CONTENT_LENGTH, "${min(to - from + 1, totalBytes)}")
-        ctx.res.outputStream.write(inputStream, from, to)
+        ctx.res().outputStream.write(inputStream, from, to)
         return true
     }
 

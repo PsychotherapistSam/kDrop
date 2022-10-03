@@ -1,6 +1,6 @@
 package de.sam.base.utils
 
-import io.javalin.core.validation.Validator
+import io.javalin.validation.Validator
 
 fun <T> Validator<T>.getFirstError(): Pair<Validator<T>, String?> {
     if (this.errors().isNotEmpty()) {

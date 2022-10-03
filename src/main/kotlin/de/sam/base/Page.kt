@@ -4,6 +4,7 @@ import de.sam.base.database.UserDTO
 import de.sam.base.utils.currentUserDTO
 import io.javalin.http.Context
 import io.javalin.http.Handler
+import io.javalin.http.HandlerType.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
@@ -53,9 +54,9 @@ abstract class Page(
         pagePreTime = measureTime {
             before()
             when (this.ctx.method()) {
-                "GET" -> get()
-                "POST" -> post()
-                "DELETE" -> delete()
+                GET -> get()
+                POST -> post()
+                DELETE -> delete()
             }
             after()
         }.inWholeNanoseconds

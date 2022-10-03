@@ -11,10 +11,10 @@ import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
-import io.javalin.core.validation.ValidationError
 import io.javalin.http.Context
-import io.javalin.http.HttpCode
+import io.javalin.http.HttpStatus
 import io.javalin.http.InternalServerErrorResponse
+import io.javalin.validation.ValidationError
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
@@ -35,12 +35,12 @@ class AuthenticationController {
             val attempt = validateLoginAttempt(ctx.formParam("username"), ctx.formParam("password"))
             // first = user, second = errors
             if (attempt.second.isNotEmpty()) {
-                ctx.status(HttpCode.FORBIDDEN)
+                ctx.status(HttpStatus.FORBIDDEN)
                 ctx.json(attempt.second)
                 return@prolongAtLeast
             }
 
-            ctx.status(HttpCode.OK)
+            ctx.status(HttpStatus.OK)
             ctx.currentUserDTO = attempt.first
         }
     }
@@ -51,10 +51,10 @@ class AuthenticationController {
 
         if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
             ctx.json("You are already registered.")
-            ctx.status(HttpCode.FORBIDDEN)
+            ctx.status(HttpStatus.FORBIDDEN)
         } else if (!ctx.isLoggedIn && !config.allowUserRegistration) {
             ctx.json("User registration is currently disabled.")
-            ctx.status(HttpCode.FORBIDDEN)
+            ctx.status(HttpStatus.FORBIDDEN)
         } else {
             prolongAtLeast(2000) {
                 val username = ctx.formParam("username")
@@ -71,7 +71,7 @@ class AuthenticationController {
                     errors.addAll(passwordErrors)
 
                 if (errors.isNotEmpty()) {
-                    ctx.status(HttpCode.FORBIDDEN)
+                    ctx.status(HttpStatus.FORBIDDEN)
                     ctx.json(errors.map { it.message })
                 } else {
                     val userDAO = transaction {
@@ -100,7 +100,7 @@ class AuthenticationController {
     }
 
     fun logoutRequest(ctx: Context) {
-        ctx.req.session.invalidate()
+        ctx.req().session.invalidate()
     }
 }
 
