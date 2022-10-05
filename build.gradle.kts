@@ -21,7 +21,7 @@ dependencies {
     implementation("io.javalin:javalin:5.0.1")
     implementation("io.javalin:javalin-rendering:5.0.0")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    implementation("org.slf4j:slf4j-simple:2.0.1")
+    implementation("org.slf4j:slf4j-simple:2.0.3")
     // https://mvnrepository.com/artifact/gg.jte/jte
     implementation("gg.jte:jte:2.1.2")
     implementation("gg.jte:jte-kotlin:2.1.2")
@@ -61,7 +61,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:21.8.0")
+    implementation("com.stripe:stripe-java:21.10.0")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
@@ -106,6 +106,9 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
         // exclude prettytime
         exclude(dependency("org.ocpsoft.prettytime:prettytime"))
+
+        // exclude totp
+        exclude(dependency("dev.samstevens.totp:totp"))
     }
 }
 
