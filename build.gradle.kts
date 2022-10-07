@@ -23,8 +23,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.3")
     // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.1.2")
-    implementation("gg.jte:jte-kotlin:2.1.2")
+    implementation("gg.jte:jte:2.2.1")
+    implementation("gg.jte:jte-kotlin:2.2.1")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
