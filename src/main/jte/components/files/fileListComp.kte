@@ -97,7 +97,7 @@
                     </div>
                 </td>
                 <td style="word-break: break-all;">
-                    <a href="${UserFilesPage.ROUTE}${fileDTO.id.toString()}/">
+                    <a href="${UserFilesPage.ROUTE}${fileDTO.id.toString()}/" class="drag-startable">
                         @if(fileDTO.isFolder)
                             <i class="folder outline icon"></i>
                         @else

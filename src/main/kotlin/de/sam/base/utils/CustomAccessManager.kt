@@ -94,36 +94,43 @@ class CustomAccessManager : AccessManager {
 
         if (routeRolesMap.contains(UserRoles.FILE_ACCESS_CHECK)) {
             val userQueryTime = measureNanoTime {
-                val fileId = ctx.pathParamAsClass<UUID>("fileId")
-                    .get()
-
-                if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
-                    val fileCacheEntry = fileCache[fileId]!!
-                    ctx.fileDAOFromId = fileCacheEntry.second
-                    ctx.fileDTOFromId = fileCacheEntry.third
+                if (ctx.pathParamAsClass<String>("fileId")
+                        .get() == "home" && UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME in routeRolesMap
+                ) {
+                    Logger.info("allowing home access")
                 } else {
-                    if (fileCache.containsKey(fileId)) {
-                        fileCache.remove(fileId)
-                    }
-                    transaction {
-                        logTimeSpent("Getting file by id") {
-                            val fileDAO = FileDAO.findById(fileId)
-                            if (fileDAO != null) {
-                                val fileDTO = fileDAO.toDTO()
-                                Logger.trace("Setting fileDTO and DAO to request attribute")
-                                ctx.fileDAOFromId = fileDAO
-                                ctx.fileDTOFromId = fileDTO
-                                fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO!!)
+                    val fileId = ctx.pathParamAsClass<UUID>("fileId")
+                        .get()
+
+                    if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
+                        val fileCacheEntry = fileCache[fileId]!!
+                        ctx.fileDAOFromId = fileCacheEntry.second
+                        ctx.fileDTOFromId = fileCacheEntry.third
+                    } else {
+                        if (fileCache.containsKey(fileId)) {
+                            fileCache.remove(fileId)
+                        }
+                        transaction {
+                            logTimeSpent("Getting file by id") {
+                                val fileDAO = FileDAO.findById(fileId)
+                                if (fileDAO != null) {
+                                    val fileDTO = fileDAO.toDTO()
+                                    Logger.trace("Setting fileDTO and DAO to request attribute")
+                                    ctx.fileDAOFromId = fileDAO
+                                    ctx.fileDTOFromId = fileDTO
+                                    fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO!!)
+                                }
                             }
                         }
                     }
-                }
 
-                if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
-                    Logger.error("File not found: access manager")
-                    throw NotFoundResponse("File not found")
+                    if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
+                        Logger.error("File not found: access manager")
+                        throw NotFoundResponse("File not found")
+                    }
                 }
             }
+
             ctx.attribute("fileQueryTime", userQueryTime)
         }
 

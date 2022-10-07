@@ -460,6 +460,62 @@ class FileController {
         return deletedFileIDs
     }
 
+    fun moveFiles(ctx: Context) {
+        val fileListString = ctx.formParamAsClass<String>("files")
+            .check({ files ->
+                files
+                    .split(",")
+                    .all { file ->
+                        file.isValidUUID()
+                    }
+            }, "Invalid file UUID")
+            .get()
+
+        val targetFile = ctx.fileDAOFromId
+
+        val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
+
+        val user = ctx.currentUserDTO!!
+
+        val allFiles = arrayListOf<FileDAO>()
+        transaction {
+            allFiles.addAll(FileDAO.find { FilesTable.id inList fileIDs })
+        }
+
+        transaction {
+            if (ctx.pathParam("fileId") != "home") {
+                if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
+                    return@transaction
+                }
+            }
+
+            val oldParents = allFiles.map { it.parent }.toSet()
+
+            allFiles.forEach { file ->
+                if (!file.isOwnedByUserId(user.id)) {
+                    return@forEach
+                }
+
+                file.parent = targetFile
+            }
+
+            logTimeSpent("refreshing all moved files parents size") {
+                oldParents.forEach { parent ->
+                    if (parent != null) {
+                        Logger.debug("refreshing size of ${parent.name}")
+                        recalculateFolderSize(parent.id.value, user.id)
+                    }
+                }
+
+                if (targetFile != null) {
+                    recalculateFolderSize(targetFile.id.value, user.id)
+                }
+            }
+            ctx.json(mapOf("status" to "ok"))
+        }
+    }
+
+
     fun createDirectory(ctx: Context) {
         val folderName = ctx.formParamAsClass<String>("name").get()
 

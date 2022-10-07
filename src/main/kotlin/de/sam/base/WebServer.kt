@@ -204,9 +204,18 @@ class WebServer {
                         get("/", FileController()::getSingleFile, UserRoles.FILE_ACCESS_CHECK)
                         put("/", FileController()::updateFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
                         delete("/", FileController()::deleteSingleFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
+
+                        post(
+                            "/setAsChildren",
+                            FileController()::moveFiles,
+                            UserRoles.USER,
+                            UserRoles.FILE_ACCESS_CHECK,
+                            UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
+                        )
                         //put("/", FileController()::updateFile, UserRoles.USER)
                     }
                 }
+
                 path("/directories") {
                     //TODO: move this to the files post (uploadFile) but accept no file if it has to be a directory
                     post("/", FileController()::createDirectory, UserRoles.USER)

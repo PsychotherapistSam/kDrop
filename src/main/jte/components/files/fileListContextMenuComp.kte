@@ -99,6 +99,11 @@
     }
 </style>
 
+<style>
+    #drag-ghost {
+    }
+</style>
+
 <script>
     // Jquery Serialization Plug-In
     // https://tdanemar.wordpress.com/2010/08/24/jquery-serialize-method-and-checkboxes/
@@ -252,6 +257,110 @@
 
     let ds = null;
 
+    // custom drag drop handling
+
+    var customDragging = false;
+
+    document.addEventListener("dragstart", function (e) {
+        if ($(e.target).hasClass("drag-startable")) {
+            customDragging = true;
+            var elem = document.createElement("div");
+            elem.id = "drag-ghost";
+            elem.textNode = "Dragging";
+            elem.classList.add("ui")
+            elem.classList.add("inverted")
+            elem.classList.add("segment")
+            elem.style.position = "absolute";
+            elem.style.top = "-1000px";
+
+            elem.appendChild(document.createTextNode("Dragging " + getSelectedRows().length + " item" + (getSelectedRows().length > 1 ? "s" : "")));
+
+            document.body.appendChild(elem);
+            e.dataTransfer.setDragImage(elem, -20, 0);
+        }
+    }, false);
+
+    document.addEventListener("dragover", function (e) {
+        if (customDragging) {
+            const target = $(e.target)
+            const closestTr = target.closest("tr")
+            if (closestTr.length > 0 && closestTr.attr("data-folder") === "true") {
+                e.preventDefault();
+            }
+
+            if (target.hasClass("section")) {
+                e.preventDefault();
+            }
+        }
+    });
+
+    document.addEventListener("drop", function (e) {
+        if (customDragging) {
+            var targetId = "";
+            const target = $(e.target)
+            const closestTr = target.closest("tr")
+
+            if (closestTr.length > 0 && closestTr.attr("data-folder") === "true") {
+                targetId = closestTr.attr("data-id");
+            } else {
+                if (target.hasClass("section")) {
+                    targetId = target.attr("data-id");
+                }
+            }
+
+            if (targetId !== "") {
+                const filesToMove = getSelectedRows().map(x => $(x).attr("data-id"));
+
+                if (filesToMove.indexOf(targetId) !== -1) {
+                    $('body')
+                        .toast({
+                            class: 'error',
+                            message: "You can't move a folder into itself!"
+                        })
+                    ;
+                    return;
+                }
+                const ids = filesToMove.join(",");
+                const data = new FormData();
+                data.append("files", ids);
+
+                $.ajax({
+                    url: "/api/v1/files/" + targetId + "/setAsChildren",
+                    type: "POST",
+                    enctype: "multipart/form-data",
+                    data: data,
+                    processData: false,
+                    contentType: false,
+
+                    success: function (result) {
+                        htmx.trigger("#refreshButton", "refreshTable");
+                    },
+                    error: function (error) {
+                        $('body')
+                            .toast({
+                                class: 'error',
+                                message: 'Could not delete file: ' + error
+                            })
+                        ;
+                    }
+                });
+                e.preventDefault();
+            }
+        }
+    });
+
+    // Let's remove the created ghost elem on dragend
+    document.addEventListener("dragend", function (e) {
+        if (customDragging) {
+            var ghost = document.getElementById("drag-ghost");
+            if (ghost.parentNode) {
+                ghost.parentNode.removeChild(ghost);
+            }
+        }
+        customDragging = false;
+    }, false);
+
+
     function initializeDragSelect() {
         ds = new DragSelect({
             selectables: document.getElementsByClassName('context-clickable'),
@@ -269,6 +378,15 @@
         ds.subscribe('predragstart', ({event}) => {
             if (event.type != "mousedown") {
                 ds.stop()
+            }
+            // only show custom mdoal when we are dragging a link; TODO: check if this is a custom element, or other things will cause this too.
+            if (event.target instanceof HTMLAnchorElement) {
+                const row = event.target.closest(".context-clickable");
+                if (!isSelected(row)) {
+                    clearSelection()
+                    selectRow(row);
+                }
+                ds.break();
             }
         });
         ds.subscribe('dragstart', ({event}) => {
@@ -326,7 +444,7 @@
 
 
     function isSelected(row) {
-        return ds.getSelection().contains(row);
+        return ds.getSelection().indexOf(row) !== -1;
     }
 
     function getSelectedRows() {
