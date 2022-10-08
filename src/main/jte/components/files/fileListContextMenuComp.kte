@@ -85,8 +85,12 @@
     }
 
 
+    .section {
+        transition: 0.3s;
+    }
+
     .ds-selectable:hover {
-        background-color: rgba(0, 0, 0, 0.07);
+        background-color: rgba(0, 0, 0, 0.03);
     }
 
     .ds-selected {
@@ -96,6 +100,12 @@
     .ds-selector {
         background: rgba(0, 0, 0, 0.1) none repeat scroll 0% 0% !important;
         border: 1px solid rgba(0, 0, 0, 0.45) !important;
+    }
+
+    .ds-drop-target {
+        background-color: rgba(0, 0, 0, 0.03) !important;
+        padding: 0px 5px !important;
+        border-radius: 5px;
     }
 </style>
 
@@ -260,9 +270,11 @@
     // custom drag drop handling
 
     var customDragging = false;
+    var startElement = null;
 
     document.addEventListener("dragstart", function (e) {
         if ($(e.target).hasClass("drag-startable")) {
+            startElement = $(e.target).closest("tr").attr("data-id");
             customDragging = true;
             var elem = document.createElement("div");
             elem.id = "drag-ghost";
@@ -284,12 +296,19 @@
         if (customDragging) {
             const target = $(e.target)
             const closestTr = target.closest("tr")
-            if (closestTr.length > 0 && closestTr.attr("data-folder") === "true") {
-                e.preventDefault();
-            }
 
-            if (target.hasClass("section")) {
+            $("tr").removeClass("ds-drop-target");
+            $(".section").removeClass("ds-drop-target");
+
+            if (closestTr.length > 0 && closestTr.attr("data-folder") === "true" && closestTr.attr("data-id") !== startElement) {
+                console.log(startElement)
+                closestTr.addClass("ds-drop-target")
                 e.preventDefault();
+            } else if (target.hasClass("section")) {
+                target.addClass("ds-drop-target")
+                e.preventDefault();
+            } else {
+
             }
         }
     });
@@ -352,6 +371,8 @@
     // Let's remove the created ghost elem on dragend
     document.addEventListener("dragend", function (e) {
         if (customDragging) {
+            $("tr").removeClass("ds-drop-target");
+            $(".section").removeClass("ds-drop-target");
             var ghost = document.getElementById("drag-ghost");
             if (ghost.parentNode) {
                 ghost.parentNode.removeChild(ghost);
