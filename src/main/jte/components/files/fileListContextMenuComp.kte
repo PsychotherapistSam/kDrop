@@ -285,7 +285,7 @@
             elem.style.position = "absolute";
             elem.style.top = "-1000px";
 
-            elem.appendChild(document.createTextNode("Dragging " + getSelectedRows().length + " item" + (getSelectedRows().length > 1 ? "s" : "")));
+            elem.appendChild(document.createTextNode("Moving " + getSelectedRows().length + " item" + (getSelectedRows().length > 1 ? "s" : "")));
 
             document.body.appendChild(elem);
             e.dataTransfer.setDragImage(elem, -20, 0);
