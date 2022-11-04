@@ -54,6 +54,9 @@ class UserFilesPage : Page(
                     }
                     // reverse list because the traversal is backwards
                     breadcrumbs.reverse()
+
+                    // set page title from  last breadcrumb
+                    title = breadcrumbs.last().name + " - My Files"
                 }
             }
 
