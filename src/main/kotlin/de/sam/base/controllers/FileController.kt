@@ -34,7 +34,7 @@ class FileController {
         }
 
         val userId = ctx.currentUserDTO!!.id
-        val parentFileId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
+        val parentFileId = ctx.queryParamAsClass<UUID>("parent").get()
 
         val files = try {
             ctx.req()
@@ -49,7 +49,7 @@ class FileController {
         }
         transaction {
             val owner = ctx.currentUserDTO!!.fetchDAO()!!
-            val parentFile = if (parentFileId != null) FileDAO.findById(parentFileId) else null
+            val parentFile = FileDAO.findById(parentFileId)
 
             if (parentFile != null && !parentFile.toDTO().isOwnedByUserId(userId)) {
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
@@ -113,12 +113,12 @@ class FileController {
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun recalculateFolderSize(folderId: UUID?, userId: UUID) {
+    private fun recalculateFolderSize(folderId: UUID, userId: UUID) {
         // this is a seperate transaction beacuse the files would not be in the database
         transaction {
             measureTime {
                 val owner = UserDAO.findById(userId)!!
-                val parent = if (folderId != null) FileDAO.findById(folderId) else null
+                val parent = FileDAO.findById(folderId)
 
                 if (parent != null) {
                     //TODO: also maybe update parents parent recursively // this ends up in nearly going to the root folder.
@@ -149,11 +149,12 @@ class FileController {
 
     private fun calculateFileSize(file: FileDAO, user: UserDTO): Long {
         var size = 0L
-        if (file.isFolder) {
-            size += getAllChildrenRecursively(file, user).sumByLong { it.size }
-        } else {
-            size += file.size
-        }
+        size +=
+            if (file.isFolder) {
+                getAllChildrenRecursively(file, user).sumByLong { it.size }
+            } else {
+                file.size
+            }
         return size
     }
 
@@ -483,10 +484,8 @@ class FileController {
         }
 
         transaction {
-            if (ctx.pathParam("fileId") != "home") {
-                if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
-                    return@transaction
-                }
+            if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
+                return@transaction
             }
 
             val oldParents = allFiles.map { it.parent }.toSet()
@@ -507,9 +506,7 @@ class FileController {
                     }
                 }
 
-                if (targetFile != null) {
-                    recalculateFolderSize(targetFile.id.value, user.id)
-                }
+                recalculateFolderSize(targetFile.id.value, user.id)
             }
             ctx.json(mapOf("status" to "ok"))
         }
@@ -519,13 +516,13 @@ class FileController {
     fun createDirectory(ctx: Context) {
         val folderName = ctx.formParamAsClass<String>("name").get()
 
-        val parentId = if (ctx.queryParam("parent") != null) UUID.fromString(ctx.queryParam("parent")) else null
+        val parentId = UUID.fromString(ctx.queryParam("parent"))
 
         transaction {
             val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
-            val parent = if (parentId != null) FileDAO.findById(parentId) else null
+            val parent = FileDAO.findById(parentId)
 
-            if (parent != null && !parent.toDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+            if (parent == null || !parent.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
             }
 
@@ -538,7 +535,7 @@ class FileController {
                 this.size = 0
                 this.sizeHR = "0 B"
                 this.password = null
-                this.private = parent?.private ?: false
+                this.private = parent.private
                 this.created = DateTime.now()
                 this.isFolder = true
             }
@@ -574,7 +571,7 @@ private fun File.sha512(): String {
     return Files.asByteSource(this).hash(Hashing.sha512()).toString()
 }
 
-public fun String.isValidUUID(): Boolean {
+fun String.isValidUUID(): Boolean {
     try {
         UUID.fromString(this)
     } catch (exception: IllegalArgumentException) {

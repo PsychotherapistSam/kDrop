@@ -19,6 +19,7 @@ class UserDTO(
     var preferences: String,
     var registrationDate: DateTime,
     var totpSecret: String?,
+    var rootFolderId: UUID,
 ) : Serializable {
 
     fun getHighestRolePowerLevel(): Int = roles.maxOf { it.powerLevel }
@@ -49,6 +50,7 @@ class UserDTO(
 //        return prefs[index + 1]
 //    }
 }
+
 // Extract this from the serializable object.
 fun UserDTO.fetchDAO(): UserDAO? {
     return transaction {
@@ -64,6 +66,7 @@ object UsersTable : UUIDTable("t_users") {
     val preferences = varchar("preferences", 256)
     val registrationDate = datetime("registration_date")
     var totpSecret = varchar("totp_secret", 256).nullable()
+    val rootFolderId = uuid("root_folder_id")
 }
 
 class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
@@ -76,6 +79,7 @@ class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     var preferences by UsersTable.preferences
     var registrationDate by UsersTable.registrationDate
     var totpSecret by UsersTable.totpSecret
+    var rootFolderId by UsersTable.rootFolderId
 }
 
 
@@ -87,6 +91,7 @@ fun UserDAO.toDTO(): UserDTO {
         roles.split(",").map { UserRoles.valueOf(it) },
         this.preferences,
         this.registrationDate,
-        this.totpSecret
+        this.totpSecret,
+        this.rootFolderId
     )
 }

@@ -13,13 +13,13 @@
 @template.layout.page(
 page = page,
 content = @`
-    !{val currentIsFolder = page.parent == null || page.parent!!.isFolder}
-    !{val fileIsOwnedByCurrentUser = page.parent?.isOwnedByUserId(page.currentUserDTO?.id) == true}
+    !{val currentIsFolder = page.parent.isFolder}
+    !{val fileIsOwnedByCurrentUser = page.parent.isOwnedByUserId(page.currentUserDTO?.id)}
 
-    @if(!currentIsFolder && page.parent != null)
+    @if(!currentIsFolder)
         <h1>${page.parent!!.name}</h1>
     @else
-        <h1>Your Files</h1>
+        <h1>My Files</h1>
     @endif
 
     @if(fileIsOwnedByCurrentUser)
@@ -57,7 +57,7 @@ content = @`
     </script>
 `,
 extraContent = @`
-    @if(page.currentUserDTO != null && ( page.parent == null || page.parent?.isFolder == true))
+    @if(page.currentUserDTO != null && page.parent.isFolder)
         @template.components.files.modals()
         @template.components.files.fileListContextMenuComp(parent = page.parent)
     @endif

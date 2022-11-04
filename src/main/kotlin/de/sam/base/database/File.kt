@@ -22,7 +22,8 @@ class FileDTO(
     var password: String?,
     var created: DateTime,
     var isFolder: Boolean,
-    var hash: String?
+    var hash: String?,
+    var isRoot: Boolean,
 ) : Serializable {
     fun isOwnedByUserId(id: UUID?): Boolean {
         return id != null && owner.id == id
@@ -45,6 +46,7 @@ object FilesTable : UUIDTable("t_files") {
     val created = datetime("created")
     val isFolder = bool("is_folder")
     val hash = varchar("hash", 128).nullable()
+    val isRoot = bool("is_root")
 }
 
 class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
@@ -70,6 +72,7 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     var created by FilesTable.created
     var isFolder by FilesTable.isFolder
     var hash by FilesTable.hash
+    var isRoot by FilesTable.isRoot
 }
 
 
@@ -86,6 +89,7 @@ fun FileDAO.toDTO(): FileDTO {
         this.password,
         this.created,
         this.isFolder,
-        this.hash
+        this.hash,
+        this.isRoot
     )
 }

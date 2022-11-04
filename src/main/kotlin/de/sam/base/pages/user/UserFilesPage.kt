@@ -24,7 +24,8 @@ class UserFilesPage : Page(
         lateinit var ROUTE: String
     }
 
-    var parent: FileDTO? = null
+    lateinit var parent: FileDTO
+
     var fileDTOs = listOf<FileDTO>()
     var breadcrumbs = arrayListOf<FileDTO>()
 
@@ -41,27 +42,24 @@ class UserFilesPage : Page(
                 it.name == (ctx.queryParam("sort") ?: "name")
             }
 
-        parent = ctx.fileDTOFromId
+        parent = ctx.fileDTOFromId!!
 
         transaction {
-            if (parent != null) {
-                logTimeSpent("the breadcrumb traversal") {
-                    // recursive list parents for breadcrumb
-                    var breadcrumb = parent
-                    while (breadcrumb != null) {
-                        breadcrumbs.add(breadcrumb)
-                        breadcrumb = breadcrumb.parent
-                    }
-                    // reverse list because the traversal is backwards
-                    breadcrumbs.reverse()
-
-                    // set page title from  last breadcrumb
-                    title = breadcrumbs.last().name + " - My Files"
+            logTimeSpent("the breadcrumb traversal") {
+                // recursive list parents for breadcrumb
+                var breadcrumb: FileDTO? = parent
+                while (breadcrumb != null) {
+                    breadcrumbs.add(breadcrumb)
+                    breadcrumb = breadcrumb.parent
                 }
+                // reverse list because the traversal is backwards
+                breadcrumbs.reverse()
+
+                // set page title from  last breadcrumb
+                title = breadcrumbs.last().name + " - My Files"
             }
 
-            // parent == null defualts to root folder
-            if (parent == null || parent!!.isFolder) {
+            if (parent.isFolder) {
                 if (!ctx.isLoggedIn) {
                     Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
                     throw NotFoundResponse("File not found")
@@ -91,7 +89,8 @@ class UserFilesPage : Page(
                     "fileDTOs" to fileDTOs,
                     "sortBy" to sortBy,
                     "sortByName" to sortByName,
-                    "ctx" to ctx
+                    "ctx" to ctx,
+                    "parent" to parent
                 )
             )
             return

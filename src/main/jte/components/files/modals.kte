@@ -126,10 +126,7 @@
         $('#folderCreationModal').modal({
             duration: 250,
             onApprove: function () {
-                let attributes = "";
-                if (parentId != null) {
-                    attributes = "?parent=" + parentId;
-                }
+                let attributes = "?parent=" + parentId;
                 $.ajax({
                     url: "/api/v1/directories" + attributes,
                     type: "POST",

@@ -94,41 +94,48 @@ class CustomAccessManager : AccessManager {
 
         if (routeRolesMap.contains(UserRoles.FILE_ACCESS_CHECK)) {
             val userQueryTime = measureNanoTime {
-                if (ctx.pathParamAsClass<String>("fileId")
-                        .get() == "home" && UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME in routeRolesMap
-                ) {
-                    Logger.info("allowing home access")
-                } else {
-                    val fileId = ctx.pathParamAsClass<UUID>("fileId")
-                        .get()
+//                if (ctx.pathParamAsClass<String>("fileId")
+//                        .get() == "home" && UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME in routeRolesMap
+//                ) {
+//                    Logger.info("allowing home access")
+//                } else {
 
-                    if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
-                        val fileCacheEntry = fileCache[fileId]!!
-                        ctx.fileDAOFromId = fileCacheEntry.second
-                        ctx.fileDTOFromId = fileCacheEntry.third
+                // use current users home folder if no folderId is provided
+                val fileId =
+                    if (ctx.pathParamMap().containsKey("fileId")) {
+                        ctx.pathParamAsClass<UUID>("fileId")
+                            .getOrDefault(ctx.currentUserDTO!!.rootFolderId)
                     } else {
-                        if (fileCache.containsKey(fileId)) {
-                            fileCache.remove(fileId)
-                        }
-                        transaction {
-                            logTimeSpent("Getting file by id") {
-                                val fileDAO = FileDAO.findById(fileId)
-                                if (fileDAO != null) {
-                                    val fileDTO = fileDAO.toDTO()
-                                    Logger.trace("Setting fileDTO and DAO to request attribute")
-                                    ctx.fileDAOFromId = fileDAO
-                                    ctx.fileDTOFromId = fileDTO
-                                    fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO!!)
-                                }
+                        ctx.currentUserDTO!!.rootFolderId
+                    }
+
+                if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
+                    val fileCacheEntry = fileCache[fileId]!!
+                    ctx.fileDAOFromId = fileCacheEntry.second
+                    ctx.fileDTOFromId = fileCacheEntry.third
+                } else {
+                    if (fileCache.containsKey(fileId)) {
+                        fileCache.remove(fileId)
+                    }
+                    transaction {
+                        logTimeSpent("Getting file by id") {
+                            val fileDAO = FileDAO.findById(fileId)
+                            if (fileDAO != null) {
+                                val fileDTO = fileDAO.toDTO()
+                                Logger.trace("Setting fileDTO and DAO to request attribute")
+                                ctx.fileDAOFromId = fileDAO
+                                ctx.fileDTOFromId = fileDTO
+                                fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO)
                             }
                         }
                     }
-
-                    if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
-                        Logger.error("File not found: access manager")
-                        throw NotFoundResponse("File not found")
-                    }
                 }
+
+                if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
+                    Logger.error("File not found: access manager")
+                    throw NotFoundResponse("File not found")
+                }
+//                }
             }
 
             ctx.attribute("fileQueryTime", userQueryTime)

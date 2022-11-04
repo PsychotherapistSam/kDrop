@@ -16,10 +16,10 @@
 @param sortByName: String
 @param sortBy: String
 @param ctx: Context
-@param parent: FileDTO?
+@param parent: FileDTO
 @param share: ShareDTO? = null
 
-!{val fileUrl = if(share != null) "/api/v1/shares/${share.id}/download" else "/api/v1/files/${parent?.id ?: ""}"}
+!{val fileUrl = if(share != null) "/api/v1/shares/${share.id}/download" else "/api/v1/files/${parent.id ?: ""}"}
 
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
@@ -129,17 +129,17 @@
                      _="on click call uppy.getPlugin('Dashboard').openModal()">
                     Upload File(s)
                 </div>
-                @if(parent != null)
-                    <div class="ui secondary compact button"
-                         _="on click call promptFolderCreation('${parent!!.id.toString()}')">
-                        Create a subfolder
-                    </div>
-                @else
-                    <div class="ui secondary compact button"
-                         _="on click call promptFolderCreation()">
-                        Create a subfolder
-                    </div>
-                @endif
+                <%--                @if(parent != null)--%>
+                <div class="ui secondary compact button"
+                     _="on click call promptFolderCreation('${parent!!.id.toString()}')">
+                    Create a subfolder
+                </div>
+                <%--                @else--%>
+                <%--                    <div class="ui secondary compact button"--%>
+                <%--                         _="on click call promptFolderCreation()">--%>
+                <%--                        Create a subfolder--%>
+                <%--                    </div>--%>
+                <%--                @endif--%>
             </div>
         @endif
     </div>

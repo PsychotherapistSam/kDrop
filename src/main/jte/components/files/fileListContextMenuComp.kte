@@ -1,6 +1,6 @@
 @import de.sam.base.database.FileDTO
 
-@param parent: FileDTO?
+@param parent: FileDTO
 
 <script src="https://cdn.jsdelivr.net/npm/dragselect@2.3.1/dist/DragSelect.min.js"></script>
 
@@ -818,11 +818,7 @@
                         showShareListModal(rows[0]);
                         break;
                     case "new-folder":
-                    @if(parent != null)
-                        promptFolderCreation("${parent!!.id.toString()}");
-                    @else
-                        promptFolderCreation();
-                    @endif
+                        promptFolderCreation("${parent.id.toString()}");
                         break;
                     case "edit":
                         promptFileEdit(rows[0]);

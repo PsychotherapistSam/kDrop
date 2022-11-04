@@ -4,20 +4,25 @@
 @param breadcrumbs: ArrayList<FileDTO>
 
 <div class="ui breadcrumb">
-    <div class="divider">
-        /
-    </div>
-    <a class="section" href="${UserFilesPage.ROUTE}" data-id="home">Home</a>
+    <%--    <div class="divider">--%>
+    <%--        /--%>
+    <%--    </div>--%>
+    <%--    <a class="section" href="${UserFilesPage.ROUTE}" data-id="home">Home</a>--%>
 
     @if(breadcrumbs.isNotEmpty())
         @for(breadcrumb in breadcrumbs)
             <div class="divider">
                 /
             </div>
-            <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}/"
-               data-id="${breadcrumb.id.toString()}">
-                ${breadcrumb.name}
-            </a>
+            @if(breadcrumb.isRoot)
+                <a class="section" href="${UserFilesPage.ROUTE}"
+                   data-id="${breadcrumb.id.toString()}">${breadcrumb.name}</a>
+            @else
+                <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}/"
+                   data-id="${breadcrumb.id.toString()}">
+                    ${breadcrumb.name}
+                </a>
+            @endif
         @endfor
     @else
     @endif

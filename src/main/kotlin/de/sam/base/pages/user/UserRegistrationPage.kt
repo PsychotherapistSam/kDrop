@@ -6,6 +6,7 @@ import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
 import de.sam.base.controllers.AuthenticationController.Companion.argon2Instance
 import de.sam.base.controllers.validateRegistrationAttempt
+import de.sam.base.database.FileDAO
 import de.sam.base.database.UserDAO
 import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
@@ -72,7 +73,7 @@ class UserRegistrationPage : Page(
             }
 
             val userDAO = transaction {
-                return@transaction UserDAO.new {
+                val user = UserDAO.new {
                     this.name = username!!
                     this.password = Password.hash(password)
                         .addSalt("${this.id}") // argon2id salts the passwords on itself, but better safe than sorry
@@ -84,6 +85,25 @@ class UserRegistrationPage : Page(
                     this.preferences = ""
                     this.registrationDate = DateTime.now()
                 }
+
+                val rootFolder = FileDAO.new {
+                    name = "My Files"
+                    path = "/"
+                    mimeType = ""
+                    parent = null
+                    owner = user
+                    size = 0
+                    sizeHR = "0 B"
+                    private = true
+                    created = DateTime.now()
+                    isFolder = true
+                    hash = null
+                    isRoot = true
+                }
+
+                user.rootFolderId = rootFolder.id.value
+
+                return@transaction user
             }
             ctx.currentUserDTO = userDAO.toDTO()
             ctx.hxRedirect("/")

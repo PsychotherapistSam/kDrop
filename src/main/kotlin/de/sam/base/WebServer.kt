@@ -150,7 +150,7 @@ class WebServer {
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
-                    get("/", UserFilesPage(), UserRoles.USER)
+                    get("/", UserFilesPage(), UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
                     path("/{fileId}") {
                         get("/", UserFilesPage(), UserRoles.FILE_ACCESS_CHECK)
                         get("/shares", UserSharePage()::shareList, UserRoles.FILE_ACCESS_CHECK)
