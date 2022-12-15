@@ -21,6 +21,8 @@
 
 !{val fileUrl = if(share != null) "/api/v1/shares/${share.id}/download" else "/api/v1/files/${parent.id ?: ""}"}
 
+<input type="hidden" id="parentId" value="${parent.id.toString()}">
+
 <div id="fileListComponent" class="ui fitted basic segment">
     <div class="ui two column grid">
         <div class="column">

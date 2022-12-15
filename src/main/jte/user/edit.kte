@@ -28,6 +28,20 @@ content = @`
     @else
         @template.layout.user.settingsNavbar(page=page)
     @endif
+    <%--    <h4 class="ui horizontal divider header">--%>
+    <%--        <i class="disk icon"></i>--%>
+    <%--        Usage Quota--%>
+    <%--    </h4>--%>
+    <%--    <div class="ui basic fitted segment">--%>
+    <%--        <div id="quotaProgress" class="ui  progress" data-total="100" data-value="99">--%>
+    <%--            <div class="bar">--%>
+    <%--                <div class="progress"></div>--%>
+    <%--            </div>--%>
+    <%--        </div>--%>
+    <%--        <script>--%>
+    <%--            $('#quotaProgress').progress();--%>
+    <%--        </script>--%>
+    <%--    </div>--%>
     <h4 class="ui horizontal divider header">
         <i class="user icon"></i>
         Profile

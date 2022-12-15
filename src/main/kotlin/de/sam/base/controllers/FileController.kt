@@ -75,6 +75,7 @@ class FileController {
                     this.private = parentFile?.private ?: false
                     this.created = DateTime.now()
                     this.isFolder = false
+                    this.isRoot = false
                 }
 
                 val targetFile = File("./upload/${file.id}")
@@ -538,6 +539,7 @@ class FileController {
                 this.private = parent.private
                 this.created = DateTime.now()
                 this.isFolder = true
+                this.isRoot = false
             }
             ctx.json(mapOf("id" to file.id.toString()))
         }

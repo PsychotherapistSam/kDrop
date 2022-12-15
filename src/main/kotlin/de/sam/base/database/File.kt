@@ -1,5 +1,6 @@
 package de.sam.base.database
 
+import de.sam.base.utils.file.FileType
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -27,6 +28,10 @@ class FileDTO(
 ) : Serializable {
     fun isOwnedByUserId(id: UUID?): Boolean {
         return id != null && owner.id == id
+    }
+
+    fun getTypeEnum(): FileType {
+        return FileType.fromMimeType(mimeType)
     }
 
     // placeholder for functions

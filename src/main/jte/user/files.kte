@@ -26,25 +26,13 @@ content = @`
         @template.components.files.breadcrumbElementComp(breadcrumbs = page.breadcrumbs)
     @endif
 
-    @if(fileIsOwnedByCurrentUser && false) <!-- fileHasAShare -->
-        !{val typeString = if(page.parent!!.isFolder) "folder" else "file"}
-        <div class="ui warning message">
-            <div class="header">
-                This ${typeString} is publically accessible!
-            </div>
-            This ${typeString} is publically accessible to all people who have access to the link.
-            @if(page.parent!!.isFolder)
-                All files or folders in this folder will inherit this access by default.
-            @endif
-            You can change this behavior by setting the access of this ${typeString} to private.
-        </div>
-    @endif
-
     @if(currentIsFolder)
-        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.ctx, parent = page.parent)
-        @template.components.files.fileUploadComp(parent = page.parent, page = page)
+        @template.previews.folderPreview(files = page.fileDTOs,  parent = page.parent!!, ctx = page.ctx, sortByName = page.sortByName, sortBy = page.sortBy)
+    <%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.ctx, parent = page.parent)--%>
+    <%--        @template.components.files.fileUploadComp(parent = page.parent, page = page)--%>
     @else
-        @template.components.files.fileDownloadComponent(file = page.parent!!, ctx = page.ctx)
+        @template.previews.genericFilePreview(file = page.parent!!, ctx = page.ctx )
+    <%--        @template.components.files.fileDownloadComponent(file = page.parent!!, ctx = page.ctx)--%>
     @endif
 
     <script>
@@ -58,7 +46,7 @@ content = @`
 `,
 extraContent = @`
     @if(page.currentUserDTO != null && page.parent.isFolder)
-        @template.components.files.modals()
-        @template.components.files.fileListContextMenuComp(parent = page.parent)
+    <%--        @template.components.files.modals()--%>
+    <%--        @template.components.files.fileListContextMenuComp(parent = page.parent)--%>
     @endif
 `)
