@@ -3,10 +3,7 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.controllers.resultFile
 import de.sam.base.database.*
-import de.sam.base.utils.CustomSeekableWriter
-import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.fileDTOFromId
-import de.sam.base.utils.share
+import de.sam.base.utils.*
 import io.javalin.http.Context
 import io.javalin.http.Header
 import io.javalin.http.NotFoundResponse
@@ -32,6 +29,15 @@ class UserSharePage : Page(
             val fileDAO =
                 FileDAO.findById(ctx.share!!.first.file.id) ?: throw NotFoundResponse("File not found")
             file = fileDAO.toDTO()
+
+            if (file?.isFolder == true) {
+                fileDTOs = FileDAO
+                    .find { FilesTable.parent.eq(ctx.fileDAOFromId?.id) }
+                    .map { it.toDTO() }
+//                    .sortedWith { a, b ->
+//                        sortingDirection.compare(a, b)
+//                    }
+            }
         }
     }
 

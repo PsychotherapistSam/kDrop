@@ -1,0 +1,89 @@
+@import de.sam.base.database.FileDTO
+@import de.sam.base.utils.file.FileType
+@import io.javalin.http.Context
+@import de.sam.base.utils.isLoggedIn
+@import de.sam.base.utils.preferencesString
+@import de.sam.base.utils.toReadableTimeString
+@import de.sam.base.utils.toRecentTimeString
+
+@param file: FileDTO
+@param ctx: Context
+@param share: Boolean = false
+@param shareId: String? = null
+
+!{val fileUrl = if(share) "/api/v1/shares/${shareId}/download" else "/api/v1/files/${file.id}"}
+
+<div class="ui basic fitted segment">
+    <a href="${fileUrl}"
+       class="ui huge fluid icon button"
+       download>
+        <i class="ui download icon"></i>
+        Download
+    </a>
+    @if(!ctx.isLoggedIn || ctx.preferencesString!!.split(",").contains("file-previews"))
+        <div class="ui basic fitted segment">
+            @if(file.getTypeEnum() == FileType.PDF)
+            <object data="${fileUrl}" type="application/pdf"
+                    style="overflow: hidden; height: 65vh; width: 100%; border: none;">
+                <div class="ui warning message">
+                    <p>I'm sorry, but it looks like your web browser is unable to open PDF files. However, you can still
+                        download the PDF by clicking the button above. </p>
+                </div>
+            </object>
+            @elseif(file.getTypeEnum() == FileType.JSON || file.getTypeEnum() == FileType.PLAIN)
+            <iframe src="${fileUrl}"
+                    style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
+            @elseif(file.getTypeEnum() == FileType.VIDEO_MP4 || file.getTypeEnum() == FileType.AUDIO)
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.3/dist/plyr.min.css">
+            <video controls crossorigin playsinline id="plyr">
+                <source src="${fileUrl}"
+                        type="${file.mimeType}">
+            </video>
+            <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.3/dist/plyr.min.js"></script>
+            <script>
+                const player = new Plyr('#plyr');
+                window.player = player;
+            </script>
+            @elseif(file.getTypeEnum() == FileType.IMAGE)
+            <img class="ui centered image"
+                 src="${fileUrl}"
+                 alt="${file.name}">
+            @endif
+        </div>
+    @endif
+    <div class="ui basic fitted segment">
+        <h4 class="ui horizontal divider header">
+            Details
+        </h4>
+        <table class="ui compact definition table">
+            <tbody>
+            <tr>
+                <td>Name</td>
+                <td style="word-break: break-all;">${file.name}</td>
+            </tr>
+            <tr>
+                <td>Type</td>
+                <td>${file.mimeType}</td>
+            </tr>
+            <tr>
+                <td>Size</td>
+                <td>${file.sizeHR}</td>
+            </tr>
+            <tr>
+                <td>Creation Date</td>
+                <td>${file.created.toRecentTimeString()}
+                    (${file.created.toReadableTimeString()})
+                </td>
+            </tr>
+            <tr>
+                <td>ID</td>
+                <td>${file.id.toString()}</td>
+            </tr>
+            <tr>
+                <td>SHA512</td>
+                <td style="word-break: break-all;">${file.hash ?: "not yet computed"}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

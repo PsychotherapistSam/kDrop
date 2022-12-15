@@ -1,0 +1,24 @@
+@import de.sam.base.database.FileDTO
+@import de.sam.base.utils.*
+@import de.sam.base.utils.file.FileType
+@import io.javalin.http.Context
+@import de.sam.base.utils.isLoggedIn
+@import de.sam.base.utils.preferencesString
+@import de.sam.base.utils.toReadableTimeString
+@import de.sam.base.utils.toRecentTimeString
+
+@param files: List<FileDTO>
+@param parent: FileDTO
+@param ctx: Context
+@param share: Boolean = false
+@param shareId: String? = null
+@param sortByName: String
+@param sortBy: String
+
+@template.components.files.fileListComp(parent = parent, fileDTOs = files, sortByName = sortByName, sortBy = sortBy, ctx = ctx, share = ctx.share?.second ?: null)
+
+@if(!share)
+    @template.components.files.modals()
+    @template.components.files.fileListContextMenuComp(parent = parent)
+    @template.components.files.fileUploadComp(parent = parent, ctx = ctx)
+@endif

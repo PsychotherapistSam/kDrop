@@ -46,15 +46,11 @@ content = @`
             Beacuse we do not have a good way to share folders yet, you are currently not able to do so. This will be a
             feature in the future.
         </div>
+        @template.previews.folderPreview(files = page.fileDTOs , parent = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString(), sortByName = "", sortBy = "")
+
     <%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = "", sortBy = "", ctx = page.ctx, parent = page.file, share = page.ctx.share!!.second)--%>
     @else
-        @template.components.files.fileDownloadComponent(file = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString())
+        @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString())
     @endif
 
-`,
-extraContent = @`
-<%--    @if(page.currentUserDTO != null && ( page.file == null || page.file?.isFolder == true))--%>
-<%--        @template.components.files.modals()--%>
-<%--        @template.components.files.fileListContextMenuComp(file = page.file)--%>
-<%--    @endif--%>
 `)
