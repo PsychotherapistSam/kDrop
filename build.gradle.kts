@@ -18,27 +18,27 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation("io.javalin:javalin:5.0.1")
-    implementation("io.javalin:javalin-rendering:5.0.0")
+    implementation("io.javalin:javalin:5.3.1")
+    implementation("io.javalin:javalin-rendering:5.3.1")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    implementation("org.slf4j:slf4j-simple:2.0.3")
+    implementation("org.slf4j:slf4j-simple:2.0.5")
     // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.2.1")
-    implementation("gg.jte:jte-kotlin:2.2.1")
+    implementation("gg.jte:jte:2.2.4")
+    implementation("gg.jte:jte-kotlin:2.2.4")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
     implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.5.0")
+    implementation("org.postgresql:postgresql:42.5.1")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.0")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.4")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.0")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-joda
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.13.4")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.0")
 
     // https://mvnrepository.com/artifact/com.password4j/password4j
-    implementation("com.password4j:password4j:1.6.0")
+    implementation("com.password4j:password4j:1.6.3")
 
     // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
     implementation("org.ocpsoft.prettytime:prettytime:5.0.4.Final")
@@ -61,7 +61,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:21.10.0")
+    implementation("com.stripe:stripe-java:22.5.0")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
