@@ -100,6 +100,11 @@ class CustomAccessManager : AccessManager {
 //                    Logger.info("allowing home access")
 //                } else {
 
+                // reject user if they are not logged in
+                if (!ctx.isLoggedIn) {
+                    throw UnauthorizedResponse("You need to be logged in to access this resource.")
+                }
+
                 // use current users home folder if no folderId is provided
                 val fileId =
                     if (ctx.pathParamMap().containsKey("fileId")) {

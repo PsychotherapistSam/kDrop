@@ -57,6 +57,7 @@ abstract class Page(
                 GET -> get()
                 POST -> post()
                 DELETE -> delete()
+                else -> throw UnsupportedOperationException("Method ${this.ctx.method()} not supported")
             }
             after()
         }.inWholeNanoseconds
