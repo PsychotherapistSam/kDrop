@@ -28,7 +28,7 @@ import kotlin.time.measureTime
 
 class FileController {
     fun uploadFile(ctx: Context) {
-        val maxFileSize = 1024L * 1024L * 1024L * 5L // 1024 MB || 5 GiB
+        val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
         if (ctx.header(Header.CONTENT_LENGTH) != null && ctx.header(Header.CONTENT_LENGTH)!!.toLong() > maxFileSize) {
             throw BadRequestResponse("File too big, max size is ${humanReadableByteCountBin(maxFileSize)}")
         }
