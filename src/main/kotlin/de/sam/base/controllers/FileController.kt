@@ -175,7 +175,13 @@ class FileController {
     fun getSingleFile(ctx: Context) {
         //TODO: this using a context extension
 
-        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+        val file =
+            transaction {
+                ctx.fileDTOFromId // first check if the file is set by id
+                    ?: FileDAO.findById(ctx.share!!.first.file.id)?.toDTO() // if not check if the file is set by share
+                    ?: throw NotFoundResponse("File not found") // if not throw an error
+                        .also { Logger.error(it.message) }
+            }
 
         val systemFile = File("./${file.path}")
         if (!systemFile.exists()) {
@@ -190,37 +196,24 @@ class FileController {
 //        if (file.hash != null) {
 //            ctx.header("SHA512", file.hash!!)
 //        }
-        ctx.header("Cache-Control", "max-age=31536000, immutable")
 
-        if (ctx.header(Header.RANGE) == null) {
-            ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
+        //            if (isDirectDownload) {
+//                transaction {
+//                    logTimeSpent("adding file log entry") {
+//                        DownloadLogDAO.new {
+//                            this.file = ctx.fileDAOFromId
+//                            this.user = ctx.currentUserDTO?.fetchDAO()
+//                            this.ip = ctx.ip()
+//                            this.readDuration = System.nanoTime() - ctx.requestStartTime
+//                            this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
+//                            this.readBytes = file.size
+//                            this.userAgent = ctx.header(Header.USER_AGENT) ?: "unknown"
+//                        }
+//                    }
+//                }
+//            }
 
-//            ctx.header(Header.CONTENT_TYPE, file.mimeType)
-//            ctx.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=${file.name}")
-//            ctx.header(Header.CONTENT_LENGTH, file.size.toString())
-//            ctx.result(FileInputStream(systemFile))
-
-            if (isDirectDownload) {
-                transaction {
-                    logTimeSpent("adding file log entry") {
-                        DownloadLogDAO.new {
-                            this.file = ctx.fileDAOFromId
-                            this.user = ctx.currentUserDTO?.fetchDAO()
-                            this.ip = ctx.ip()
-                            this.readDuration = System.nanoTime() - ctx.requestStartTime
-                            this.downloadDate = DateTime.now() - (this.readDuration / 1000000L)
-                            this.readBytes = file.size
-                            this.userAgent = ctx.header(Header.USER_AGENT) ?: "unknown"
-                        }
-                    }
-                }
-            }
-        } else {
-            CustomSeekableWriter.write(ctx, FileInputStream(systemFile), file.mimeType, file.size)
-        }
-
-
-        // ctx.seekableStream(FileInputStream(systemFile), file.mimeType, file.size)
+        ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
     }
 
     fun updateFile(ctx: Context) {
@@ -546,12 +539,15 @@ class FileController {
     }
 }
 
+val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s
+
 fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
     // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-    this.header(Header.CONTENT_TYPE, mimeType)
     this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
-    this.header(Header.CONTENT_LENGTH, file.length().toString())
-    this.result(FileInputStream(file))
+    this.header(Header.CACHE_CONTROL, "max-age=31536000, immutable")
+
+//    CustomSeekableWriter.write(this, ThrottledInputStream(FileInputStream(file), speedLimit), mimeType, file.length())
+    CustomSeekableWriter.write(this, FileInputStream(file), mimeType, file.length())
 }
 
 private fun File.sha512(): String {

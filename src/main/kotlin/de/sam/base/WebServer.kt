@@ -225,9 +225,8 @@ class WebServer {
                     post("/", ShareController()::create, UserRoles.USER)
                     path("/{shareId}") {
                         get("/", ShareController()::getOne, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
-                        get("/download", UserSharePage()::downloadFile, UserRoles.SHARE_ACCESS_CHECK)
+                        get("/download", FileController()::getSingleFile, UserRoles.SHARE_ACCESS_CHECK)
                         delete("/", ShareController()::delete, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
-
                     }
 //                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
                 }
