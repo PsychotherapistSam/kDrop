@@ -100,6 +100,7 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
         // Exclude Javalin
         exclude(dependency("io.javalin:javalin"))
+        exclude(dependency("io.javalin:javalin-rendering"))
 
         // Exclude jte-Kotlin
         exclude(dependency("gg.jte:jte-kotlin")) // Sadly, this is very large
