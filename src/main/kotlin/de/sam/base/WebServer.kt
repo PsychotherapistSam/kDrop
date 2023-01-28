@@ -110,6 +110,8 @@ class WebServer {
                 )
                 ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
                 ctx.header("X-Frame-Options", "SAMEORIGIN")
+                ctx.header("X-Content-Type-Options", "nosniff")
+                ctx.header("Referrer-Policy", "no-referrer")
             }
             get("/") { ctx ->
                 if (ctx.isLoggedIn) {
