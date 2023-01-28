@@ -19,12 +19,15 @@ object Session {
         sessionCache = DefaultSessionCache(this).apply { // create the session handler
             sessionDataStore = JDBCSessionDataStoreFactory().apply { // attach a cache to the handler
                 setDatabaseAdaptor(DatabaseAdaptor().apply { // attach a store to the cache
-                  //  setDriverInfo(driver, url)
+                    //  setDriverInfo(driver, url)
                     datasource = hikariDataSource!! // you can set data source here (for connection pooling, etc)
                 })
             }.getSessionDataStore(sessionHandler)
         }
-        httpOnly = true
+
+        // Session cookies are secure and httpOnly
+        sessionCookieConfig.isHttpOnly = true
+        sessionCookieConfig.isSecure = true
 
         // Sessions are valid for 5 days
         maxInactiveInterval = 60 * 60 * 24 * 5 // 5 days
