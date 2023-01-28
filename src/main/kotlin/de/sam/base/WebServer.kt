@@ -48,9 +48,8 @@ class WebServer {
 
             // limit to one instance per webserver
             val customAccessManager = CustomAccessManager()
-            javalinConfig.accessManager { handler, ctx, routeRoles ->
-                customAccessManager.manage(handler, ctx, routeRoles)
-            }
+
+            javalinConfig.accessManager(customAccessManager::manage)
             javalinConfig.requestLogger.http { ctx, timeInMs ->
                 Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
@@ -62,6 +61,7 @@ class WebServer {
                 it.precompress = false // if the files should be pre-compressed and cached in memory (optimization)
                 it.aliasCheck = null // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
             }
+
 
             // dos with large files
 //            javalinConfig.autogenerateEtags = false
@@ -108,6 +108,7 @@ class WebServer {
                     "Content-Security-Policy",
                     "default-src 'self'; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com"
                 )
+                ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
             }
             get("/") { ctx ->
                 if (ctx.isLoggedIn) {
