@@ -34,40 +34,6 @@ import java.util.*
 
 class WebServer {
     fun start() {
-        /*transaction {
-            logTimeSpent("adding 5000 testfiles 5") {
-                val owner = UserDAO.find { UsersTable.name eq "Sam" }.first()
-                val fileOne = FileDAO.new {
-                    this.name = "testfolder5 (5k files)"
-                    this.path = "/testfolder5 (5k files)"
-                    this.parent = null
-                    this.owner = owner
-                    this.size = 0
-                    this.sizeHR = "0 B"
-                    this.password = null
-                    this.private = false
-                    this.created = DateTime.now()
-                    this.isFolder = true
-                }
-
-                for (i in 0..5000) {
-                    FileDAO.new {
-                        this.name = "testfile$i.txt"
-                        this.path = "/${fileOne.name}/$name"
-                        this.parent = fileOne
-                        this.owner = owner
-                        this.size = Random().nextLong(2000000) + 15000
-                        this.sizeHR = humanReadableByteCountBin(this.size)
-                        this.password = null
-                        this.private = false
-                        this.created = DateTime.now()
-                        this.isFolder = false
-                    }
-                }
-            }
-        }*/
-
-
         Logger.debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->
             // javalinConfig.enableWebjars()
@@ -137,6 +103,12 @@ class WebServer {
 
         Logger.debug("Registering Javalin routes")
         app.routes {
+            before("*") { ctx ->
+                ctx.header(
+                    "Content-Security-Policy",
+                    "default-src 'self'; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com"
+                )
+            }
             get("/") { ctx ->
                 if (ctx.isLoggedIn) {
                     ctx.redirect(UserFilesPage.ROUTE)
