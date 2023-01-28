@@ -13,6 +13,7 @@ import de.sam.base.pages.user.settings.UserEditPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
+import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
 import gg.jte.TemplateEngine
@@ -136,7 +137,13 @@ class WebServer {
 
         Logger.debug("Registering Javalin routes")
         app.routes {
-            get("/") { ctx -> ctx.redirect(UserFilesPage.ROUTE) }
+            get("/") { ctx ->
+                if (ctx.isLoggedIn) {
+                    ctx.redirect(UserFilesPage.ROUTE)
+                } else {
+                    ctx.redirect(UserLoginPage.ROUTE)
+                }
+            }
             get("/login", UserLoginPage())
             post("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())
