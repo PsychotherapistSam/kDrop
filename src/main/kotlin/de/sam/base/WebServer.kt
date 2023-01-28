@@ -106,7 +106,7 @@ class WebServer {
             before("*") { ctx ->
                 ctx.header(
                     "Content-Security-Policy",
-                    "default-src 'self'; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com https://www.google.com/; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com; frame-ancestors 'self'"
+                    "default-src 'self'; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com; frame-ancestors 'self'"
                 )
                 ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
                 ctx.header("X-Frame-Options", "SAMEORIGIN")
