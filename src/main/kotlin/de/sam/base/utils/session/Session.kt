@@ -15,7 +15,7 @@ object Session {
         }
     }
 
-    fun sqlSessionHandler() = SessionHandler().apply {
+    fun sqlSessionHandler(devEnvironment: Boolean) = SessionHandler().apply {
         sessionCache = DefaultSessionCache(this).apply { // create the session handler
             sessionDataStore = JDBCSessionDataStoreFactory().apply { // attach a cache to the handler
                 setDatabaseAdaptor(DatabaseAdaptor().apply { // attach a store to the cache
@@ -26,8 +26,10 @@ object Session {
         }
 
         // Session cookies are secure and httpOnly
-        sessionCookieConfig.isHttpOnly = true
-        sessionCookieConfig.isSecure = true
+        if (!devEnvironment) {
+            sessionCookieConfig.isHttpOnly = true
+            sessionCookieConfig.isSecure = true
+        }
 
         // Sessions are valid for 5 days
         maxInactiveInterval = 60 * 60 * 24 * 5 // 5 days

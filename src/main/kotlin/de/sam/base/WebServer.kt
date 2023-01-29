@@ -43,7 +43,7 @@ class WebServer {
             // for uuid validation
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
-            javalinConfig.jetty.sessionHandler { Session.sqlSessionHandler() }
+            javalinConfig.jetty.sessionHandler { Session.sqlSessionHandler(config.devEnvironment) }
             javalinConfig.plugins.register(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
 
             // limit to one instance per webserver
@@ -104,10 +104,11 @@ class WebServer {
         Logger.debug("Registering Javalin routes")
         app.routes {
             before("*") { ctx ->
-                ctx.header(
-                    "Content-Security-Policy",
-                    "default-src 'self'  https://www.google.com; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com; frame-ancestors 'self'"
-                )
+                if (!config.devEnvironment)
+                    ctx.header(
+                        "Content-Security-Policy",
+                        "default-src 'self'  https://www.google.com; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com; frame-ancestors 'self'"
+                    )
                 ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
                 ctx.header("X-Frame-Options", "SAMEORIGIN")
                 ctx.header("X-Content-Type-Options", "nosniff")
