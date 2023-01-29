@@ -35,6 +35,12 @@
                 </div>
             @endif
         </div>
+        <%--        <div class="center aligned column">--%>
+        <%--            <div class="ui tiny progress" data-percent="${ (parent.size / ( 10.0 * 1024 * 1024 * 1024)) * 100 }">--%>
+        <%--                <div class="bar"></div>--%>
+        <%--                <div class="label">Storage used: ${parent.sizeHR} / 10GiB</div>--%>
+        <%--            </div>--%>
+        <%--        </div>--%>
         <div class="right aligned column">
             <div class="ui basic fitted segment">
                 Sort by
