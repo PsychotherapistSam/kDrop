@@ -24,14 +24,17 @@
 <input type="hidden" id="parentId" value="${parent.id.toString()}">
 
 <div id="fileListComponent" class="ui fitted basic segment">
-    <div class="ui two column grid">
-        <div class="column">
+    <div class="ui horizontal basic segments">
+        <div class="ui basic fitted segment">
             @if(share == null)
                 <div class="ui secondary compact animated button" id="fileUploadModal">
                     <div class="visible content">Upload File(s)</div>
                     <div class="hidden content">
                         <i class="upload icon"></i>
                     </div>
+                </div>
+                <div class="ui secondary compact icon button" _="on click call startFileDownload(getAllRows())">
+                    <i class="download icon"></i>
                 </div>
             @endif
         </div>
@@ -41,42 +44,39 @@
         <%--                <div class="label">Storage used: ${parent.sizeHR} / 10GiB</div>--%>
         <%--            </div>--%>
         <%--        </div>--%>
-        <div class="right aligned column">
-            <div class="ui basic fitted segment">
-                Sort by
-                <div class="ui inline scrolling dropdown" id="sortDropdown">
-                    <input type="hidden" name="sort" value="name"
-                           _="on change send refreshTable to #refreshButton"
-                    >
-                    <div class="text">Name</div>
-                    <i class="dropdown icon"></i>
-                    <div class="menu">
-                        @for(direction in FileSortingDirection.sortDirections)
-                            <div class="item" data-value="${direction.name}">${direction.prettyName}</div>
-                        @endfor
-                        <%--                        <div class="item" data-value="name">Name (a-Z)</div>--%>
-                        <%--                        <div class="item" data-value="namerev">Name (Z-a)</div>--%>
-                        <%--                        <div class="item" data-value="smallest">Smallest</div>--%>
-                        <%--                        <div class="item" data-value="largest">Largest</div>--%>
-                        <%--                        <div class="item" data-value="newest">Newest</div>--%>
-                        <%--                        <div class="item" data-value="oldest">Oldest</div>--%>
-                    </div>
-                </div>
-                <div class="ui secondary compact icon button"
-                     id="refreshButton"
-                     hx-get="."
-                     hx-trigger="click, refreshTable from:body throttle: 1s"
-                     hx-params="table,sort"
-                     hx-include="[name='sort']"
-                     hx-target="#fileTableBody"
-                     hx-swap="outerHTML"
-                     hx-select="#fileTableBody"
-                     _="${displayLoader}">
-                    <i class="refresh icon"></i>
+        <div class="ui basic fitted right aligned segment">
+            Sort by
+            <div class="ui inline scrolling dropdown" id="sortDropdown">
+                <input type="hidden" name="sort" value="name"
+                       _="on change send refreshTable to #refreshButton"
+                >
+                <div class="text">Name</div>
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    @for(direction in FileSortingDirection.sortDirections)
+                        <div class="item" data-value="${direction.name}">${direction.prettyName}</div>
+                    @endfor
+                    <%--                        <div class="item" data-value="name">Name (a-Z)</div>--%>
+                    <%--                        <div class="item" data-value="namerev">Name (Z-a)</div>--%>
+                    <%--                        <div class="item" data-value="smallest">Smallest</div>--%>
+                    <%--                        <div class="item" data-value="largest">Largest</div>--%>
+                    <%--                        <div class="item" data-value="newest">Newest</div>--%>
+                    <%--                        <div class="item" data-value="oldest">Oldest</div>--%>
                 </div>
             </div>
+            <div class="ui secondary compact icon button"
+                 id="refreshButton"
+                 hx-get="."
+                 hx-trigger="click, refreshTable from:body throttle: 1s"
+                 hx-params="table,sort"
+                 hx-include="[name='sort']"
+                 hx-target="#fileTableBody"
+                 hx-swap="outerHTML"
+                 hx-select="#fileTableBody"
+                 _="${displayLoader}">
+                <i class="refresh icon"></i>
+            </div>
         </div>
-
     </div>
     <table class="ui unstackable table" id="fileTable">
         <thead>
@@ -93,6 +93,32 @@
         <th class="right aligned">Modified</th>
         </thead>
         <tbody id="fileTableBody">
+        <%--        @if(parent.parent != null)--%>
+        <%--            !{val parentsParent = parent.parent!!}--%>
+        <%--            <tr class="context-clickable"--%>
+        <%--                data-id="${parentsParent.id.toString()}"--%>
+        <%--                data-name="${parentsParent.name}"--%>
+        <%--                data-folder="${parentsParent.isFolder}"--%>
+        <%--                data-mime="${parentsParent.mimeType}">--%>
+        <%--                <td class="collapsing">--%>
+        <%--                    <div class="ui fitted checkbox">--%>
+        <%--                        <input type="checkbox"><label>&nbsp;</label>--%>
+        <%--                    </div>--%>
+        <%--                </td>--%>
+        <%--                <td style="word-break: break-all;">--%>
+        <%--                    <a href="${UserFilesPage.ROUTE}${parentsParent.id.toString()}/" class="drag-startable">--%>
+        <%--                        <i class="folder outline icon"></i>--%>
+        <%--                        ..--%>
+        <%--                    </a>--%>
+        <%--                </td>--%>
+        <%--                @if(!ctx.isMobileUser)--%>
+        <%--                    <td class="right aligned collapsing">${parentsParent.sizeHR}</td>--%>
+        <%--                @endif--%>
+        <%--                <td class="right aligned collapsing"--%>
+        <%--                    data-tooltip="${parentsParent.created.toReadableTimeString()}"--%>
+        <%--                    data-inverted="">${parent.created.toRecentTimeString()}</td>--%>
+        <%--            </tr>--%>
+        <%--        @endif--%>
         @for(fileDTO in fileDTOs)
             <tr class="context-clickable"
                 data-id="${fileDTO.id.toString()}"

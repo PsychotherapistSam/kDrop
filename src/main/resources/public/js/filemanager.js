@@ -355,6 +355,10 @@ function getSelectedRows() {
     return ds.getSelection()
 }
 
+function getAllRows() {
+    return ds.getSelectables();
+}
+
 function toggleSelection() {
     if ($("#toggleAllSelection")[0].checked) {
         selectAll();
@@ -534,6 +538,77 @@ function positionMenu(e) {
     menu.style.top = clickCoordsY + "px";
 }
 
+function convertRowsToXHRData(rows) {
+    const ids = rows.map(function (row) {
+        return row.getAttribute("data-id");
+    }).join(",");
+    const data = new FormData();
+    data.append("files", ids);
+    return data;
+}
+
+
+function startFileDownload(rows) {
+    if (rows.length === 1 && !rows[0].getAttribute("data-folder")) {
+        window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
+    } else {
+
+        let fileIdList = convertRowsToXHRData(rows)
+        showFileDownloadModal(rows.length, -1);
+        // https://stackoverflow.com/a/29556434
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", "/api/v1/files", true);
+        xhr.setRequestHeader("x-client", "web/api");
+        xhr.responseType = 'blob';
+        // set multipart data
+        xhr.onprogress = function (e) {
+            // console.log(e.loaded + " / " + e.total);
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                showFileDownloadModal(rows.length, Math.round(percentComplete));
+            }
+        };
+        xhr.onload = function (e) {
+            if (this.status === 200) {
+                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
+                const blob = new Blob([this.response], {type: 'application/zip'});
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            } else {
+                const blob = new Blob([this.response], {type: 'application/zip'});
+                const fileReader = new FileReader();
+                fileReader.onload = (e) => {
+                    $('body')
+                        .toast({
+                            class: 'red',
+                            message: JSON.parse(e.target.result)[0],
+                            position: 'bottom right',
+                            displayTime: 5000,
+                            showProgress: 'bottom',
+                        })
+                    ;
+                };
+                fileReader.readAsText(blob)
+
+            }
+            hideFileDownloadModal();
+        };
+        xhr.onabort = function (e) {
+            $('body')
+                .toast({
+                    class: 'error',
+                    message: 'Could not download files as zip'
+                })
+            ;
+            hideFileDownloadModal();
+        }
+        xhr.send(fileIdList);
+    }
+}
 
 /**
  * Dummy action function that logs an action when a menu item link is clicked
@@ -545,11 +620,6 @@ function menuItemListener(link) {
     if (!link.classList.contains("context-item-dropdown")) {
         const rows = getSelectedRows();
         if (rows.length > 0) {
-            const ids = rows.map(function (row) {
-                return row.getAttribute("data-id");
-            }).join(",");
-            const data = new FormData();
-            data.append("files", ids);
             switch (link.getAttribute("data-action")) {
                 case "delete":
                     if (rows.length >= 2 || (rows.length === 1 && rows[0].getAttribute("data-folder") === "true")) {
@@ -559,7 +629,7 @@ function menuItemListener(link) {
                         url: "/api/v1/files",
                         type: "DELETE",
                         enctype: "multipart/form-data",
-                        data: data,
+                        data: convertRowsToXHRData(rows),
                         processData: false,
                         contentType: false,
 
@@ -584,106 +654,7 @@ function menuItemListener(link) {
                     });
                     break;
                 case "download":
-                    if (rows.length === 1 && !rows[0].getAttribute("data-folder")) {
-                        window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
-                    } else {
-                        showFileDownloadModal(rows.length, -1);
-                        // https://stackoverflow.com/a/29556434
-                        const xhr = new XMLHttpRequest();
-                        xhr.open("PUT", "/api/v1/files", true);
-                        xhr.setRequestHeader("x-client", "web/api");
-                        xhr.responseType = 'blob';
-                        // set multipart data
-                        xhr.onprogress = function (e) {
-                            // console.log(e.loaded + " / " + e.total);
-                            if (e.lengthComputable) {
-                                const percentComplete = (e.loaded / e.total) * 100;
-                                showFileDownloadModal(rows.length, Math.round(percentComplete));
-                            }
-                        };
-                        xhr.onload = function (e) {
-                            if (this.status === 200) {
-                                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
-                                const blob = new Blob([this.response], {type: 'application/zip'});
-                                const downloadUrl = URL.createObjectURL(blob);
-                                const a = document.createElement("a");
-                                a.href = downloadUrl;
-                                a.download = filename;
-                                document.body.appendChild(a);
-                                a.click();
-                            } else {
-                                const blob = new Blob([this.response], {type: 'application/zip'});
-                                const fileReader = new FileReader();
-                                fileReader.onload = (e) => {
-                                    $('body')
-                                        .toast({
-                                            class: 'red',
-                                            message: JSON.parse(e.target.result)[0],
-                                            position: 'bottom right',
-                                            displayTime: 5000,
-                                            showProgress: 'bottom',
-                                        })
-                                    ;
-                                };
-                                fileReader.readAsText(blob)
-
-                            }
-                            hideFileDownloadModal();
-                        };
-                        xhr.onabort = function (e) {
-                            $('body')
-                                .toast({
-                                    class: 'error',
-                                    message: 'Could not download files as zip'
-                                })
-                            ;
-                            hideFileDownloadModal();
-                        }
-                        xhr.send(data);
-
-                        /*
-                         $.ajax({
-                             url: "/api/v1/files",
-                             type: "PUT",
-                             enctype: "multipart/form-data",
-                             data: data,
-                             processData: false,
-                             contentType: false,
-
-                             success: function (result) {
-                                 var blob = new Blob([result], {type: "application/zip"});
-                                 if (window.navigator.msSaveOrOpenBlob) {
-                                     window.navigator.msSaveBlob(blob, "download.zip");
-                                 } else {
-                                     var a = document.createElement("a");
-                                     a.href = window.URL.createObjectURL(blob);
-                                     a.download = "download.zip";
-                                     document.body.appendChild(a);
-                                     a.click();
-                                     document.body.removeChild(a);
-                                 }
-
-                                 //     save("download.zip", result)
-                                 //     console.log(result)
-                                 // console.log(result);
-                                 // rows.remove();
-                                 // ds.removeSelectables(rowsToDelete)
-                                 // updateVisibilityOfEmptyFolder();
-                                 //  hideFileDeletionLoadingModal();
-                                 //   htmx.trigger("#refreshButton", "refreshTable");
-                             },
-                             error: function (error) {
-                                 // show fomantic toast
-                                 // hideFileDeletionLoadingModal();
-                                 $('body')
-                                     .toast({
-                                         class: 'error',
-                                         message: 'Could not download files: ' + error.toString()
-                                     })
-                                 ;
-                             }
-                         });*/
-                    }
+                    startFileDownload(rows);
                     break;
                 case "shares":
                     showShareListModal(rows[0]);
