@@ -47,6 +47,7 @@ class AdminUsersPage : Page(
         }
 
         if (ctx.queryParam("table") != null) {
+            renderTemplate = false
             ctx.render(
                 "components/usersTable.kte",
                 mapOf(

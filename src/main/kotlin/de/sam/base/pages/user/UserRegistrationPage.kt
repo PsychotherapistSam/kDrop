@@ -42,7 +42,10 @@ class UserRegistrationPage : Page(
 
     override fun post() {
         prolongAtLeast(2000) {
-            if (ctx.isLoggedIn) {
+            val canBypassCaptcha = ctx.isLoggedIn && ctx.currentUserDTO!!.roles.contains(UserRoles.ADMIN)
+            val dontSetSession = canBypassCaptcha && ctx.header("No-Session") == "true"
+
+            if (ctx.isLoggedIn && !canBypassCaptcha) {
                 ctx.hxRedirect("/")
                 return@prolongAtLeast
             }
@@ -50,7 +53,7 @@ class UserRegistrationPage : Page(
             val username = ctx.formParam("username")
             val password = ctx.formParam("password")
 
-            if (Configuration.config.captcha.enabled && Configuration.config.captcha.locations.contains("registration")) {
+            if (Configuration.config.captcha.enabled && Configuration.config.captcha.locations.contains("registration") && !canBypassCaptcha) {
                 when (Configuration.config.captcha.service.lowercase()) {
                     "recaptcha" -> {
                         val captchaErrors = Captcha.validate(ctx)
@@ -105,9 +108,11 @@ class UserRegistrationPage : Page(
 
                 return@transaction user
             }
-            ctx.currentUserDTO = userDAO.toDTO()
-            ctx.hxRedirect("/")
-            //ctx.redirect("/")
+
+            if (!dontSetSession) {
+                ctx.currentUserDTO = userDAO.toDTO()
+                ctx.hxRedirect("/")
+            }
             return@prolongAtLeast
         }
     }

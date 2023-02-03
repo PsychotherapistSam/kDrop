@@ -213,7 +213,7 @@
             $('#userCreationModal').modal({
                 onApprove: function () {
                     $.ajax({
-                        url: "/api/v1/users",
+                        url: "/registration",
                         type: "POST",
                         headers: {
                             'No-Session': 'true'
@@ -223,7 +223,6 @@
                             $('#userCreationModal').modal('hide');
                             $('#userCreationModal').remove();
                             htmx.trigger("#refreshButton", "refreshTable");
-                            //window.location.href = '${AdminUsersPage.ROUTE}';
                         },
                     });
                     return false;

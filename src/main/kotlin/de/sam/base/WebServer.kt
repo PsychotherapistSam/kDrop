@@ -168,7 +168,7 @@ class WebServer {
                 }
                 path("/users") {
                     // crud stuff
-                    post(AuthenticationController()::registrationRequest)
+//                    post(AuthenticationController()::registrationRequest)
                     before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
                         delete("/", UserController()::deleteUser, UserRoles.SELF, UserRoles.ADMIN)
