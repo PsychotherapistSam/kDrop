@@ -13,6 +13,7 @@ import de.sam.base.utils.preferences.Preferences
 import io.javalin.http.*
 import io.javalin.validation.ValidationError
 import io.javalin.validation.Validator
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
@@ -102,17 +103,31 @@ class UserController {
         }
     }
 
-    fun deleteUser(ctx: Context) {
+    fun deleteUser(user: UserDTO) {
+        transaction {
+            // delete all user related data
+            ShareDAO.find { SharesTable.user eq user.id }.forEach { it.delete() }
+
+            FileController().deleteFileList(
+                FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.subList(0, 1),
+                user
+            )
+            FileDAO.find { FilesTable.owner eq user.id }.forEach { it.delete() }
+
+            UserDAO
+                .findById(user.id)!!
+                .delete()
+        }
+    }
+
+    fun deleteUserFromContext(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
 
         if (ctx.currentUserDTO != selectedUserDTO && !ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
             throw UnauthorizedResponse("You are not allowed to delete this user")
         }
-        transaction {
-            UserDAO
-                .findById(selectedUserDTO.id)!!
-                .delete()
-        }
+
+        deleteUser(selectedUserDTO)
     }
 
     fun getUserParameter(ctx: Context) {

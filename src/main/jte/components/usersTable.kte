@@ -163,7 +163,8 @@
     <div class="ui tiny modal" id="userCreationModal">
         <div class="header">User Creation</div>
         <div class="content">
-            <form class="ui form" id="userCreationForm">
+            <form class="ui form" id="userCreationForm"
+                  onsubmit="$('#userCreationModal').find('button.approve').first().click(); return false;">
                 <div class="field">
                     <label for="username">Username</label>
                     <input type="text" name="username" id="username" placeholder="Username" tabindex="1">
@@ -172,6 +173,7 @@
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
                 </div>
+                <input type="submit" hidden/>
             </form>
         </div>
         <div class="actions">
@@ -211,6 +213,7 @@
 
         function addUserModal() {
             $('#userCreationModal').modal({
+                duration: 250,
                 onApprove: function () {
                     $.ajax({
                         url: "/registration",
@@ -221,13 +224,15 @@
                         data: $('#userCreationForm').serialize(),
                         success: function () {
                             $('#userCreationModal').modal('hide');
-                            $('#userCreationModal').remove();
+                            $('#userCreationModal').find("button.approve").first().removeClass("loading")
+                            $('#userCreationForm').trigger("reset");
                             htmx.trigger("#refreshButton", "refreshTable");
                         },
                     });
                     return false;
                 }
             }).modal('show');
+            return true;
         }
     </script>
 </div>

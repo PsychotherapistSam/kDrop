@@ -51,6 +51,7 @@
                 <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
             </div>
         </form>
+        <input type="submit" hidden/>
     </div>
     <div class="actions">
         <button class="ui compact green approve button"
@@ -76,6 +77,7 @@
                     <input type="checkbox" name="public" id="public" class="hidden">
                 </div>
             </div>
+            <input type="submit" hidden/>
         </form>
     </div>
     <div class="actions">
@@ -304,7 +306,7 @@
     <div class="header">Create File or Folder Shares</div>
     <div class="content">
         <form class="ui form" id="shareCreationForm"
-              onsubmit="$('#folderCreationModal').find('button.approve').first().click(); return false;">
+              onsubmit="$('#shareCreationModal').find('button.approve').first().click(); return false;">
             <!-- onsubmit="$('#fileEditModal').find('button.approve').first().click(); return false;" -->
             <div class="field">
                 <label for="vanityName">Vanity Name (optional)</label>

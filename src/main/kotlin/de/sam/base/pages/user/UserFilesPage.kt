@@ -83,6 +83,7 @@ class UserFilesPage : Page(
         ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
 
         if (ctx.queryParam("table") != null) {
+            renderTemplate = false
             ctx.render(
                 "components/files/fileListComp.kte",
                 mapOf(

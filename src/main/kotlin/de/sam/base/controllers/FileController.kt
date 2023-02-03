@@ -392,7 +392,7 @@ class FileController {
         }
     }
 
-    private fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): ArrayList<UUID> {
+    fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): ArrayList<UUID> {
         val deletedFileIDs = arrayListOf<UUID>()
         val allFiles = arrayListOf<FileDAO>()
         transaction {

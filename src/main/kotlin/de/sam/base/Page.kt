@@ -50,6 +50,7 @@ abstract class Page(
         this.ctx = context
         currentUserDTO = this.ctx.currentUserDTO
         templateStartTime = System.nanoTime()
+        renderTemplate = true
 
         pagePreTime = measureTime {
             before()
