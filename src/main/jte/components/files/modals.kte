@@ -71,12 +71,6 @@
                 <label for="name">Name</label>
                 <input type="text" name="name" id="name" placeholder="Name" tabindex="1">
             </div>
-            <div class="field">
-                <div class="ui checkbox">
-                    <label for="public">Public</label>
-                    <input type="checkbox" name="public" id="public" class="hidden">
-                </div>
-            </div>
             <input type="submit" hidden/>
         </form>
     </div>
@@ -307,7 +301,6 @@
     <div class="content">
         <form class="ui form" id="shareCreationForm"
               onsubmit="$('#shareCreationModal').find('button.approve').first().click(); return false;">
-            <!-- onsubmit="$('#fileEditModal').find('button.approve').first().click(); return false;" -->
             <div class="field">
                 <label for="vanityName">Vanity Name (optional)</label>
                 <input type="text" name="vanityName" id="vanityName" placeholder="Name" tabindex="1">
@@ -317,7 +310,7 @@
                 <label for="maxDownloads">Downloads (optional)</label>
                 <input type="number" name="maxDownloads" id="maxDownloads" placeholder="0" tabindex="1">
             </div>
-
+            <input type="submit" hidden/>
         </form>
     </div>
     <div class="actions">
