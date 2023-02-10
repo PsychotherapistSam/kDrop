@@ -1,5 +1,6 @@
 package de.sam.base.config
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -17,11 +18,12 @@ class Configuration {
     var description: String = ""
     var passwordPepper: String = UUID.randomUUID().toString()
     var database = Database()
-    var captcha = Captcha()
+    var captcha = null as Captcha?
     var allowUserRegistration: Boolean = false
     var devEnvironment = true
     var logLevel = "TRACE"
     var fileTempDirectory = File("./upload/tmp").canonicalPath
+    var tracking = Tracking()
 
     class Database {
         var host: String = "localhost"
@@ -32,11 +34,26 @@ class Configuration {
     }
 
     class Captcha {
-        var enabled: Boolean = false
         var service: String = ""
         var siteKey: String = ""
         var secretKey: String = ""
         var locations: List<String> = arrayListOf("registration")
+    }
+
+
+    open class Tracking {
+        var cronitor = Cronitor()
+        var matomo = null as Matomo?
+
+        class Cronitor {
+            var url = ""
+            var clientKey: String = ""
+        }
+
+        class Matomo {
+            var url: String = ""
+            var siteId: Int = 0
+        }
     }
 
     companion object {
@@ -54,6 +71,7 @@ class Configuration {
         val mapper = ObjectMapper(YAMLFactory())
         //   mapper.enable(SerializationFeature.WRAP_ROOT_VALUE)
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
         mapper.writeValue(file, this)
     }
 }

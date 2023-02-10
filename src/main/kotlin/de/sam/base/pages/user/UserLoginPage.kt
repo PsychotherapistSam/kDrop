@@ -30,8 +30,8 @@ class UserLoginPage : Page(
                 return@prolongAtLeast
             }
 
-            if (config.captcha.enabled && config.captcha.locations.contains("login")) {
-                when (config.captcha.service.lowercase()) {
+            if (config.captcha != null && config.captcha!!.locations.contains("login")) {
+                when (config.captcha!!.service.lowercase()) {
                     "recaptcha" -> {
                         val captchaErrors = Captcha.validate(ctx)
                         if (captchaErrors.isNotEmpty()) {

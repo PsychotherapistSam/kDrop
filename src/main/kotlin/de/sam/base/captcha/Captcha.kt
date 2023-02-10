@@ -31,12 +31,12 @@ class Captcha {
 
             val request = Request.Builder()
                 .url(
-                    captchaServiceUrlMap[Configuration.config.captcha.service.lowercase()]
+                    captchaServiceUrlMap[Configuration.config.captcha!!.service.lowercase()]
                         ?: throw InternalServerErrorResponse("Unknown captcha service")
                 )
                 .post(
                     FormBody.Builder()
-                        .add("secret", Configuration.config.captcha.secretKey)
+                        .add("secret", Configuration.config.captcha!!.secretKey)
                         .add("response", captchaSolution.get() ?: "")
                         //                            .add("sitekey", "10000000-ffff-ffff-ffff-000000000001")
                         .build()

@@ -5,6 +5,18 @@
 
 !{val latestCommit = "e6c853fa"}
 
+@if(config.tracking != null)
+    @if(config.tracking.cronitor != null)
+        <script async src="${config.tracking.cronitor.url}"></script>
+        <script>
+            window.cronitor = window.cronitor || function () {
+                (window.cronitor.q = window.cronitor.q || []).push(arguments);
+            };
+            cronitor('config', {clientKey: '${config.tracking.cronitor.clientKey}'});
+        </script>
+    @endif
+@endif
+
 <footer>
     <div class="ui basic secondary segment"
          hx-target="body"

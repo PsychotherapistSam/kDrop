@@ -53,8 +53,8 @@ class UserRegistrationPage : Page(
             val username = ctx.formParam("username")
             val password = ctx.formParam("password")
 
-            if (Configuration.config.captcha.enabled && Configuration.config.captcha.locations.contains("registration") && !canBypassCaptcha) {
-                when (Configuration.config.captcha.service.lowercase()) {
+            if (Configuration.config.captcha != null && Configuration.config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
+                when (Configuration.config.captcha!!.service.lowercase()) {
                     "recaptcha" -> {
                         val captchaErrors = Captcha.validate(ctx)
                         if (captchaErrors.isNotEmpty()) {
