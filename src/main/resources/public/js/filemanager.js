@@ -39,114 +39,327 @@ $.fn.serializeArray = function (options) {
         }).get();
 };
 
+// CONTEXT MENU
 
-// https://stackoverflow.com/a/39845980/11324248
-// https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
-// https://codepen.io/SitePoint/pen/MYLoWY
-// Adapted to work with the fomantic-ui framework
+var contextMenu = document.getElementById("context-menu");
 
+var menuTargetClass = "table";
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//
-// H E L P E R    F U N C T I O N S
-//
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+var clientX = 0;
+var clientY = 0;
 
-/**
- * Function to check if we clicked inside an element with a particular class
- * name.
- *
- * @param {Object} e The event
- * @param {String} className The class name to check against
- * @return {Boolean}
- */
-function clickInsideElement(e, className) {
-    let el = e.srcElement || e.target;
+document.addEventListener("click", function (event) {
+    var target = event.target;
 
-    if (el.classList.contains(className)) {
-        return el;
+    const isClickInside = contextMenu.contains(target);
+
+    // check if the target tag is an icon, if so select the parent
+    if (target.tagName === "I") {
+        target = target.parentElement;
+    }
+
+    console.log(target);
+
+    switch (target.getAttribute("data-action")) {
+        case "new-folder":
+            promptFolderCreation(document.getElementById("parentId").value);
+            break;
+        case "preview":
+            showImagePreviewModal("/api/v1/files/" + getSelectedRows()[0].getAttribute("data-id"));
+            break;
+        case "share":
+            showShareListModal(getSelectedRows()[0]);
+            break;
+        case "download":
+            startFileDownload(getSelectedRows());
+            break;
+        case "edit":
+            promptFileEdit(getSelectedRows()[0]);
+            break;
+        case "delete":
+            const rows = getSelectedRows();
+            if (rows.length >= 2 || (rows.length === 1 && rows[0].getAttribute("data-folder") === "true")) {
+                showFileDeletionLoadingModal(rows.length);
+            }
+            $.ajax({
+                url: "/api/v1/files",
+                type: "DELETE",
+                enctype: "multipart/form-data",
+                data: convertRowsToXHRData(rows),
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    hideFileDeletionLoadingModal();
+                    htmx.trigger("#refreshButton", "refreshTable");
+                },
+                error: function (error) {
+                    // show fomantic toast
+                    hideFileDeletionLoadingModal();
+                    $('body')
+                        .toast({
+                            class: 'error',
+                            message: 'Could not delete file: ' + error
+                        })
+                    ;
+                }
+            });
+            break;
+        default:
+            return;
+    }
+
+    hideMenu();
+
+    if (!isClickInside) {
+        hideMenu();
+    }
+});
+
+function convertRowsToXHRData(rows) {
+    const ids = rows.map(function (row) {
+        return row.dataset.id;
+    }).join(",");
+    const data = new FormData();
+    data.append("files", ids);
+    return data;
+}
+
+function startFileDownload(rows) {
+    if (rows.length === 1 && !rows[0].getAttribute("data-folder")) {
+        window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
     } else {
-        while (el = el.parentNode) {
-            if (el.classList && el.classList.contains(className)) {
-                return el;
+
+        let fileIdList = convertRowsToXHRData(rows)
+        showFileDownloadModal(rows.length, -1);
+        // https://stackoverflow.com/a/29556434
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", "/api/v1/files", true);
+        xhr.setRequestHeader("x-client", "web/api");
+        xhr.responseType = 'blob';
+        // set multipart data
+        xhr.onprogress = function (e) {
+            // console.log(e.loaded + " / " + e.total);
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                showFileDownloadModal(rows.length, Math.round(percentComplete));
+            }
+        };
+        xhr.onload = function (e) {
+            if (this.status === 200) {
+                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
+                const blob = new Blob([this.response], {type: 'application/zip'});
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+            } else {
+                const blob = new Blob([this.response], {type: 'application/zip'});
+                const fileReader = new FileReader();
+                fileReader.onload = (e) => {
+                    $('body')
+                        .toast({
+                            class: 'red',
+                            message: JSON.parse(e.target.result)[0],
+                            position: 'bottom right',
+                            displayTime: 5000,
+                            showProgress: 'bottom',
+                        })
+                    ;
+                };
+                fileReader.readAsText(blob)
+
+            }
+            hideFileDownloadModal();
+        };
+        xhr.onabort = function (e) {
+            $('body')
+                .toast({
+                    class: 'error',
+                    message: 'Could not download files as zip'
+                })
+            ;
+            hideFileDownloadModal();
+        }
+        xhr.send(fileIdList);
+    }
+}
+
+function elementInsideTarget(element) {
+    return element.closest("." + menuTargetClass) != null;
+}
+
+document.addEventListener("contextmenu", function (event) {
+    var isClickInsideTable = elementInsideTarget(event.target);
+    if (isClickInsideTable) {
+        event.preventDefault();
+        showMenu(event.clientX, event.clientY, event.target.closest("tr"), document.getElementsByClassName("context-bounds")[0]);
+    } else if (!contextMenu.contains(event.target)) { // clicked inside the menu
+        hideMenu();
+    }
+});
+
+var timeoutId = null;
+
+document.addEventListener("mousemove", function (event) {
+    if (menuIsOpen()) {
+        clientX = event.clientX;
+        clientY = event.clientY;
+
+        var mouseInsideMenu = contextMenu.contains(event.target);
+        if (mouseInsideMenu) {
+            stopTimeout();
+        } else {
+            // close menu after 1 second
+            if (timeoutId == null) {
+                timeoutId = setTimeout(function () {
+                    hideMenu();
+                }, 1000);
             }
         }
     }
+});
 
-    return false;
-}
-
-/**
- * Get's exact position of event.
- *
- * @param {Object} e The event passed in
- * @return {Object} Returns the x and y position
- */
-function getPosition(e) {
-    let posX = 0;
-    let posY = 0;
-
-    if (!e) var e = window.event;
-
-    if (e.pageX || e.pageY) {
-        posX = e.pageX;
-        posY = e.pageY;
-    } else if (e.clientX || e.clientY) {
-        posX = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        posY = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-    }
-
-    return {
-        x: posX,
-        y: posY
+function stopTimeout() {
+    if (timeoutId != null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-//
-// C O R E    F U N C T I O N S
-//
-//////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
+function menuIsOpen() {
+    return contextMenu.classList.contains("visible");
+}
 
-/**
- * Variables.
- */
-const contextMenuClassName = "context-menu";
-const contextMenuLinkClassName = "context-item";
-const contextMenuActive = "context-menu--active";
+var lastTarget = null;
 
-const taskItemClassName = "context-clickable";
-let rowInContext;
-const taskItemActiveClass = "active";
+function showMenu(x, y, target = null, related = null) {
+    stopTimeout();
+    // bug: related height chagnes from first and second time
+    let relativeClippingBounds = related.getBoundingClientRect();
 
-let clickCoords;
-let clickCoordsX;
-let clickCoordsY;
+    // check if it clips the bounds of the related element
+    let clipX = x + contextMenu.offsetWidth > relativeClippingBounds.left + relativeClippingBounds.width;
+    let clipY = y + contextMenu.offsetHeight > relativeClippingBounds.top + relativeClippingBounds.height;
 
-const menu = document.querySelector("#context-menu");
-let menuState = 0;
-let menuWidth;
-let menuHeight;
-let menuPosition;
-let menuPositionX;
-let menuPositionY;
+    // dont clip if it would be smaller than the table
+    if (relativeClippingBounds.height < contextMenu.offsetHeight) {
+        clipY = false;
+    }
 
-let windowWidth;
-let windowHeight;
+    // calculate relative positions for the menu (since position: relative); its position is relative to its parent
+    // this was the choice, so it scrolls with the rest
+    let contextMenuRelativeBounds = contextMenu.parentElement.getBoundingClientRect();
 
+    let relativeX = x - contextMenuRelativeBounds.left;
+    let relativeY = y - contextMenuRelativeBounds.top;
 
-/*
-var table = $('#fileTable').DataTable({
-    paging: false,
-    ordering: false,
-    searching: false,
-    info: false,
-    select: true
-});*/
+    // make it fit inside the relative element
+    let menuX = clipX ? relativeX - contextMenu.offsetWidth : relativeX;
+    let menuY = clipY ? relativeY - contextMenu.offsetHeight : relativeY;
+
+    // adjust for padding
+    let computedStyle = getComputedStyle(contextMenu);
+
+    // invert the padding if it clips
+    menuX -= parseInt(computedStyle.paddingRight) * clipX ? -1 : 1;
+    menuY -= parseInt(computedStyle.paddingBottom) * clipY ? -1 : 1;
+
+    filterMenuButtons(target.closest("table"), target);
+
+    withoutTransition(contextMenu, parseInt(getComputedStyle(contextMenu).left) > 0, function () {
+        contextMenu.style.left = menuX + "px";
+        contextMenu.style.top = menuY + "px";
+    });
+
+    contextMenu.style.display = "block";
+    contextMenu.classList.add("visible")
+
+    if (related == null) {
+        contextMenu.style.position = "fixed";
+    } else {
+        contextMenu.style.position = "absolute";
+    }
+
+    if (lastTarget != null && getSelectedRows().length === 1) {
+        deselectRow(lastTarget);
+    }
+
+    if (target != null) {
+        lastTarget = target;
+        selectRow(target);
+    }
+}
+
+function filterMenuButtons(table, target) {
+    let tableId = table.getAttribute("id");
+    // hide all buttons
+    contextMenu.querySelectorAll(".item").forEach(function (item) {
+        item.style.display = "none";
+    });
+
+    var itemType = "file";
+
+    if (target.dataset.folder != null && target.dataset.folder == "true") {
+        itemType = "folder";
+    } else if (target.dataset.mime != null && target.dataset.mime.split("/")[0] === "image") {
+        itemType = "image";
+    }
+
+    function showAction(action) {
+        contextMenu.querySelector(".item[data-action='" + action + "']").style.display = "block";
+    }
+
+    // the order here doesn't matter but I try to keep it in the same order as the buttons are in the menu
+
+    showAction("new");
+    showAction("new-folder");
+    showAction("share");
+    showAction("download");
+    showAction("edit");
+    showAction("move");
+    showAction("delete");
+
+    switch (itemType) {
+        case "image":
+            showAction("preview");
+            break;
+    }
+}
+
+function hideMenu() {
+    stopTimeout();
+
+    // contextMenu.style.display = "none";
+    contextMenu.classList.remove("visible");
+
+    if (lastTarget != null)
+        lastTarget.classList.remove("active");
+
+    // remove from viewport after the animation is done
+    setTimeout(function () {
+        withoutTransition(contextMenu, false, function () {
+            contextMenu.style.left = -contextMenu.offsetWidth + "px";
+            contextMenu.style.top = -contextMenu.offsetHeight + "px";
+        });
+    }, 100);
+
+}
+
+function withoutTransition(element, ignore = false, callback) {
+    if (!ignore) {
+        element.classList.add("notransition");
+    }
+    callback();
+
+    if (!ignore) {
+        element.offsetHeight;
+        element.classList.remove("notransition");
+    }
+}
+
+// DRAG & SELECT
 
 let ds = null;
 
@@ -154,6 +367,7 @@ let ds = null;
 
 var customDragging = false;
 var startElement = null;
+
 
 document.addEventListener("dragstart", function (e) {
     if ($(e.target).hasClass("drag-startable")) {
@@ -271,14 +485,7 @@ function initializeDragSelect() {
         area: document.getElementById('fileTableBody'),
         draggability: false, // implement this instead: https://interactjs.io/docs/
         keyboardDrag: false,
-        //selectedClass: 'selected'
     });
-    // fired once the user releases the mouse. (items) = selected nodes:
-    /* ds.subscribe('callback', ({ items, event }) => {
-         table.rows().deselect();
-         table.rows('.ds-selected').select();
-         console.log(items)
-     });*/
     ds.subscribe('predragstart', ({event}) => {
         if (event.type != "mousedown") {
             ds.stop()
@@ -297,7 +504,7 @@ function initializeDragSelect() {
         if (event === "mousedown") {
             // console.log(event)
         }
-        toggleMenuOff();
+        hideMenu();
     })
     ds.subscribe('elementselect', ({item, items}) => {
         // console.log(item)
@@ -318,45 +525,14 @@ function initializeDragSelect() {
     });
 }
 
-/*
-        $('#fileTable').selectable({
-            classes: {
-                "ui-selected": "selected"
-            },
-            filter: 'tr',
-            stop: function () {
-                console.log(this);
-                $(".ui-selected", this).each(function () {
-                    var index = $("#fileTable tr").index(this) - 1;
-                    $('#fileTable tbody tr:eq(' + index + ')').toggleClass('active');
-                    $('#fileTable tbody tr:eq(' + index + ')').toggleClass('ui-selected');
-                });
-            }
-        });
-*/
-/**
- * Initialise our application's code.
- */
-function init() {
-    initializeDragSelect()
-    contextListener();
-    clickListener();
-    keyupListener();
-    resizeListener();
-    console.log("registered context menu listeners etc.")
-}
-
-
-function isSelected(row) {
-    return ds.getSelection().indexOf(row) !== -1;
-}
+initializeDragSelect();
 
 function getSelectedRows() {
     return ds.getSelection()
 }
 
-function getAllRows() {
-    return ds.getSelectables();
+function isSelected(row) {
+    return ds.getSelection().indexOf(row) !== -1;
 }
 
 function toggleSelection() {
@@ -390,338 +566,3 @@ function deselectRow(row) {
     $(row).find(":checkbox")[0].checked = false;
 }
 
-/**
- * Listens for contextmenu events.
- */
-function contextListener() {
-    document.addEventListener("contextmenu", function (e) {
-        // another item is clicked
-        if (rowInContext && getSelectedRows().length == 1) {
-            clearSelection();
-            //table.rows(rowInContext).deselect();
-            // rowInContext.classList.remove(taskItemActiveClass)
-        }
-        rowInContext = clickInsideElement(e, taskItemClassName);
-
-        // row sensitive context menu button visibility
-        if (ds.getSelection().length <= 1 && $(rowInContext).attr("data-mime") && $(rowInContext).attr("data-mime").split("/")[0] === "image") {
-            $("#contextMenuPreviewButton").show()
-        } else {
-            $("#contextMenuPreviewButton").hide()
-        }
-
-        if (rowInContext) {
-            e.preventDefault();
-            toggleMenuOn();
-            positionMenu(e);
-        } else {
-            rowInContext = null;
-            toggleMenuOff();
-        }
-    });
-}
-
-/**
- * Listens for click events.
- */
-function clickListener() {
-    const fileTable = document.querySelector('#fileTable')
-
-    document.addEventListener("click", function (e) {
-        if (event.target.type === "checkbox" && event.target.id != "toggleAllSelection" && event.composedPath().includes(fileTable)) {
-            const row = event.target.closest(".context-clickable");
-            if (event.target.checked) {
-                // not using addSelection because that uses invalid jquery on mobile
-                selectRow(row)
-                // ds.addSelection(row)
-            } else {
-                // not using deselectRow because that uses invalid jquery on mobile
-                deselectRow(row)
-                //  ds.removeSelection(row)
-            }
-        }
-
-        const clickeElIsLink = clickInsideElement(e, contextMenuLinkClassName);
-
-        if (clickeElIsLink) {
-            e.preventDefault();
-            menuItemListener(clickeElIsLink);
-        } else {
-            // this closes the menu when not clicking on the menu
-            // this closes the menu when the dropdown is clicked, so I disabled it (without really understanding the code)
-            const button = e.which || e.button;
-            if (button === 1) {
-                toggleMenuOff();
-            }
-        }
-
-        // clear selection when clicking outside of the table
-        const withinBoundaries = e.composedPath().includes(fileTable)
-        if (!withinBoundaries && !e.target.classList.contains("context-item-dropdown")) {
-            ds.clearSelection();
-        }
-    }, false);
-}
-
-/**
- * Listens for keyup events.
- */
-function keyupListener() {
-    window.onkeyup = function (e) {
-        if (e.keyCode === 27) {
-            toggleMenuOff();
-        }
-    }
-}
-
-/**
- * Window resize event listener
- */
-function resizeListener() {
-    window.onresize = function (e) {
-        toggleMenuOff();
-    };
-}
-
-/**
- * Turns the custom context menu on.
- */
-function toggleMenuOn() {
-    if (getSelectedRows().length <= 1) {
-        ds.clearSelection();
-        ds.addSelection(rowInContext);
-        //table.rows().deselect();
-        //table.rows(rowInContext).select();
-        //rowInContext.classList.add(taskItemActiveClass)
-    }
-    if (menuState !== 1) {
-        menuState = 1;
-        menu.classList.add(contextMenuActive);
-    }
-}
-
-/**
- * Turns the custom context menu off.
- */
-function toggleMenuOff() {
-    if (menuState !== 0) {
-        menuState = 0;
-        menu.classList.remove(contextMenuActive);
-        menu.style.top = "";
-        menu.style.left = "";
-
-        // ds.clearSelection();
-
-        // table.rows().deselect();
-        /*if (getSelectedRows().length == 1) {
-            //rowInContext.classList.remove(taskItemActiveClass)
-            table.rows(rowInContext).deselect();
-        }*/
-    }
-}
-
-/**
- * Positions the menu properly.
- *
- * @param {Object} e The event
- */
-function positionMenu(e) {
-    clickCoords = getPosition(e);
-    console.log(clickCoords)
-    clickCoordsX = clickCoords.x;
-    clickCoordsY = clickCoords.y;
-
-    menuWidth = menu.offsetWidth + 4;
-    menuHeight = menu.offsetHeight + 4;
-
-    menu.style.left = clickCoordsX + "px";
-    menu.style.top = clickCoordsY + "px";
-}
-
-function convertRowsToXHRData(rows) {
-    const ids = rows.map(function (row) {
-        return row.getAttribute("data-id");
-    }).join(",");
-    const data = new FormData();
-    data.append("files", ids);
-    return data;
-}
-
-
-function startFileDownload(rows) {
-    if (rows.length === 1 && !rows[0].getAttribute("data-folder")) {
-        window.location.href = "/api/v1/files/" + rows[0].getAttribute("data-id") + "?download";
-    } else {
-
-        let fileIdList = convertRowsToXHRData(rows)
-        showFileDownloadModal(rows.length, -1);
-        // https://stackoverflow.com/a/29556434
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", "/api/v1/files", true);
-        xhr.setRequestHeader("x-client", "web/api");
-        xhr.responseType = 'blob';
-        // set multipart data
-        xhr.onprogress = function (e) {
-            // console.log(e.loaded + " / " + e.total);
-            if (e.lengthComputable) {
-                const percentComplete = (e.loaded / e.total) * 100;
-                showFileDownloadModal(rows.length, Math.round(percentComplete));
-            }
-        };
-        xhr.onload = function (e) {
-            if (this.status === 200) {
-                const filename = e.target.getResponseHeader("Content-Disposition").split(" ")[1].split("=")[1];
-                const blob = new Blob([this.response], {type: 'application/zip'});
-                const downloadUrl = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-            } else {
-                const blob = new Blob([this.response], {type: 'application/zip'});
-                const fileReader = new FileReader();
-                fileReader.onload = (e) => {
-                    $('body')
-                        .toast({
-                            class: 'red',
-                            message: JSON.parse(e.target.result)[0],
-                            position: 'bottom right',
-                            displayTime: 5000,
-                            showProgress: 'bottom',
-                        })
-                    ;
-                };
-                fileReader.readAsText(blob)
-
-            }
-            hideFileDownloadModal();
-        };
-        xhr.onabort = function (e) {
-            $('body')
-                .toast({
-                    class: 'error',
-                    message: 'Could not download files as zip'
-                })
-            ;
-            hideFileDownloadModal();
-        }
-        xhr.send(fileIdList);
-    }
-}
-
-/**
- * Dummy action function that logs an action when a menu item link is clicked
- *
- * @param {HTMLElement} link The link that was clicked
- */
-function menuItemListener(link) {
-    // the dropdown menu should not close the whole menu when clicked, and itself should not be a clickable link, but yet it should not be considered outside the menu (which would lead it to close)
-    if (!link.classList.contains("context-item-dropdown")) {
-        const rows = getSelectedRows();
-        if (rows.length > 0) {
-            switch (link.getAttribute("data-action")) {
-                case "delete":
-                    if (rows.length >= 2 || (rows.length === 1 && rows[0].getAttribute("data-folder") === "true")) {
-                        showFileDeletionLoadingModal(rows.length);
-                    }
-                    $.ajax({
-                        url: "/api/v1/files",
-                        type: "DELETE",
-                        enctype: "multipart/form-data",
-                        data: convertRowsToXHRData(rows),
-                        processData: false,
-                        contentType: false,
-
-                        success: function (result) {
-                            // console.log(result);
-                            // rows.remove();
-                            // ds.removeSelectables(rowsToDelete)
-                            // updateVisibilityOfEmptyFolder();
-                            hideFileDeletionLoadingModal();
-                            htmx.trigger("#refreshButton", "refreshTable");
-                        },
-                        error: function (error) {
-                            // show fomantic toast
-                            hideFileDeletionLoadingModal();
-                            $('body')
-                                .toast({
-                                    class: 'error',
-                                    message: 'Could not delete file: ' + error
-                                })
-                            ;
-                        }
-                    });
-                    break;
-                case "download":
-                    startFileDownload(rows);
-                    break;
-                case "shares":
-                    showShareListModal(rows[0]);
-                    break;
-                case "new-folder":
-                    //TODO: fix this
-                    promptFolderCreation(document.getElementById("parentId").value);
-                    break;
-                case "edit":
-                    promptFileEdit(rows[0]);
-                    break;
-                case "preview":
-                    showImagePreviewModal("/api/v1/files/" + rows[0].getAttribute("data-id"));
-                    break;
-            }
-        }
-        getSelectedRows().forEach(function (row) {
-                switch (link.getAttribute("data-action")) {
-                    // case "download":
-                    //     window.location.href = "/api/v1/files/" + row.getAttribute("data-id") + "?download";
-                    //     break;
-                    /*case "delete":
-                        const fileId = row.getAttribute("data-id");
-                        $.ajax({
-                            url: "/api/v1/files/" + fileId,
-                            type: "DELETE",
-                            success: function (result) {
-                                // console.log(result);
-                                ds.removeSelectables(row)
-                                row.remove();
-                                updateVisibilityOfEmptyFolder();
-                            },
-                            error: function (error) {
-                                // show fomantic toast
-                                $('body')
-                                    .toast({
-                                        class: 'error',
-                                        message: 'Could not delete file'
-                                    })
-                                ;
-                            }
-                        });
-                        break;*/
-                    // case "new-folder":
-                    //     promptFolderCreation();
-                    //     break;
-                    /* default:
-                         console.log(row.getAttribute("data-id"));
-                         console.log(link.getAttribute("data-action"))
-                         console.log(row);
-                         console.log("Task ID - " + row.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
-                         break;*/
-                }
-            }
-        );
-        toggleMenuOff();
-    }
-
-    /*for (var i = 0; i < getSelectedRows().length; i++) {
-        var row = getSelectedRows()[i];
-        console.log(row);
-        console.log("Task ID - " + row.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
-    }*/
-
-}
-
-/**
- * Run the app.
- */
-init();

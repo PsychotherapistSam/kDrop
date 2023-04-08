@@ -78,7 +78,7 @@
             </div>
         </div>
     </div>
-    <table class="ui unstackable table" id="fileTable">
+    <table class="ui unstackable table context-bounds" id="fileTable">
         <thead>
         <th>
             <div class="ui fitted checkbox">

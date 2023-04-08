@@ -4,98 +4,64 @@
 
 <script src="https://cdn.jsdelivr.net/npm/dragselect@2.5.5/dist/DragSelect.min.js"></script>
 
-<!-- initially hidden right-click menu -->
-<nav id="context-menu" class="context-menu">
-    <div class="ui compact vertical menu">
-        <div class="ui simple dropdown item context-item context-item-dropdown">
+<div id="context-menu" class="context">
+    <div class="ui simple compact vertical menu">
+        <div class="ui simple dropdown item context-item context-item-dropdown" data-action="new">
             <i class="dropdown icon"></i>
             New
             <div class="menu">
-                <a class="item context-item" data-action="new-folder">
+                <a class="item" data-action="new-folder">
                     <i class="folder icon"></i>Folder
                 </a>
-                <%--                <a class="item context-item" data-action="new-share">--%>
+                <%--                <a class="item" data-action="new-share">--%>
                 <%--                    <i class="share icon"></i>Share--%>
                 <%--                </a>--%>
             </div>
         </div>
-        <a class="item context-item" data-action="preview" id="contextMenuPreviewButton">
-            <i class="image icon"></i> Preview
+        <a class="item" data-action="preview">
+            Preview
+            <i class="image icon"></i>
         </a>
-        <a class="item context-item" data-action="shares">
-            <i class="share alternate icon"></i>Share
+        <a class="item" data-action="share">
+            Share
+            <i class="share alternate icon"></i>
         </a>
-        <a class="item context-item" data-action="download">
-            <i class="download icon"></i> Download
+        <a class="item" data-action="download">
+            Download
+            <i class="download icon"></i>
         </a>
-        <a class="item context-item" data-action="edit">
-            <i class="pen icon"></i> Edit
+        <a class="item" data-action="edit">
+            Edit
+            <i class="pen icon"></i>
         </a>
-        <a class="item context-item" data-action="copy">
-            <i class="move icon"></i> Move
+        <a class="item" data-action="move">
+            Move
+            <i class="move icon"></i>
         </a>
-        <a class="red item context-item" data-action="delete">
-            <i class="red trash icon"></i> Delete
+        <a class="red item " data-action="delete">
+            Delete
+            <i class="red trash icon"></i>
         </a>
+
     </div>
-</nav>
+</div>
 
 
 <style>
-    /* context menu */
-
-    .context-menu {
-        display: none;
-        position: fixed;
-        z-index: 10;
-        width: 240px;
-        animation: fadeIn 0.2s;
-        transition: 0.2s;
-    }
-
-    .context-menu--active {
-        display: block;
-    }
-
-
-    @keyframes fadeIn {
-        0% {
-            opacity: 0;
-        }
-        100% {
-            opacity: 1;
-        }
-    }
-
-
-    .ds-selectable {
-        -webkit-touch-callout: none;
-        /* iOS Safari */
-        -webkit-user-select: none;
-        /* Safari */
-        -khtml-user-select: none;
-        /* Konqueror HTML */
-        -moz-user-select: none;
-        /* Old versions of Firefox */
-        -ms-user-select: none;
-        /* Internet Explorer/Edge */
+    #fileTableBody {
         user-select: none;
-        /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
-
-        transition: 0.3s;
-    }
-
-
-    .section {
-        transition: 0.3s;
     }
 
     .ds-selectable:hover {
-        background-color: rgba(0, 0, 0, 0.03);
+        background-color: #f6f7f9 !important;
+    }
+
+    .ds-selectable {
+        transition: 50ms ease-in-out;
     }
 
     .ds-selected {
-        background-color: rgba(0, 0, 0, 0.05) !important;
+        background-color: #f9fafb !important;
     }
 
     .ds-selector {
@@ -107,6 +73,25 @@
         background-color: rgba(0, 0, 0, 0.03) !important;
         padding: 0px 5px !important;
         border-radius: 5px;
+    }
+
+    /* styling is donw with fomantic ui */
+    .context {
+        position: absolute;
+        top: -1000px;
+        left: -1000px;
+        z-index: 1000;
+        padding: 2px;
+        transition: .1s ease-in-out;
+        opacity: 0;
+    }
+
+    .context.visible {
+        opacity: 1;
+    }
+
+    .notransition {
+        transition: none !important;
     }
 </style>
 

@@ -45,7 +45,7 @@
     @endif
 </head>
 <body>
-<div class="full height">
+<div class="full-height">
     @template.layout.navbar(page)
     <div class="ui container">
         <div class="ui basic fitted segment">
