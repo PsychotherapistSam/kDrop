@@ -2,7 +2,7 @@
 
 @param parent: FileDTO
 
-<script src="https://cdn.jsdelivr.net/npm/dragselect@2.5.5/dist/DragSelect.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dragselect@2.7.2/dist/DragSelect.min.js"></script>
 
 <div id="context-menu" class="context">
     <div class="ui simple compact vertical menu">

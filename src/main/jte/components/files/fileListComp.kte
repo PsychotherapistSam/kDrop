@@ -27,11 +27,8 @@
     <div class="ui horizontal basic segments">
         <div class="ui basic fitted segment">
             @if(share == null)
-                <div class="ui secondary compact animated button" id="fileUploadModal">
-                    <div class="visible content">Upload File(s)</div>
-                    <div class="hidden content">
-                        <i class="upload icon"></i>
-                    </div>
+                <div class="ui secondary compact button" id="fileUploadModal">
+                    Upload File(s)
                 </div>
                 <div class="ui secondary compact icon button" _="on click call startFileDownload(getAllRows())">
                     <i class="download icon"></i>

@@ -566,3 +566,6 @@ function deselectRow(row) {
     $(row).find(":checkbox")[0].checked = false;
 }
 
+function getAllRows() {
+    return ds.getSelectables();
+}
