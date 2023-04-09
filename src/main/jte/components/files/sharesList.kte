@@ -4,7 +4,7 @@
 
 @param shares: List<ShareDAO>
 
-<div class="ui relaxed divided list" style="margin-bottom: unset">
+<div class="ui relaxed list" style="margin-bottom: unset">
     @if(shares.isNotEmpty())
         @for(share in shares)
             <div class="item" data-id="${share.id.value.toString()}">
