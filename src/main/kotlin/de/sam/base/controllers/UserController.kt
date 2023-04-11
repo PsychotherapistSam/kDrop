@@ -6,6 +6,7 @@ import com.password4j.types.Argon2
 import de.sam.base.config.Configuration
 import de.sam.base.database.*
 import de.sam.base.users.UserRoles
+import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
@@ -99,6 +100,7 @@ class UserController {
                 if (isSelf) {
                     ctx.currentUserDTO = user.toDTO()
                 }
+                CacheInvalidation.userTokens[selectedUserDTO.id] = System.currentTimeMillis()
             }
         }
     }

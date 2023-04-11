@@ -11,6 +11,7 @@ import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.prolongAtLeast
+import de.sam.base.utils.tokenTime
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
 import io.javalin.http.InternalServerErrorResponse
@@ -42,6 +43,7 @@ class AuthenticationController {
 
             ctx.status(HttpStatus.OK)
             ctx.currentUserDTO = attempt.first
+            ctx.tokenTime = System.currentTimeMillis()
         }
     }
 

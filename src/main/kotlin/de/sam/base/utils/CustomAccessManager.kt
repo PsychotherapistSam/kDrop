@@ -56,6 +56,20 @@ class CustomAccessManager : AccessManager {
             }
         }
 
+        if (ctx.isLoggedIn) {
+            val userId = ctx.currentUserDTO!!.id
+            val sessionToken = ctx.tokenTime ?: -1
+            val currentToken = CacheInvalidation.userTokens[userId] ?: -1
+
+            if (sessionToken < currentToken) {
+                transaction {
+                    val user = UserDAO.findById(userId)!!.toDTO()
+                    ctx.currentUserDTO = user
+                    ctx.tokenTime = currentToken
+                }
+            }
+        }
+
         if (routeRolesMap.any { !it.special }) {
             if (!ctx.isLoggedIn) {
                 throw UnauthorizedResponse("You need to be logged in to access this resource.")
@@ -180,6 +194,7 @@ class CustomAccessManager : AccessManager {
             }
             ctx.attribute("shareQueryTime", shareQueryTime)
         }
+
         handler.handle(ctx)
     }
 
