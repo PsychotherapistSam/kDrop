@@ -236,6 +236,10 @@ var lastTarget = null;
 
 function showMenu(x, y, target = null, related = null) {
     stopTimeout();
+
+    // filter first before doing height calculations or anything else since they might be off
+    filterMenuButtons(target.closest("table"), target);
+
     // bug: related height chagnes from first and second time
     let relativeClippingBounds = related.getBoundingClientRect();
 
@@ -266,7 +270,6 @@ function showMenu(x, y, target = null, related = null) {
     menuX -= parseInt(computedStyle.paddingRight) * clipX ? -1 : 1;
     menuY -= parseInt(computedStyle.paddingBottom) * clipY ? -1 : 1;
 
-    filterMenuButtons(target.closest("table"), target);
 
     withoutTransition(contextMenu, parseInt(getComputedStyle(contextMenu).left) > 0, function () {
         contextMenu.style.left = menuX + "px";
