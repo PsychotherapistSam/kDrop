@@ -37,17 +37,12 @@
                             <div class="detail">200 GiB/2 TiB (1%)</div>
                         </div>
                         @if(highestRole.powerLevel > 1)
-                        <div class="ui ${highestRole.color} label">
-                            ${highestRole.name}
-                        </div>
+                            <div class="ui ${highestRole.color} label">
+                                ${highestRole.name}
+                            </div>
+                        @endif
                     </div>
-                    @endif
                 </a>
-                <%--                <a class="disabled vertically fitted item">--%>
-                <%--                    <div class="ui ${highestRole.color} label">--%>
-                <%--                        ${highestRole.name}--%>
-                <%--                    </div>--%>
-                <%--                </a>--%>
 
                 <div class="ui dropdown item" id="menuDropdown">
                     ${currentUser.name}<i class="dropdown icon"></i>
