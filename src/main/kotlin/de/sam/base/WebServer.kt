@@ -11,6 +11,7 @@ import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.*
 import de.sam.base.pages.user.settings.UserEditPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
+import de.sam.base.requirements.Requirement
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.isLoggedIn
@@ -133,10 +134,10 @@ class WebServer {
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
-                    get("/", UserFilesPage(), UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
+                    get("/", UserFilesPage(), UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE, Requirement.IS_LOGGED_IN)
                     path("/{fileId}") {
-                        get("/", UserFilesPage(), UserRoles.FILE_ACCESS_CHECK)
-                        get("/shares", UserSharePage()::shareList, UserRoles.FILE_ACCESS_CHECK)
+                        get("/", UserFilesPage(), Requirement.HAS_ACCESS_TO_FILE)
+                        get("/shares", UserSharePage()::shareList, Requirement.HAS_ACCESS_TO_FILE)
                     }
                 }
                 path("/totp") {
@@ -155,7 +156,7 @@ class WebServer {
                     }
                 }
             }
-            get("/s/{shareId}", UserSharePage(), UserRoles.SHARE_ACCESS_CHECK)
+            get("/s/{shareId}", UserSharePage(), Requirement.HAS_ACCESS_TO_SHARE)
         }
 
         // https://stackoverflow.com/a/7260540
@@ -184,15 +185,15 @@ class WebServer {
                     delete("/", FileController()::deleteFiles, UserRoles.USER)
                     // before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
-                        get("/", FileController()::getSingleFile, UserRoles.FILE_ACCESS_CHECK)
-                        put("/", FileController()::updateFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
-                        delete("/", FileController()::deleteSingleFile, UserRoles.USER, UserRoles.FILE_ACCESS_CHECK)
+                        get("/", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
+                        put("/", FileController()::updateFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
+                        delete("/", FileController()::deleteSingleFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
 
                         post(
                             "/setAsChildren",
                             FileController()::moveFiles,
                             UserRoles.USER,
-                            UserRoles.FILE_ACCESS_CHECK,
+                            Requirement.HAS_ACCESS_TO_FILE,
                             UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
                         )
                         //put("/", FileController()::updateFile, UserRoles.USER)
@@ -207,9 +208,9 @@ class WebServer {
                 path("/shares") {
                     post("/", ShareController()::create, UserRoles.USER)
                     path("/{shareId}") {
-                        get("/", ShareController()::getOne, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
-                        get("/download", FileController()::getSingleFile, UserRoles.SHARE_ACCESS_CHECK)
-                        delete("/", ShareController()::delete, UserRoles.USER, UserRoles.SHARE_ACCESS_CHECK)
+                        get("/", ShareController()::getOne, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
+                        get("/download", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
+                        delete("/", ShareController()::delete, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
                     }
 //                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
                 }
