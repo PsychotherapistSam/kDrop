@@ -537,6 +537,26 @@ class FileController {
             ctx.json(mapOf("id" to file.id.toString()))
         }
     }
+
+    fun getFileMetadata(ctx: Context) {
+        val file =
+            transaction {
+                ctx.fileDTOFromId // first check if the file is set by id
+                    ?: FileDAO.findById(ctx.share!!.first.file.id)?.toDTO() // if not check if the file is set by share
+                    ?: throw NotFoundResponse("File not found") // if not throw an error
+                        .also { Logger.error(it.message) }
+            }
+
+        val shares = transaction {
+            ShareDAO.find { SharesTable.file eq file.id }.map { it.toDTO() }
+        }
+        ctx.json(
+            mapOf(
+                "file" to file,
+                "shares" to shares
+            )
+        )
+    }
 }
 
 val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s

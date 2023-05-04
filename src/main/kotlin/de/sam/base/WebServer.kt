@@ -189,6 +189,8 @@ class WebServer {
                         put("/", FileController()::updateFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
                         delete("/", FileController()::deleteSingleFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
 
+                        get("/metadata", FileController()::getFileMetadata, Requirement.HAS_ACCESS_TO_FILE)
+
                         post(
                             "/setAsChildren",
                             FileController()::moveFiles,

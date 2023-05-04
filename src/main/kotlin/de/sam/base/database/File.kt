@@ -1,5 +1,6 @@
 package de.sam.base.database
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import de.sam.base.utils.file.FileType
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
@@ -16,7 +17,9 @@ class FileDTO(
     var name: String,
     var path: String,
     var mimeType: String,
+    @JsonIgnore
     var parent: FileDTO?,
+    @JsonIgnore
     var owner: UserDTO,
     var size: Long,
     var sizeHR: String,

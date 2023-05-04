@@ -1,5 +1,6 @@
 package de.sam.base.database
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -13,7 +14,9 @@ import java.util.*
 
 class ShareDTO(
     var id: UUID,
+    @JsonIgnore
     var file: FileDTO,
+    @JsonIgnore
     var user: UserDTO,
     var creationDate: DateTime,
     var maxDownloads: Long?,
@@ -24,7 +27,7 @@ class ShareDTO(
 
 object SharesTable : UUIDTable("t_shares") {
     val file = reference("file", FilesTable)
-    val user = reference("user",UsersTable)
+    val user = reference("user", UsersTable)
     val creationDate = datetime("creation_date")
     val maxDownloads = long("max_downloads").nullable()
     val downloadCount = long("download_count")
