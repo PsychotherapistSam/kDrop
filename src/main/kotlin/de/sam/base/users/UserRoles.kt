@@ -14,5 +14,6 @@ enum class UserRoles(
     FILE_ACCESS_CHECK_ALLOW_HOME("allow home file on file access check", 1, "", true, true),
     USER("User", 1, "white"),
     PREMIUM("Premium", 10, "purple"),
+    DEVELOPER("Developer", 1337, "teal"),
     ADMIN("Administrator", 9999, "red");
 }
