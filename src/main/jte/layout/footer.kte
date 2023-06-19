@@ -3,7 +3,7 @@
 
 @param page: Page
 
-!{val latestCommit = "e6c853fa"}
+!{val latestCommit = "c124cc6542"}
 
 @if(config.tracking != null)
     @if(config.tracking.cronitor != null)
