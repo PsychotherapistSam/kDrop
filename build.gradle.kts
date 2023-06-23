@@ -1,9 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val tinylog = "2.6.2"
+val jte = "2.0.2"
+
 plugins {
     kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("gg.jte.gradle") version ("2.0.2")
+    id("gg.jte.gradle") version ("2.3.2")
     application
 }
 
@@ -16,22 +19,22 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")
     // https://mvnrepository.com/artifact/io.javalin/javalin
     implementation("io.javalin:javalin:5.4.2")
     implementation("io.javalin:javalin-rendering:5.4.2")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.5")
     // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.3.0")
-    implementation("gg.jte:jte-kotlin:2.3.0")
+    implementation("gg.jte:jte:2.3.2")
+    implementation("gg.jte:jte-kotlin:2.3.2")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.5.4")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-joda
@@ -41,13 +44,12 @@ dependencies {
     implementation("com.password4j:password4j:1.7.0")
 
     // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
-    implementation("org.ocpsoft.prettytime:prettytime:5.0.4.Final")
+    implementation("org.ocpsoft.prettytime:prettytime:5.0.6.Final")
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation("commons-io:commons-io:2.11.0")
 
 
-    val tinylog = "2.6.1"
     // Tinylog
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
@@ -61,7 +63,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:22.13.0")
+    implementation("com.stripe:stripe-java:22.21.0-beta.1")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
