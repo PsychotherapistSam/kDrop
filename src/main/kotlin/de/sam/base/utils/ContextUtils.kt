@@ -69,3 +69,7 @@ var Context.loginReturnUrl: String?
 var Context.tokenTime: Long?
     get() = this.sessionAttribute<Long>("tokenTime")
     set(value) = this.sessionAttribute("tokenTime", value)
+
+var Context.ip: String?
+    get() =  this.header("X-Forwarded-For")?.split(",")?.get(0) ?: this.ip()
+    set(value) = throw UnsupportedOperationException("Cannot set ip")

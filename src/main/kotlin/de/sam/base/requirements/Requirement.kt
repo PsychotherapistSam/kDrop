@@ -1,5 +1,6 @@
 package de.sam.base.requirements
 
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDAOFromId
@@ -107,9 +108,15 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                 }
             }
         }
+    },
+    IS_IN_SETUP_STAGE("This page can not be found", HttpStatus.NOT_FOUND) {
+        override fun isMet(ctx: Context): Boolean {
+            return true
+        }
     };
 
     open fun isMet(ctx: Context): Boolean {
         return false
     }
+
 }

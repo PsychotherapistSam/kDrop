@@ -5,6 +5,7 @@ import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.*
 import de.sam.base.pages.ChangelogPage
 import de.sam.base.pages.ErrorPage
+import de.sam.base.pages.SetupPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
@@ -157,6 +158,10 @@ class WebServer {
                         get("/edit", AdminUserEditPage(), UserRoles.ADMIN)
                     }
                 }
+            }
+            path("/setup") {
+                get("/", SetupPage(), Requirement.IS_IN_SETUP_STAGE)
+                post("/", SetupPage(), Requirement.IS_IN_SETUP_STAGE)
             }
             get("/s/{shareId}", UserSharePage(), Requirement.HAS_ACCESS_TO_SHARE)
         }

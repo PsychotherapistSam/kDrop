@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val tinylog = "2.6.2"
+val jte = "2.0.2"
+
 plugins {
     kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -23,8 +26,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.5")
     // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.3.0")
-    implementation("gg.jte:jte-kotlin:2.3.0")
+    implementation("gg.jte:jte:2.3.2")
+    implementation("gg.jte:jte-kotlin:2.3.2")
     // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
     implementation("org.jetbrains.exposed:exposed:0.17.14")
     // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
@@ -41,13 +44,12 @@ dependencies {
     implementation("com.password4j:password4j:1.7.0")
 
     // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
-    implementation("org.ocpsoft.prettytime:prettytime:5.0.4.Final")
+    implementation("org.ocpsoft.prettytime:prettytime:5.0.6.Final")
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation("commons-io:commons-io:2.11.0")
 
 
-    val tinylog = "2.6.2"
     // Tinylog
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
