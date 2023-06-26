@@ -3,6 +3,7 @@ package de.sam.base
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.*
+import de.sam.base.pages.ChangelogPage
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.admin.AdminIndexPage
 import de.sam.base.pages.admin.AdminUserEditPage
@@ -121,6 +122,7 @@ class WebServer {
                     ctx.redirect(UserLoginPage.ROUTE)
                 }
             }
+            get("/changelog", ChangelogPage())
             get("/login", UserLoginPage())
             post("/login", UserLoginPage())
             get("/registration", UserRegistrationPage())

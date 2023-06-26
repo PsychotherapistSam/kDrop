@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("gg.jte.gradle") version ("2.0.2")
+    id("gg.jte.gradle") version ("2.3.2")
     application
 }
 
@@ -16,10 +16,10 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
     // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation("io.javalin:javalin:5.4.2")
-    implementation("io.javalin:javalin-rendering:5.4.2")
+    implementation("io.javalin:javalin:5.6.1")
+    implementation("io.javalin:javalin-rendering:5.6.0")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.5")
     // https://mvnrepository.com/artifact/gg.jte/jte
@@ -31,7 +31,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.5.4")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-joda
@@ -47,7 +47,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
 
-    val tinylog = "2.6.1"
+    val tinylog = "2.6.2"
     // Tinylog
     // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
@@ -61,13 +61,17 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 
     // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:22.13.0")
+    implementation("com.stripe:stripe-java:22.21.0-beta.1")
 
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
 
+    //TODO: implement maybe
     // https://mvnrepository.com/artifact/io.konform/konform
-    implementation("io.konform:konform:0.4.0")
+    //implementation("io.konform:konform:0.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
+
+    implementation("org.jetbrains:markdown:0.4.0")
 }
 
 tasks.test {
@@ -76,11 +80,6 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }
 
 application {
@@ -130,4 +129,7 @@ tasks {
 // https://github.com/casid/jte/blob/7de70921c2832a119517cc135d387a03790645e8/DOCUMENTATION.md?plain=1#L684
 jte {
     generate()
+}
+kotlin {
+    jvmToolchain(17)
 }

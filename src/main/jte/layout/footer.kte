@@ -1,9 +1,10 @@
 @import de.sam.base.Page
 @import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.ChangelogPage
 
 @param page: Page
 
-!{val latestCommit = "e6c853fa"}
+!{val currentVersion = "v0.0.1"}
 
 @if(config.tracking != null)
     @if(config.tracking.cronitor != null)
@@ -30,7 +31,9 @@
                     <div class="right aligned column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
-                            <a class="item" href="#">${latestCommit}</a>
+                            <a class="item"
+                               href="${ChangelogPage.ROUTE}"
+                               hx-get="${ChangelogPage.ROUTE}">${currentVersion}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
@@ -42,7 +45,9 @@
                     <div class="column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
-                            <a class="item" href="#">${latestCommit}</a>
+                            <a class="item"
+                               href="${ChangelogPage.ROUTE}"
+                               hx-get="${ChangelogPage.ROUTE}">${currentVersion}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>

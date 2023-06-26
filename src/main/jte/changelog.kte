@@ -1,0 +1,36 @@
+@import de.sam.base.pages.ChangelogPage
+@import de.sam.base.config.Configuration.Companion.config
+
+@param page: ChangelogPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <h3 class="ui dividing header">${config.name} Changelog</h3>
+    <div class="ui styled accordion">
+        <div class="active title">
+            <i class="dropdown icon"></i>
+            v0.0.1 - 26 June 2023
+        </div>
+        <div class="active content">
+            <ul class="ui list">
+                <li>Added changelog page.</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.0 - 26 June 2023
+        </div>
+        <div class="content">
+            <ul class="ui list">
+                <li>Initial release using semantic versioning.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        $('.ui.accordion').accordion();
+    </script>
+`
+)
+
