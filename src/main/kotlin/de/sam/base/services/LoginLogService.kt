@@ -20,7 +20,10 @@ class LoginLogService {
 
     fun getLoginHistory(user: UserDTO): List<LoginLogDTO> {
         return transaction {
-            LoginLogDAO.find { LoginLogTable.user eq user.id }.map { it.toDTO() }
+            LoginLogDAO.find { LoginLogTable.user eq user.id }
+                .map { it.toDTO() }
+                .sortedBy { it.date }
+                .reversed()
         }
     }
 }

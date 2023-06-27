@@ -17,7 +17,7 @@ class UserLoginLogSettingsPage(private val loginLogService: LoginLogService) : P
     var loginLogList = listOf<LoginLogDTO>()
 
     override fun before() {
-        loginLogList = ArrayList<LoginLogDTO>()
+        loginLogList = ArrayList()
     }
 
     override fun get() {
