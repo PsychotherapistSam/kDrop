@@ -1,5 +1,6 @@
 package de.sam.base.config
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -24,6 +25,9 @@ class Configuration {
     var logLevel = "TRACE"
     var fileTempDirectory = File("./upload/tmp").canonicalPath
     var tracking = Tracking()
+
+    @JsonIgnore
+    var version = "v0.0.2"
 
     class Database {
         var host: String = "localhost"

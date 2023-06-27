@@ -10,9 +10,24 @@ content = @`
     <div class="ui styled accordion">
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.1 - 26 June 2023
+            v0.0.2 - 27 June 2023
         </div>
         <div class="active content">
+            <%--            <h4 class="ui dividing header">Notes</h4>--%>
+            <%--            <p>This version is not tested very well, please report any issues to an administrator.</p>--%>
+            <h4 class="ui dividing header">Changes</h4>
+            <ul class="ui list">
+                <li>Removed "new" layer from file manager context menu</li>
+                <li>Added a user <a href="/user/settings/loginHistory">login history page</a> in the settings.</li>
+            </ul>
+
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.1 - 26 June 2023
+        </div>
+        <div class="content">
+            <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
                 <li>Added changelog page.</li>
             </ul>
@@ -22,6 +37,7 @@ content = @`
             v0.0.0 - 26 June 2023
         </div>
         <div class="content">
+            <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
                 <li>Initial release using semantic versioning.</li>
             </ul>

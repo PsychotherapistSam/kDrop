@@ -4,8 +4,6 @@
 
 @param page: Page
 
-!{val currentVersion = "v0.0.1"}
-
 @if(config.tracking != null)
     @if(config.tracking.cronitor != null)
         <script async src="${config.tracking.cronitor.url}"></script>
@@ -33,7 +31,7 @@
                             <a class="item" href="#">Contact Us</a>
                             <a class="item"
                                href="${ChangelogPage.ROUTE}"
-                               hx-get="${ChangelogPage.ROUTE}">${currentVersion}</a>
+                               hx-get="${ChangelogPage.ROUTE}">${config.version}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
@@ -47,7 +45,7 @@
                             <a class="item" href="#">Contact Us</a>
                             <a class="item"
                                href="${ChangelogPage.ROUTE}"
-                               hx-get="${ChangelogPage.ROUTE}">${currentVersion}</a>
+                               hx-get="${ChangelogPage.ROUTE}">${config.version}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
