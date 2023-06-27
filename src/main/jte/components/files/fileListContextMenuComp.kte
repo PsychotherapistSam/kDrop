@@ -4,20 +4,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/dragselect@2.7.2/dist/DragSelect.min.js"></script>
 
+<%-- filemanager.js showAction --%>
 <div id="context-menu" class="context">
     <div class="ui simple compact vertical menu">
-        <div class="ui simple dropdown item context-item context-item-dropdown" data-action="new">
-            <i class="dropdown icon"></i>
-            New
-            <div class="menu">
-                <a class="item" data-action="new-folder">
-                    <i class="folder icon"></i>Folder
-                </a>
-                <%--                <a class="item" data-action="new-share">--%>
-                <%--                    <i class="share icon"></i>Share--%>
-                <%--                </a>--%>
-            </div>
-        </div>
+        <%--        <div class="ui simple dropdown item context-item context-item-dropdown" data-action="new">--%>
+        <%--            <i class="dropdown icon"></i>--%>
+        <%--            New--%>
+        <%--            <div class="menu">--%>
+        <%--              --%>
+        <%--                --%><%--                <a class="item" data-action="new-share">--%>
+        <%--                --%><%--                    <i class="share icon"></i>Share--%>
+        <%--                --%><%--                </a>--%>
+        <%--            </div>--%>
+        <%--        </div>--%>
+        <a class="item" data-action="new-folder">
+            New Folder
+            <i class="folder icon"></i>
+        </a>
         <a class="item" data-action="preview">
             Preview
             <i class="image icon"></i>

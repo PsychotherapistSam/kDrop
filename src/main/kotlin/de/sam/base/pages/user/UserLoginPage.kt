@@ -4,9 +4,10 @@ import de.sam.base.Page
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.validateLoginAttempt
+import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
 
-class UserLoginPage : Page(
+class UserLoginPage(private val loginLogService: LoginLogService) : Page(
     name = "Login",
     templateName = "user/login.kte",
 ) {
@@ -57,6 +58,8 @@ class UserLoginPage : Page(
             ctx.req().getSession(true)
 
             ctx.currentUserDTO = attempt.first
+
+            loginLogService.logLogin(ctx, attempt.first!!)
 
             if (!attempt.first?.totpSecret.isNullOrBlank()) {
                 ctx.needsToVerifyTOTP = true

@@ -316,7 +316,7 @@ function filterMenuButtons(table, target) {
 
     // the order here doesn't matter but I try to keep it in the same order as the buttons are in the menu
 
-    showAction("new");
+    // showAction("new");
     showAction("new-folder");
     showAction("share");
     showAction("download");

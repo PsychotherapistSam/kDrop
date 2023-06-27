@@ -1,5 +1,6 @@
 @import de.sam.base.Page
 @import de.sam.base.pages.user.settings.UserEditPage
+@import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 @import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 @import de.sam.base.users.UserRoles
 
@@ -13,6 +14,10 @@
     <a class="@if(page is UserTOTPSettingsPage) active @endif item"
        href="${UserTOTPSettingsPage.ROUTE}" hx-get="${UserTOTPSettingsPage.ROUTE}">
         TOTP
+    </a>
+    <a class="@if(page is UserLoginLogSettingsPage) active @endif item"
+       href="${UserLoginLogSettingsPage.ROUTE}" hx-get="${UserLoginLogSettingsPage.ROUTE}">
+        Login History
     </a>
     @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
         <a class="right item"

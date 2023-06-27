@@ -28,6 +28,7 @@ class DatabaseManager {
             SchemaUtils.create(FilesTable)
             SchemaUtils.create(DownloadLogTable)
             SchemaUtils.create(SharesTable)
+            SchemaUtils.create(LoginLogTable)
         }
     }
 }

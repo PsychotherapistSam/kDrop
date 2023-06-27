@@ -12,8 +12,10 @@ import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.*
 import de.sam.base.pages.user.settings.UserEditPage
+import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
+import de.sam.base.services.LoginLogService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.isLoggedIn
@@ -74,6 +76,8 @@ class WebServer {
 //            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
+        val loginLogService = LoginLogService()
+
         Logger.debug("Registering Javalin route handlers")
         app.events {
             it.handlerAdded { metaInfo ->
@@ -124,8 +128,8 @@ class WebServer {
                 }
             }
             get("/changelog", ChangelogPage())
-            get("/login", UserLoginPage())
-            post("/login", UserLoginPage())
+            get("/login", UserLoginPage(loginLogService))
+            post("/login", UserLoginPage(loginLogService))
             get("/registration", UserRegistrationPage())
             post("/registration", UserRegistrationPage())
             path("/user") {
@@ -134,6 +138,7 @@ class WebServer {
                     get("/totp", UserTOTPSettingsPage(), UserRoles.USER)
                     post("/totp", UserTOTPSettingsPage(), UserRoles.USER)
                     delete("/totp", UserTOTPSettingsPage(), UserRoles.USER)
+                    get("/loginHistory", UserLoginLogSettingsPage(loginLogService), UserRoles.USER)
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
