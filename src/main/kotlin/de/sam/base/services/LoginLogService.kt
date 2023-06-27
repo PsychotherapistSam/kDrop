@@ -1,6 +1,7 @@
 package de.sam.base.services
 
 import de.sam.base.database.*
+import de.sam.base.utils.realIp
 import io.javalin.http.Context
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -10,7 +11,7 @@ class LoginLogService {
         transaction {
             LoginLogDAO.new {
                 this.user = UserDAO.findById(user.id)!!
-                this.ip = ctx.ip()
+                this.ip = ctx.realIp
                 this.userAgent = ctx.userAgent()!!
                 this.date = DateTime.now()
             }
