@@ -194,7 +194,9 @@ document.addEventListener("contextmenu", function (event) {
     var isClickInsideTable = elementInsideTarget(event.target);
     if (isClickInsideTable) {
         event.preventDefault();
+        event.stopPropagation();
         showMenu(event.clientX, event.clientY, event.target.closest("tr"), document.getElementsByClassName("context-bounds")[0]);
+        return false;
     } else if (!contextMenu.contains(event.target)) { // clicked inside the menu
         hideMenu();
     }
