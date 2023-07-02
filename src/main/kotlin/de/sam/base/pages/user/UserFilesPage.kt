@@ -5,6 +5,7 @@ import de.sam.base.database.FileDAO
 import de.sam.base.database.FileDTO
 import de.sam.base.database.FilesTable
 import de.sam.base.database.toDTO
+import de.sam.base.services.FileService
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.sorting.FileSortingDirection
 import de.sam.base.utils.fileDAOFromId
@@ -16,7 +17,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.tinylog.kotlin.Logger
 
-class UserFilesPage : Page(
+class UserFilesPage(private val fileService: FileService) : Page(
     name = "My Files",
     templateName = "user/files.kte",
 ) {
@@ -31,6 +32,8 @@ class UserFilesPage : Page(
 
     var sortByName: String = FileSortingDirection.sortDirections.first().prettyName
     var sortBy: String = FileSortingDirection.sortDirections.first().name
+
+//    lateinit var rootFile: FileDTO
 
     override fun before() {
         breadcrumbs.clear()
@@ -81,6 +84,10 @@ class UserFilesPage : Page(
             }
         }
         ctx.header("HX-Push", "./?sort=${sortingDirection.name}")
+
+//        if (ctx.preferencesString!!.split(",").contains("show-usage-quota")) {
+//            rootFile = fileService.getRootFileForUser(ctx.currentUserDTO!!)!!
+//        }
 
         if (ctx.queryParam("table") != null) {
             renderTemplate = false

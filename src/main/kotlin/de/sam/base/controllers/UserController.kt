@@ -5,6 +5,7 @@ import com.password4j.Password
 import com.password4j.types.Argon2
 import de.sam.base.config.Configuration
 import de.sam.base.database.*
+import de.sam.base.services.FileService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO
@@ -20,7 +21,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.system.measureNanoTime
 
-class UserController {
+class UserController(private val fileService: FileService) {
 
     fun updateUser(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
@@ -110,7 +111,7 @@ class UserController {
             // delete all user related data
             ShareDAO.find { SharesTable.user eq user.id }.forEach { it.delete() }
 
-            FileController().deleteFileList(
+            FileController(fileService).deleteFileList(
                 FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.subList(0, 1),
                 user
             )

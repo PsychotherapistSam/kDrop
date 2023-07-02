@@ -10,6 +10,7 @@
 @import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.user.*
 @import de.sam.base.pages.user.UserFilesPage
+@import de.sam.base.utils.preferencesString
 
 @param page: Page
 
@@ -30,19 +31,28 @@
             @if(currentUser != null)
                 !{val highestRole = currentUser.getHighestRole()}
 
+                <%--@if(page.ctx.preferencesString!!.split(",").contains("show-usage-quota"))--%>
                 <a class="disabled fitted item">
                     <div class="ui horizontal labels">
                         <div class="ui label">
                             Usage
-                            <div class="detail">200 GiB/2 TiB (1%)</div>
+                            @raw
+                            <div class="detail"
+                                 _="on load fetch /api/v1/directories/root as json put `$it.sizeHR` at the start of me">
+                                / 2 TiB
+                                (1%)
+                            </div>
+                            @endraw
                         </div>
                         @if(highestRole.powerLevel > 1)
-                            <div class="ui ${highestRole.color} label">
+                            <div class=" ui ${highestRole.color} label
+                            ">
                                 ${highestRole.name}
                             </div>
                         @endif
                     </div>
                 </a>
+                <%--@endif--%>
 
                 <div class="ui dropdown item" id="menuDropdown">
                     ${currentUser.name}<i class="dropdown icon"></i>

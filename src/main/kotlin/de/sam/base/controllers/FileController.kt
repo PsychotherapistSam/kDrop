@@ -3,6 +3,7 @@ package de.sam.base.controllers
 import com.google.common.hash.Hashing
 import com.google.common.io.Files
 import de.sam.base.database.*
+import de.sam.base.services.FileService
 import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
@@ -26,7 +27,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-class FileController {
+class FileController(private val fileService: FileService) {
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
         if (ctx.header(Header.CONTENT_LENGTH) != null && ctx.header(Header.CONTENT_LENGTH)!!.toLong() > maxFileSize) {
@@ -557,6 +558,15 @@ class FileController {
             )
         )
     }
+
+    fun getRootDirectory(ctx: Context) {
+        ctx.json(
+            fileService.getRootFileForUser(ctx.currentUserDTO!!)
+                ?: throw NotFoundResponse("Root directory not found")
+        )
+
+    }
+
 }
 
 val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s

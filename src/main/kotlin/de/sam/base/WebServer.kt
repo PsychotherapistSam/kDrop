@@ -15,6 +15,7 @@ import de.sam.base.pages.user.settings.UserEditPage
 import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
+import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
@@ -77,6 +78,7 @@ class WebServer {
         }.start(config.port)
 
         val loginLogService = LoginLogService()
+        val fileService = FileService()
 
         Logger.debug("Registering Javalin route handlers")
         app.events {
@@ -142,9 +144,15 @@ class WebServer {
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
                 path("/files") {
-                    get("/", UserFilesPage(), UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE, Requirement.IS_LOGGED_IN)
+                    get(
+                        "/",
+                        UserFilesPage(fileService),
+                        UserRoles.USER,
+                        Requirement.HAS_ACCESS_TO_FILE,
+                        Requirement.IS_LOGGED_IN
+                    )
                     path("/{fileId}") {
-                        get("/", UserFilesPage(), Requirement.HAS_ACCESS_TO_FILE)
+                        get("/", UserFilesPage(fileService), Requirement.HAS_ACCESS_TO_FILE)
                         get("/shares", UserSharePage()::shareList, Requirement.HAS_ACCESS_TO_FILE)
                     }
                 }
@@ -157,7 +165,7 @@ class WebServer {
                 get("/", AdminIndexPage(), UserRoles.ADMIN)
                 path("/users") {
                     get("/", AdminUsersPage(), UserRoles.ADMIN)
-                    before("/{userId}*", UserController()::getUserParameter)
+                    before("/{userId}*", UserController(fileService)::getUserParameter)
                     path("/{userId}") {
                         get("/", AdminUserViewPage(), UserRoles.ADMIN)
                         get("/edit", AdminUserEditPage(), UserRoles.ADMIN)
@@ -182,30 +190,40 @@ class WebServer {
                 path("/users") {
                     // crud stuff
 //                    post(AuthenticationController()::registrationRequest)
-                    before("/{userId}*", UserController()::getUserParameter)
+                    before("/{userId}*", UserController(fileService)::getUserParameter)
                     path("/{userId}") {
-                        delete("/", UserController()::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
+                        delete("/", UserController(fileService)::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
                         // get(UserController()::getUser)
-                        put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
+                        put("/", UserController(fileService)::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                     }
                 }
                 path("/files") {
                     // get("/", UserController()::getFiles, UserRoles.USER)
                     // before("/", FileController()::checkFile)
-                    post("/", FileController()::uploadFile, UserRoles.USER)
-                    put("/", FileController()::getFiles, UserRoles.USER)
-                    delete("/", FileController()::deleteFiles, UserRoles.USER)
+                    post("/", FileController(fileService)::uploadFile, UserRoles.USER)
+                    put("/", FileController(fileService)::getFiles, UserRoles.USER)
+                    delete("/", FileController(fileService)::deleteFiles, UserRoles.USER)
                     // before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
-                        get("/", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
-                        put("/", FileController()::updateFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
-                        delete("/", FileController()::deleteSingleFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
+                        get("/", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
+                        put(
+                            "/",
+                            FileController(fileService)::updateFile,
+                            UserRoles.USER,
+                            Requirement.HAS_ACCESS_TO_FILE
+                        )
+                        delete(
+                            "/",
+                            FileController(fileService)::deleteSingleFile,
+                            UserRoles.USER,
+                            Requirement.HAS_ACCESS_TO_FILE
+                        )
 
-                        get("/metadata", FileController()::getFileMetadata, Requirement.HAS_ACCESS_TO_FILE)
+                        get("/metadata", FileController(fileService)::getFileMetadata, Requirement.HAS_ACCESS_TO_FILE)
 
                         post(
                             "/setAsChildren",
-                            FileController()::moveFiles,
+                            FileController(fileService)::moveFiles,
                             UserRoles.USER,
                             Requirement.HAS_ACCESS_TO_FILE,
                             UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
@@ -216,14 +234,15 @@ class WebServer {
 
                 path("/directories") {
                     //TODO: move this to the files post (uploadFile) but accept no file if it has to be a directory
-                    post("/", FileController()::createDirectory, UserRoles.USER)
+                    post("/", FileController(fileService)::createDirectory, Requirement.IS_LOGGED_IN)
+                    get("/root", FileController(fileService)::getRootDirectory, Requirement.IS_LOGGED_IN)
                 }
 
                 path("/shares") {
                     post("/", ShareController()::create, UserRoles.USER)
                     path("/{shareId}") {
                         get("/", ShareController()::getOne, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
-                        get("/download", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
+                        get("/download", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
                         delete("/", ShareController()::delete, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
                     }
 //                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)

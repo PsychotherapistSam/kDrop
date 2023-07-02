@@ -7,9 +7,6 @@
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 @import de.sam.base.utils.currentUserDTO
-@import de.sam.base.utils.preferences.Preferences
-@import de.sam.base.utils.preferencesString
-@import de.sam.base.utils.totpSecret
 @import de.sam.base.utils.toReadableTimeString
 
 @param page: UserLoginLogSettingsPage
