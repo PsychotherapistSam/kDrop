@@ -73,6 +73,6 @@ class UserSharePage : Page(
 
         ctx.header("Cache-Control", "max-age=31536000, immutable")
 
-        ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
+        ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType)
     }
 }

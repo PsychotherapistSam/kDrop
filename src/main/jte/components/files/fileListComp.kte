@@ -118,31 +118,31 @@
         <%--        @endif--%>
         @for(fileDTO in fileDTOs)
             <tr class="context-clickable"
-                data-id="${fileDTO.id.toString()}"
-                data-name="${fileDTO.name}"
-                data-folder="${fileDTO.isFolder}"
-                data-mime="${fileDTO.mimeType}">
+                data-id="${fileDTO.id!!.toString()}"
+                data-name="${fileDTO.name!!}"
+                data-folder="${fileDTO.isFolder!!}"
+                data-mime="${fileDTO.mimeType!!}">
                 <td class="collapsing">
                     <div class="ui fitted checkbox">
                         <input type="checkbox"><label>&nbsp;</label>
                     </div>
                 </td>
                 <td style="word-break: break-all;">
-                    <a href="${UserFilesPage.ROUTE}${fileDTO.id.toString()}/" class="drag-startable">
-                        @if(fileDTO.isFolder)
+                    <a href="${UserFilesPage.ROUTE}${fileDTO.id!!.toString()}/" class="drag-startable">
+                        @if(fileDTO.isFolder!!)
                             <i class="folder outline icon"></i>
                         @else
                             <i class="file outline icon"></i>
                         @endif
-                        ${fileDTO.name}
+                        ${fileDTO.name!!}
                     </a>
                 </td>
                 @if(!ctx.isMobileUser)
-                    <td class="right aligned collapsing">${fileDTO.sizeHR}</td>
+                    <td class="right aligned collapsing">${fileDTO.sizeHR!!}</td>
                 @endif
                 <td class="right aligned collapsing"
-                    data-tooltip="${fileDTO.created.toReadableTimeString()}"
-                    data-inverted="">${fileDTO.created.toRecentTimeString()}</td>
+                    data-tooltip="${fileDTO.created!!.toReadableTimeString()}"
+                    data-inverted="">${fileDTO.created!!.toRecentTimeString()}</td>
             </tr>
         @endfor
         </tbody>

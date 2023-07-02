@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <file url="file://$PROJECT_DIR$/src/main" libraries="{@uppy/screen-capture, api, dragselect, filepond, fomantic-ui, htmx.org, hyperscript.org, jquery, jquery-filepond, lg-zoom, lightbox2, lightgallery, lity, magnific-popup, photoswipe, plyr, square, uppy}" />
+  </component>
+</project>

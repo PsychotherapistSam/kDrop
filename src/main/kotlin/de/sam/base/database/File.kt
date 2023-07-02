@@ -15,26 +15,26 @@ import java.util.*
 class FileDTO(
     var id: UUID,
     var name: String,
-    var path: String,
-    var mimeType: String,
+    var path: String? = null,
+    var mimeType: String? = null,
     @JsonIgnore
-    var parent: FileDTO?,
+    var parent: UUID? = null,
     @JsonIgnore
-    var owner: UserDTO,
-    var size: Long,
-    var sizeHR: String,
-    var password: String?,
-    var created: DateTime,
-    var isFolder: Boolean,
-    var hash: String?,
-    var isRoot: Boolean,
+    var owner: UUID? = null,
+    var size: Long? = null,
+    var sizeHR: String? = null,
+    var password: String? = null,
+    var created: DateTime? = null,
+    var isFolder: Boolean? = null,
+    var hash: String? = null,
+    var isRoot: Boolean? = null,
 ) : Serializable {
     fun isOwnedByUserId(id: UUID?): Boolean {
-        return id != null && owner.id == id
+        return id != null && owner == id
     }
 
     fun getTypeEnum(): FileType {
-        return FileType.fromMimeType(mimeType)
+        return FileType.fromMimeType(mimeType!!)
     }
 
     // placeholder for functions
@@ -90,8 +90,8 @@ fun FileDAO.toDTO(): FileDTO {
         this.name,
         this.path,
         this.mimeType,
-        this.parent?.toDTO(),
-        this.owner.toDTO(),
+        this.parent?.id?.value,
+        this.owner.id.value,
         this.size,
         this.sizeHR,
         this.password,

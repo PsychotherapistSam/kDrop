@@ -214,7 +214,7 @@ class FileController(private val fileService: FileService) {
 //                }
 //            }
 
-        ctx.resultFile(systemFile, file.name, file.mimeType, dispositionType)
+        ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType)
     }
 
     fun updateFile(ctx: Context) {

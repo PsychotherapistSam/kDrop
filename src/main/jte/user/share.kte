@@ -15,11 +15,11 @@
 @template.layout.page(
 page = page,
 content = @`
-    !{val currentIsFolder = page.file == null || page.file!!.isFolder}
+    !{val currentIsFolder = page.file == null || page.file!!.isFolder!!}
     !{val fileIsOwnedByCurrentUser = page.file?.isOwnedByUserId(page.currentUserDTO?.id) == true}
 
     @if(!currentIsFolder && page.file != null)
-        <h1>${page.file!!.name}</h1>
+        <h1>${page.file!!.name!!}</h1>
     @else
         <h1>Your Files</h1>
     @endif
