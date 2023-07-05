@@ -1,7 +1,7 @@
 @import de.sam.base.database.FileDTO
 @import de.sam.base.pages.user.UserFilesPage
 
-@param breadcrumbs: ArrayList<FileDTO>
+@param breadcrumbs: List<FileDTO>
 
 @if(breadcrumbs.isNotEmpty())
     <div class="ui breadcrumb">

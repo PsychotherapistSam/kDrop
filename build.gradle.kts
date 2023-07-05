@@ -74,6 +74,15 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
 
     implementation("org.jetbrains:markdown:0.4.0")
+
+    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-core
+    implementation("org.jdbi:jdbi3-core:3.39.1")
+    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-kotlin
+    implementation("org.jdbi:jdbi3-kotlin:3.39.1")
+    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-postgres
+    implementation("org.jdbi:jdbi3-postgres:3.39.1")
+
+
 }
 
 tasks.test {

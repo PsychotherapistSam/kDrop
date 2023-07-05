@@ -23,8 +23,7 @@ class UserFilesPage(private val fileService: FileService) : Page(
     lateinit var parent: FileDTO
 
     var fileDTOs = listOf<FileDTO>()
-
-    var breadcrumbs = arrayListOf<FileDTO>()
+    var breadcrumbs = listOf<FileDTO>()
 
     var sortByName: String = FileSortingDirection.sortDirections.first().prettyName
     var sortBy: String = FileSortingDirection.sortDirections.first().name
@@ -32,7 +31,7 @@ class UserFilesPage(private val fileService: FileService) : Page(
 //    lateinit var rootFile: FileDTO
 
     override fun before() {
-        breadcrumbs.clear()
+        breadcrumbs = listOf()
     }
 
     override fun get() {
@@ -42,7 +41,7 @@ class UserFilesPage(private val fileService: FileService) : Page(
             }
 
         parent = ctx.fileDTOFromId!!
-        
+
         logTimeSpent("the breadcrumb traversal") {
             breadcrumbs = fileService.getFileBreadcrumb(parent.id)
             title = breadcrumbs.last().name + " - My Files"
