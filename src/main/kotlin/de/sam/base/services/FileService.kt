@@ -160,14 +160,18 @@ class FileService {
     }
 
     private fun calculateFolderSize(folderId: UUID): Long {
+//        val sql = """
+//        WITH RECURSIVE file_tree AS (
+//            SELECT * FROM t_files WHERE parent = CAST(:id AS uuid)
+//            UNION ALL
+//            SELECT t_files.* FROM t_files, file_tree WHERE t_files.parent = file_tree.id
+//        )
+//        SELECT SUM(size) FROM file_tree
+//    """.trimIndent()
+
         val sql = """
-        WITH RECURSIVE file_tree AS (
-            SELECT * FROM t_files WHERE parent = CAST(:id AS uuid)
-            UNION ALL
-            SELECT t_files.* FROM t_files, file_tree WHERE t_files.parent = file_tree.id
-        )
-        SELECT SUM(size) FROM file_tree
-    """.trimIndent()
+            SELECT SUM(size) FROM t_files WHERE parent = CAST(:id AS uuid);
+        """.trimIndent()
 
         return jdbi.withHandle<Long, Exception> { handle ->
             handle.createQuery(sql)

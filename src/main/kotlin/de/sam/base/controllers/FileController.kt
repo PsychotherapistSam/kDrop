@@ -465,6 +465,7 @@ class FileController(private val fileService: FileService) {
         val user = ctx.currentUserDTO!!
 
         val allFiles = arrayListOf<FileDAO>()
+        var oldParents = listOf<FileDAO?>()
         transaction {
             allFiles.addAll(FileDAO.find { FilesTable.id inList fileIDs })
         }
@@ -474,7 +475,7 @@ class FileController(private val fileService: FileService) {
                 return@transaction
             }
 
-            val oldParents = allFiles.map { it.parent }.toSet()
+            oldParents = allFiles.map { it.parent }
 
             allFiles.forEach { file ->
                 if (!file.isOwnedByUserId(user.id)) {
@@ -483,19 +484,19 @@ class FileController(private val fileService: FileService) {
 
                 file.parent = targetFile
             }
-
-            logTimeSpent("refreshing all moved files parents size") {
-                oldParents.forEach { parent ->
-                    if (parent != null) {
-                        Logger.debug("refreshing size of ${parent.name}")
-                        fileService.recalculateFolderSize(parent.id.value, user.id)
-                    }
-                }
-
-                fileService.recalculateFolderSize(targetFile.id.value, user.id)
-            }
-            ctx.json(mapOf("status" to "ok"))
         }
+
+        logTimeSpent("refreshing all moved files parents size") {
+            oldParents.forEach { parent ->
+                if (parent != null) {
+                    Logger.debug("refreshing size of ${parent.name}")
+                    fileService.recalculateFolderSize(parent.id.value, user.id)
+                }
+            }
+
+            fileService.recalculateFolderSize(targetFile!!.id.value, user.id)
+        }
+        ctx.json(mapOf("status" to "ok"))
     }
 
 
