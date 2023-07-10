@@ -1,0 +1,10 @@
+@import de.sam.base.database.FileDTO
+
+@param file: FileDTO
+
+<div class="ui label">
+    Usage
+    <div class="detail">
+        ${file.sizeHR} / 2 TiB (1%)
+    </div>
+</div>

@@ -19,6 +19,7 @@ import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
+import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
@@ -135,6 +136,10 @@ class WebServer {
             get("/registration", UserRegistrationPage())
             post("/registration", UserRegistrationPage())
             path("/user") {
+                get("/quota", { ctx ->
+                    val file = fileService.getRootFolderForUser(ctx.currentUserDTO!!.id)
+                    ctx.render("components/usageQuotaComponent.kte", Collections.singletonMap("file", file))
+                }, Requirement.IS_LOGGED_IN)
                 path("/settings") {
                     get("/", UserEditPage(), UserRoles.USER)
                     get("/totp", UserTOTPSettingsPage(), UserRoles.USER)

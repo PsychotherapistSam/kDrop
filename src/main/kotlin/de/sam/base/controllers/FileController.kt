@@ -350,25 +350,36 @@ class FileController(private val fileService: FileService) {
     }
 
     fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): List<UUID> {
-        val allFiles = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(user.id) }
-        val allFilesRecursively = fileService.getAllFilesFromFolderListRecursively(fileIDs)
-            .filter { it.isOwnedByUserId(user.id) }
-            .map { it.id }
+        val fileList = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(user.id) }
 
-        val deletedFiles = fileService.deleteFilesAndShares(allFilesRecursively)
+        val filesToDelete = fileList.toMutableList()
+
+        val folders = fileList.filter { it.isFolder }.map { it.id }
+
+        // only do recursive step on folders
+        if (folders.isNotEmpty()) {
+            val recursiveFiles =
+                fileService.getAllFilesFromFolderListRecursively(folders)
+
+            filesToDelete.addAll(recursiveFiles)
+        }
+
+        val deletedFiles = fileService.deleteFilesAndShares(filesToDelete.map { it.id })
 
         deletedFiles.forEach { file ->
             val systemFile = File("./uploads/${file.id}")
             if (systemFile.exists()) {
+                Logger.debug("Deleting file ${file.id}")
                 systemFile.delete()
             }
         }
 
-        allFiles.groupBy { it.parent }
+        fileList.groupBy { it.parent }
             .forEach { (parent) ->
                 if (parent != null) {
                     val parentFile = fileService.getFileById(parent)
                     if (parentFile != null && parentFile.isFolder) {
+                        Logger.debug("Recalculating folder size for ${parentFile.id}")
                         fileService.recalculateFolderSize(parentFile.id, user.id)
                     }
                 }
