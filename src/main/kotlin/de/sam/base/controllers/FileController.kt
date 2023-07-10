@@ -555,9 +555,7 @@ class FileController(private val fileService: FileService) {
             fileService.getRootFolderForUser(ctx.currentUserDTO!!.id)
                 ?: throw NotFoundResponse("Root directory not found")
         )
-
     }
-
 }
 
 val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s
