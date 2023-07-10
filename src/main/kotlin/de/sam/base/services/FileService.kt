@@ -1,7 +1,6 @@
 package de.sam.base.services
 
 import de.sam.base.database.FileDTO
-import de.sam.base.database.hikariDataSource
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
 import de.sam.base.utils.humanReadableByteCountBin
@@ -9,9 +8,6 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
 import org.tinylog.kotlin.Logger
-import java.sql.Connection
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
@@ -184,11 +180,11 @@ class FileService {
 
     private fun updateFolderSize(folderId: UUID, size: Long, created: DateTime): FileDTO? {
         val sql = """
-        UPDATE t_files
-        SET size = :size, size_hr = :size_hr, created = :created
-        WHERE id = CAST(:id AS uuid)
-        RETURNING *;
-    """.trimIndent()
+            UPDATE t_files
+            SET size = :size, size_hr = :size_hr, created = :created
+            WHERE id = CAST(:id AS uuid)
+            RETURNING *;
+        """.trimIndent()
 
         return jdbi.withHandle<FileDTO?, Exception> { handle ->
             handle.createUpdate(sql)
@@ -316,78 +312,28 @@ class FileService {
      * @throws FileServiceException if the files could not be fetched.
      */
     fun getAllFilesFromFolderListRecursively(fileIDs: List<UUID>): List<FileDTO> {
-        val files = arrayListOf<FileDTO>()
-
-        var connection: Connection? = null
-        var preparedStatement: PreparedStatement? = null
-        var resultSet: ResultSet? = null
-
-        try {
-            connection = hikariDataSource.connection
-            preparedStatement = connection.prepareStatement(
-                """
-                WITH RECURSIVE file_tree AS (
-                    SELECT id
-                    FROM t_files
-                    WHERE id = ANY(?)
-        
-                    UNION ALL
-        
-                    SELECT f.id
-                    FROM t_files f
-                    JOIN file_tree ft ON f.parent = ft.id
-                )
-                SELECT * FROM file_tree
-            """.trimIndent()
+        val sql = """
+            WITH RECURSIVE file_tree AS (
+                SELECT *
+                FROM t_files
+                WHERE id = ANY(?)
+    
+                UNION ALL
+    
+                SELECT f.*
+                FROM t_files f
+                JOIN file_tree ft ON f.parent = ft.id
             )
+            SELECT * FROM file_tree
+        """.trimIndent()
+        return jdbi.withHandle<List<FileDTO>, Exception> { handle ->
+            val conn = handle.jdbi.open().connection
+            val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it.toString() }.toTypedArray())
 
-            // Convert the list of UUIDs to an array of UUIDs and set that to the SQL parameter
-            val uuidArray = connection.createArrayOf("uuid", fileIDs.toTypedArray())
-            preparedStatement.setArray(1, uuidArray)
-
-            resultSet = preparedStatement.executeQuery()
-            while (resultSet.next()) {
-                files.add(
-                    FileDTO(
-                        id = UUID.fromString(resultSet.getString("id")),
-                        name = resultSet.getString("name"),
-                        path = resultSet.getString("path"),
-                        mimeType = resultSet.getString("mime_type"),
-                        parent = resultSet.getString("parent")?.let { UUID.fromString(it) },
-                        owner = UUID.fromString(resultSet.getString("owner")),
-                        size = resultSet.getLong("size"),
-                        sizeHR = resultSet.getString("size_hr"),
-                        password = resultSet.getString("password"),
-                        private = resultSet.getBoolean("private"),
-                        created = DateTime(resultSet.getTimestamp("created").time),
-                        isFolder = resultSet.getBoolean("is_folder"),
-                        hash = resultSet.getString("hash"),
-                        isRoot = resultSet.getBoolean("is_root")
-                    )
-                )
-            }
-
-        } finally {
-            resultSet?.close()
-            preparedStatement?.close()
-            connection?.close()
+            handle.createQuery(sql)
+                .bind(0, uuidArray)
+                .mapTo<FileDTO>().list()
         }
-
-        return files
-    }
-
-
-//        return try {
-//            jdbi.withHandle<List<FileDTO>, Exception> { handle ->
-//                val array = handle.connection.createArrayOf("uuid", fileIDs.toTypedArray())
-//                handle.createQuery(sql)
-//                    .bind("ids", array)
-//                    .mapTo<FileDTO>()
-//                    .list()
-//            }
-//        } catch (e: Exception) {
-//            throw FileServiceException("Could not fetch files with ids $fileIDs", e)
-//        }
     }
 
     /**
@@ -399,27 +345,31 @@ class FileService {
      */
     fun deleteFilesAndShares(fileIDs: List<UUID>): List<FileDTO> {
         val fileSql = """
-        DELETE FROM t_files
-        WHERE id = ANY(CAST(:ids AS uuid[]))
-        RETURNING *;
-    """.trimIndent()
+            DELETE FROM t_files
+            WHERE id = ANY(CAST(:ids AS uuid[]))
+            RETURNING *;
+        """.trimIndent()
 
         val sharesSql = """
-        DELETE FROM t_shares
-        WHERE file = ANY(CAST(:ids AS uuid[]));
-    """.trimIndent()
+            DELETE FROM t_shares
+            WHERE file = ANY(CAST(:ids AS uuid[]));
+        """.trimIndent()
 
         return try {
             val deletedFiles: MutableList<FileDTO> = mutableListOf()
+
             jdbi.useTransaction<Exception> { handle ->
+                val conn = handle.jdbi.open().connection
+                val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it.toString() }.toTypedArray())
+
                 // Delete shares
                 handle.createUpdate(sharesSql)
-                    .bind("ids", fileIDs.map { it.toString() })
+                    .bind("ids", uuidArray)
                     .execute()
 
                 // Delete files and get them
                 handle.createQuery(fileSql)
-                    .bind("ids", fileIDs.map { it.toString() })
+                    .bind("ids", uuidArray)
                     .mapTo<FileDTO>()
                     .list()
                     .let { deletedFiles.addAll(it) }
