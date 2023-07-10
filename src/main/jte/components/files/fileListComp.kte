@@ -70,7 +70,7 @@
                  hx-target="#fileTableBody"
                  hx-swap="outerHTML"
                  hx-select="#fileTableBody"
-                 _="${displayLoader}">
+                 _="${displayLoader} then trigger quota on #quotaLabel">
                 <i class="refresh icon"></i>
             </div>
         </div>

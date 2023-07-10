@@ -33,12 +33,19 @@
 
                 <%--@if(page.ctx.preferencesString!!.split(",").contains("show-usage-quota"))--%>
                 <a class="disabled fitted item">
-                    <div class="ui horizontal labels">
+                    <div class="ui horizontal labels"
+                         hx-get="/user/quota"
+                         hx-trigger="load,quota from:body"
+                         hx-target=".ui.label"
+                         hx-swap="outerHTML"
+                         hx-push-url="false"
+                         id="quotaLabel">
                         <div class="ui label">
                             Usage
+                            <%-- _="on htmx:afterRequest fetch /api/v1/directories/root as json put `$it.sizeHR` at the start of me" --%>
                             @raw
                             <div class="detail"
-                                 _="on load fetch /api/v1/directories/root as json put `$it.sizeHR` at the start of me">
+                            >
                                 / 2 TiB
                                 (1%)
                             </div>

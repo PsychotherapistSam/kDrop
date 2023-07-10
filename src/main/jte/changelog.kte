@@ -11,9 +11,20 @@ content = @`
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.3 - 02 July 2023
+            v0.0.4 - 10 July 2023
         </div>
         <div class="active content">
+            <h4 class="ui dividing header">Enhancements</h4>
+            <ul class="ui list">
+                <li>Improved the general speed of most file-related actions (2-10x improvements)</li>
+                <li>Improved usage quota display</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.3 - 02 July 2023
+        </div>
+        <div class="content">
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
                 <li>Fixed context menu opening on Firefox on Android.</li>
