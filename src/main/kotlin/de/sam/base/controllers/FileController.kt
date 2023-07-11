@@ -2,6 +2,7 @@ package de.sam.base.controllers
 
 import com.google.common.hash.Hashing
 import com.google.common.io.Files
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.*
 import de.sam.base.services.FileService
 import de.sam.base.utils.*
@@ -40,7 +41,7 @@ class FileController(private val fileService: FileService) {
             ctx.req()
                 .setAttribute(
                     "org.eclipse.jetty.multipartConfig",
-                    MultipartConfigElement(File("./upload/temp").absolutePath, -1, -1, 1)
+                    MultipartConfigElement(config.fileTempDirectory, -1, -1, 1)
                 )
             ctx.uploadedFiles()
         } catch (EofException: EOFException) {
@@ -58,18 +59,18 @@ class FileController(private val fileService: FileService) {
 
         jdbi.useTransaction<Exception> { handle ->
             files.forEach {
-                val uploadFolder = File("./upload/")
+                val uploadFolder = File(config.fileDirectory)
                 if (!uploadFolder.exists()) {
                     uploadFolder.mkdir()
                 }
-                val uploadTempFolder = File("./uploadTempFolder/")
+                val uploadTempFolder = File(config.fileTempDirectory)
                 if (!uploadTempFolder.exists()) {
                     uploadTempFolder.mkdir()
                 }
 
                 val temporaryFileID = UUID.randomUUID()
 
-                val temporaryFile = File("./uploadTempFolder/${temporaryFileID}")
+                val temporaryFile = File("${config.fileTempDirectory}/${temporaryFileID}")
 
                 logTimeSpent("downloading the file from the user") {
                     FileUtil.streamToFile(it.content(), temporaryFile.path)
@@ -100,7 +101,7 @@ class FileController(private val fileService: FileService) {
                 )
 
                 // move file to upload folder with database id
-                val targetFile = File("./upload/${createdFile.id}")
+                val targetFile = File("${config.fileDirectory}/${createdFile.id}")
                 temporaryFile.renameTo(targetFile)
 
                 idMap[createdFile.name] = createdFile.id
@@ -131,7 +132,7 @@ class FileController(private val fileService: FileService) {
             ?: throw NotFoundResponse("File not found") // if not throw an error
                 .also { Logger.error(it.message) }
 
-        val systemFile = File("./upload/${file.id}")
+        val systemFile = File("${config.fileDirectory}/${file.id}")
         if (!systemFile.exists()) {
             throw NotFoundResponse("File not found")
         }
@@ -199,7 +200,7 @@ class FileController(private val fileService: FileService) {
                 // add all files and subfolders recursively
                 fileList.addAll(getChildren(file, ctx.currentUserDTO!!, file.name + "/"))
             } else {
-                val systemFile = File("./${file.path}")
+                val systemFile = File("${config.fileDirectory}/${file.id}")
                 if (systemFile.exists()) {
                     fileList.add(Pair(systemFile, file.name))
                 }
@@ -223,7 +224,7 @@ class FileController(private val fileService: FileService) {
 //            }
 //        }
 
-        val tempZipFile = File("./upload/temp/${UUID.randomUUID()}.zip")
+        val tempZipFile = File("${config.fileTempDirectory}/${UUID.randomUUID()}.zip")
 
         Logger.debug("Zipping ${fileList.size} files to ${tempZipFile.absolutePath}")
 
@@ -274,7 +275,7 @@ class FileController(private val fileService: FileService) {
             if (child.isFolder) {
                 children.addAll(getChildren(child, user, namePrefix + child.name + "/"))
             }
-            val systemFile = File("./${child.path}")
+            val systemFile = File("${config.fileDirectory}/${child.id}")
             if (systemFile.exists()) {
                 children.add(Pair(systemFile, namePrefix + child.name))
             }
@@ -367,7 +368,7 @@ class FileController(private val fileService: FileService) {
         val deletedFiles = fileService.deleteFilesAndShares(filesToDelete.map { it.id })
 
         deletedFiles.forEach { file ->
-            val systemFile = File("./uploads/${file.id}")
+            val systemFile = File("${config.fileDirectory}/${file.id}")
             if (systemFile.exists()) {
                 Logger.debug("Deleting file ${file.id}")
                 systemFile.delete()

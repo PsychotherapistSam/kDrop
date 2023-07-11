@@ -40,6 +40,7 @@ import java.util.*
 
 
 class WebServer {
+
     fun start() {
         Logger.debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->

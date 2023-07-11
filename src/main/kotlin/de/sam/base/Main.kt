@@ -1,6 +1,7 @@
 package de.sam.base
 
 import com.stripe.Stripe
+import de.sam.base.actions.FileCleanupAction
 import de.sam.base.actions.FileParityCheck
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.DatabaseManager
@@ -31,5 +32,8 @@ fun main(args: Array<String>) {
 
     logTimeSpent("Checking for files that do not exist in the database") {
         FileParityCheck().checkIfLocalFilesExistInDatabase()
+    }
+    logTimeSpent("Cleaning up temporary files") {
+        FileCleanupAction().cleanup()
     }
 }

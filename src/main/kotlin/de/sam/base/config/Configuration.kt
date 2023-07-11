@@ -23,7 +23,8 @@ class Configuration {
     var allowUserRegistration: Boolean = false
     var devEnvironment = true
     var logLevel = "TRACE"
-    var fileTempDirectory = File("./upload/tmp").canonicalPath
+    var fileDirectory = File("./upload").canonicalPath
+    var fileTempDirectory = File("./upload_temp").canonicalPath
     var tracking = Tracking()
 
     @JsonIgnore

@@ -1,5 +1,6 @@
 package de.sam.base.actions
 
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.isValidUUID
 import de.sam.base.database.FileDAO
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -9,7 +10,7 @@ import java.util.*
 class FileParityCheck {
     fun checkIfLocalFilesExistInDatabase() {
         transaction {
-            val localFilesList = File("./upload")
+            val localFilesList = File(config.fileDirectory)
                 .walk()
                 .toList()
                 .map { it.name }
@@ -24,7 +25,7 @@ class FileParityCheck {
 
             filesNotInDB.forEach {
                 println("File $it does not exist in the database, deleting it locally...")
-                File("./upload/$it").delete()
+                File("${config.fileDirectory}/$it").delete()
             }
         }
     }
