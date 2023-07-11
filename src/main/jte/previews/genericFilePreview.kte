@@ -81,7 +81,7 @@
             </tr>
             <tr>
                 <td>SHA512</td>
-                <td style="word-break: break-all;">${file.hash!! ?: "not yet computed"}</td>
+                <td style="word-break: break-all;">${file.hash ?: "not yet computed"}</td>
             </tr>
             </tbody>
         </table>

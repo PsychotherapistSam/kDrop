@@ -205,8 +205,8 @@ class FileService {
 
     fun createFile(handle: Handle, file: FileDTO): FileDTO {
         val sql = """
-        INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, private, created, is_folder, is_root)
-        VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :private, :created, :is_folder, :is_root)
+        INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, private, created, is_folder, hash, is_root)
+        VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :private, :created, :is_folder, :hash, :is_root)
         RETURNING *;
     """.trimIndent()
 
@@ -224,6 +224,7 @@ class FileService {
                 .bind("private", file.private)
                 .bind("created", file.created?.toDate())
                 .bind("is_folder", file.isFolder)
+                .bind("hash", file.hash)
                 .bind("is_root", file.isRoot)
                 .executeAndReturnGeneratedKeys()
                 .mapTo<FileDTO>()
@@ -246,7 +247,7 @@ class FileService {
             UPDATE t_files
             SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
                 owner = CAST(:owner AS uuid), size = :size, size_hr = :size_hr, password = :password, 
-                private = :private, created = :created, is_folder = :is_folder, is_root = :is_root
+                private = :private, created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
             WHERE id = CAST(:id AS uuid)
             RETURNING *;
         """.trimIndent()
@@ -266,6 +267,7 @@ class FileService {
                     .bind("private", file.private)
                     .bind("created", file.created?.toDate())
                     .bind("is_folder", file.isFolder)
+                    .bind("hash", file.hash)
                     .bind("is_root", file.isRoot)
                     .executeAndReturnGeneratedKeys()
                     .mapTo<FileDTO>()
