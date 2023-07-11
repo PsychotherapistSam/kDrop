@@ -131,7 +131,7 @@ class FileController(private val fileService: FileService) {
             ?: throw NotFoundResponse("File not found") // if not throw an error
                 .also { Logger.error(it.message) }
 
-        val systemFile = File("./${file.path}")
+        val systemFile = File("./upload/${file.id}")
         if (!systemFile.exists()) {
             throw NotFoundResponse("File not found")
         }
