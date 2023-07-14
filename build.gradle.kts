@@ -7,6 +7,7 @@ plugins {
     kotlin("jvm") version "1.8.0"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("gg.jte.gradle") version ("2.3.2")
+    id("com.gorylenko.gradle-git-properties") version "2.4.1"
     application
 }
 
@@ -134,6 +135,7 @@ tasks {
     }
     processResources {
         dependsOn(generateJte)
+        dependsOn(generateGitProperties)
     }
 }
 
