@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.10")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")
     // https://mvnrepository.com/artifact/io.javalin/javalin
     implementation("io.javalin:javalin:5.6.1")
     implementation("io.javalin:javalin-rendering:5.6.0")
@@ -72,7 +72,7 @@ dependencies {
     //TODO: implement maybe
     // https://mvnrepository.com/artifact/io.konform/konform
     //implementation("io.konform:konform:0.4.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-RC")
 
     implementation("org.jetbrains:markdown:0.4.0")
 

@@ -33,5 +33,6 @@ object Session {
 
         // Sessions are valid for 5 days
         maxInactiveInterval = 60 * 60 * 24 * 5 // 5 days
+        sessionCookieConfig.maxAge = 60 * 60 * 24 * 30 // 30 days
     }
 }
