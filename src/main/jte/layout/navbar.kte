@@ -43,13 +43,9 @@
                         <div class="ui label">
                             Usage
                             <%-- _="on htmx:afterRequest fetch /api/v1/directories/root as json put `$it.sizeHR` at the start of me" --%>
-                            @raw
-                            <div class="detail"
-                            >
-                                / 2 TiB
-                                (1%)
+                            <div class="detail">
+                                0.00 B
                             </div>
-                            @endraw
                         </div>
                         @if(highestRole.powerLevel > 1)
                             <div class=" ui ${highestRole.color} label

@@ -5,6 +5,6 @@
 <div class="ui label">
     Usage
     <div class="detail">
-        ${file.sizeHR} / 2 TiB (1%)
+        ${file.sizeHR}
     </div>
 </div>
