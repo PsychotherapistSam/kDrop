@@ -17,7 +17,9 @@ import org.tinylog.kotlin.Logger
 import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.lang.Thread.sleep
+import java.nio.file.StandardCopyOption
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
@@ -76,6 +78,13 @@ class FileController(private val fileService: FileService) {
                     FileUtil.streamToFile(it.content(), temporaryFile.path)
                 }
 
+                // log error if temporary file could not be written
+                if (!temporaryFile.exists()) {
+                    Logger.error("Temporary file ${temporaryFile.path} could not be written")
+                } else {
+                    Logger.debug("Temporary file ${temporaryFile.path} written")
+                }
+
                 val hash = logTimeSpent("hashing file") {
                     temporaryFile.sha512()
                 }
@@ -102,7 +111,25 @@ class FileController(private val fileService: FileService) {
 
                 // move file to upload folder with database id
                 val targetFile = File("${config.fileDirectory}/${createdFile.id}")
-                temporaryFile.renameTo(targetFile)
+
+                try {
+                    java.nio.file.Files.move(
+                        temporaryFile.toPath(),
+                        targetFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING
+                    )
+                } catch (e: IOException) {
+                    Logger.error("Target file ${targetFile.path} could not be moved")
+
+                    // delete the file from the database
+                    fileService.deleteFilesAndShares(listOf(createdFile.id))
+
+                    // delete the temporary file
+                    temporaryFile.delete()
+
+                    throw BadRequestResponse("Target file could not be moved")
+                }
+                Logger.debug("Target file ${targetFile.path} moved")
 
                 idMap[createdFile.name] = createdFile.id
             }
