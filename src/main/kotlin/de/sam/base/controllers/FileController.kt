@@ -378,6 +378,10 @@ class FileController(private val fileService: FileService) {
     }
 
     fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): List<UUID> {
+        if (fileIDs.isEmpty()) {
+            return emptyList()
+        }
+
         val fileList = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(user.id) }
 
         val filesToDelete = fileList.toMutableList()

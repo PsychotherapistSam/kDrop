@@ -112,9 +112,10 @@ class UserController(private val fileService: FileService) {
             ShareDAO.find { SharesTable.user eq user.id }.forEach { it.delete() }
 
             FileController(fileService).deleteFileList(
-                FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.subList(0, 1),
+                FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.take(1),
                 user
             )
+
             FileDAO.find { FilesTable.owner eq user.id }.forEach { it.delete() }
 
             UserDAO
