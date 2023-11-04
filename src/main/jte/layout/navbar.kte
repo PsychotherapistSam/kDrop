@@ -27,8 +27,6 @@
         <!--Start: Desktop Nav-->
         <a class="header item" href="${UserFilesPage.ROUTE}">${config.name}</a>
         <a class="@if(page is UserFilesPage) active @endif item" href="${UserFilesPage.ROUTE}">My Files</a>
-        <a class="@if(page is UserSharesPage) active @endif item" href="${UserSharesPage.ROUTE}"
-           hx-get="${UserSharesPage.ROUTE}">Shared Links</a>
 
         <div class="right menu">
             @if(currentUser != null)
@@ -72,8 +70,8 @@
                             My Files
                         </a>
                         <a class="@if(page is UserSharesPage) active @endif item"
-                           href="${UserSharesPage.ROUTE}">
-                            <i class="folder icon"></i>
+                           href="${UserSharesPage.ROUTE}" hx-get="${UserSharesPage.ROUTE}">
+                            <i class="share icon"></i>
                             Shared Links
                         </a>
                         <a class="@if(page is UserEditPage) active @endif item"
