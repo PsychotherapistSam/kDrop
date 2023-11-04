@@ -589,6 +589,24 @@ class FileController(private val fileService: FileService) {
                 ?: throw NotFoundResponse("Root directory not found")
         )
     }
+
+    fun performFileSearch(ctx: Context) {
+        val query = ctx.queryParam("q")
+
+        if (query.isNullOrBlank()) {
+            ctx.render("components/search/empty.kte")
+            return
+        }
+
+        val files = fileService.searchFiles(ctx.currentUserDTO!!.id, query.trim())
+
+        if (files.isEmpty()) {
+            ctx.render("components/search/failed.kte")
+            return
+        }
+
+        ctx.render("components/search/results.kte", Collections.singletonMap("files", files))
+    }
 }
 
 val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s

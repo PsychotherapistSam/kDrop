@@ -1,0 +1,31 @@
+@import de.sam.base.database.FileDTO
+@import de.sam.base.utils.toReadableTimeString
+@import de.sam.base.utils.toRecentTimeString
+
+@param files: List<FileDTO>
+
+
+<table class="ui unstackable selectable table" id="fileTable">
+    <tbody>
+    @for(file in files)
+        <tr data-id="398010fe-a064-4ef2-af9e-e69f5d13b52a" data-name="&quot;Bookmarks&quot;" data-folder="true">
+            <td style="word-break: break-all;">
+                <a href="/user/files/${file.id.toString()}" tabindex="${files.indexOf(file)+1}">
+                    @if(file.isFolder)
+                        <i class="folder outline icon"></i>
+                    @else
+                        <i class="file outline icon"></i>
+                    @endif
+                    ${file.name}
+                </a>
+            </td>
+            <td class="right aligned collapsing">${file.sizeHR}</td>
+            <td class="right aligned collapsing"
+                data-tooltip="${file.created!!.toReadableTimeString()}"
+                data-inverted="">${file.created!!.toRecentTimeString()}</td>
+        </tr>
+    @endfor
+    </tbody>
+</table>
+
+

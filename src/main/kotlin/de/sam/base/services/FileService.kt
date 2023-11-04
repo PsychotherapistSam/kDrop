@@ -387,4 +387,33 @@ class FileService {
         }
     }
 
+    /**
+     * Searches for files with a given query belonging to a specific user.
+     *
+     * @param userId The UUID of the user whose files to search for.
+     * @param query The search query to match against the file names.
+     * @return A list of FileDTO objects that match the given query.
+     * @throws FileServiceException If an error occurs while searching for files.
+     */
+    fun searchFiles(userId: UUID, query: String, limit: Int = 15): List<FileDTO> {
+        val sql = """
+            SELECT * FROM t_files
+            WHERE owner = CAST(:owner AS uuid)
+            AND name ILIKE :query
+            AND is_root = false;
+        """.trimIndent()
+
+        return try {
+            jdbi.withHandle<List<FileDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("owner", userId.toString())
+                    .bind("query", "%$query%")
+                    .mapTo<FileDTO>()
+                    .list()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Error searching files for user with ID $userId and query $query", e)
+        }
+    }
+
 }

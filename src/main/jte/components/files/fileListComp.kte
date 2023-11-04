@@ -73,6 +73,10 @@
                  _="${displayLoader} then trigger quota on #quotaLabel">
                 <i class="refresh icon"></i>
             </div>
+            <div class="ui secondary compact icon button"
+                 id="refreshButton" onclick="showSearchModal()">
+                <i class="search icon"></i>
+            </div>
         </div>
     </div>
     <table class="ui unstackable table context-bounds" id="fileTable">

@@ -372,3 +372,46 @@
         $('#shareCreationModal').modal('hide');
     }
 </script>
+
+<div hx-ext="loading-states" class="ui small modal" id="searchModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Search for Items
+    </div>
+    <div class="content" data-loading-states>
+        <div class="ui fluid icon input">
+            <input name="q" type="text" placeholder="Type to search..." hx-get="/user/search"
+                   hx-trigger="keyup changed delay:250ms, search, load" hx-target="#search-results"
+                   tabindex="1">
+            <i class="search icon"></i>
+        </div>
+        <div class="ui basic fitted segment" data-loading-class="loading"
+             style="min-height: 150px; max-height: 350px; overflow-y: auto;" id="search-results">
+            <div class="ui placeholder segment">
+                <div class="ui icon header">
+                    <i class="search icon"></i>
+                    Enter a search term to begin
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function showSearchModal() {
+        // check if modal is open
+        if ($('#searchModal').hasClass('visible')) {
+            return false;
+        }
+        $('#searchModal').modal({
+            duration: 250,
+            allowMultiple: false
+        }).modal('show');
+        // focus the search input
+        $('#searchModal').find("input[name=q]").first().focus()
+        return true;
+    }
+
+    function hideSearchModal() {
+        $('#searchModal').modal('hide');
+    }
+</script>

@@ -1,0 +1,6 @@
+<div class="ui placeholder segment">
+    <div class="ui icon header">
+        <i class="exclamation mark icon"></i>
+        No files could be found with the term you searched for.
+    </div>
+</div>

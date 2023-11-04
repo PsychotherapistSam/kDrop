@@ -149,6 +149,7 @@ class WebServer {
                     get("/loginHistory", UserLoginLogSettingsPage(loginLogService), UserRoles.USER)
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
+                get("/search", FileController(fileService)::performFileSearch, UserRoles.USER)
                 path("/files") {
                     get(
                         "/",

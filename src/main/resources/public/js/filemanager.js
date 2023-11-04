@@ -574,3 +574,11 @@ function deselectRow(row) {
 function getAllRows() {
     return ds.getSelectables();
 }
+
+// Search Modal
+document.addEventListener('keydown', function (event) {
+    if (event.ctrlKey && event.key === 'k') {
+        event.preventDefault();
+        showSearchModal()
+    }
+});
