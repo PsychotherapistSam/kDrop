@@ -593,7 +593,7 @@ class FileController(private val fileService: FileService) {
     fun performFileSearch(ctx: Context) {
         val query = ctx.queryParam("q")
 
-        if (query.isNullOrBlank()) {
+        if (query.isNullOrBlank() || query.length < 3) {
             ctx.render("components/search/empty.kte")
             return
         }

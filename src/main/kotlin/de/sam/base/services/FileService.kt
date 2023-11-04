@@ -395,12 +395,13 @@ class FileService {
      * @return A list of FileDTO objects that match the given query.
      * @throws FileServiceException If an error occurs while searching for files.
      */
-    fun searchFiles(userId: UUID, query: String, limit: Int = 15): List<FileDTO> {
+    fun searchFiles(userId: UUID, query: String, limit: Int = 25): List<FileDTO> {
         val sql = """
             SELECT * FROM t_files
             WHERE owner = CAST(:owner AS uuid)
             AND name ILIKE :query
-            AND is_root = false;
+            AND is_root = false
+            LIMIT :limit;
         """.trimIndent()
 
         return try {
@@ -408,6 +409,7 @@ class FileService {
                 handle.createQuery(sql)
                     .bind("owner", userId.toString())
                     .bind("query", "%$query%")
+                    .bind("limit", limit)
                     .mapTo<FileDTO>()
                     .list()
             }
