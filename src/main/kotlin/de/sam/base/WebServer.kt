@@ -17,6 +17,7 @@ import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
 import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
+import de.sam.base.services.ShareService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.currentUserDTO
@@ -81,6 +82,7 @@ class WebServer {
 
         val loginLogService = LoginLogService()
         val fileService = FileService()
+        val shareService = ShareService()
 
         Logger.debug("Registering Javalin route handlers")
         app.events {
@@ -149,6 +151,7 @@ class WebServer {
                     get("/loginHistory", UserLoginLogSettingsPage(loginLogService), UserRoles.USER)
                 }
                 get("/payment", UserPaymentPage(), UserRoles.USER)
+                get("/shares", UserSharesPage(shareService), UserRoles.USER)
                 get("/search", FileController(fileService)::performFileSearch, UserRoles.USER)
                 path("/files") {
                     get(

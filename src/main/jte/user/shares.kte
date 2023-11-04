@@ -1,0 +1,64 @@
+@import de.sam.base.pages.user.UserLoginPage
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.database.ShareDTO
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.pages.user.UserSharesPage
+@import de.sam.base.utils.toReadableTimeString
+@import de.sam.base.utils.toRecentTimeString
+
+@param page: UserSharesPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <h1>My Shared Links</h1>
+    <div class="ui relaxed list" style="margin-bottom: unset">
+        @for(share in page.shares)
+            <div class="item" data-id="${share.id.toString()}">
+                <div class="right floated content">
+                    <div class="ui compact red shareDelete button">Delete</div>
+                </div>
+                <div class="content">
+                    @if(share.vanityName != null)
+                        <a class="header" href="/s/${share.vanityName}" target="_blank">${share.vanityName}</a>
+                    @else
+                        <a class="header" href="/s/${share.id.toString()}" target="_blank">${share.id.toString()}</a>
+                    @endif
+                    <div class="description">
+                        <span
+                                data-tooltip="${share.creationDate.toReadableTimeString()}"
+                                data-inverted="">
+                            Created ${share.creationDate.toRecentTimeString()}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        @endfor
+    </div>
+
+    <script>
+        $(".shareDelete").click(function (e) {
+            const element = e.target;
+
+            $(element).addClass("loading");
+
+            const id = $(element).closest(".item").attr("data-id");
+            const fileId = $(element).closest(".modal").attr("data-file-id");
+
+            $.ajax({
+                url: "/api/v1/shares/" + id,
+                method: "DELETE",
+                success: function () {
+                    $(element).removeClass("loading");
+                    $(element).closest(".item").remove();
+                    $('body').toast({
+                        class: 'success',
+                        message: 'Deleted share successfully'
+                    });
+                }
+            });
+        });
+    </script>
+`
+)
+

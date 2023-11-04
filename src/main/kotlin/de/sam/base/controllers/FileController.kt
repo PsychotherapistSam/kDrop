@@ -155,7 +155,7 @@ class FileController(private val fileService: FileService) {
         //TODO: this using a context extension
 
         val file = ctx.fileDTOFromId
-            ?: fileService.getFileById(ctx.share!!.second.file.id)
+            ?: fileService.getFileById(ctx.share!!.second.file)
             ?: throw NotFoundResponse("File not found") // if not throw an error
                 .also { Logger.error(it.message) }
 

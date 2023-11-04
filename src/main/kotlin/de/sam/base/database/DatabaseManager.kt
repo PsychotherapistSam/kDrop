@@ -34,6 +34,7 @@ class DatabaseManager {
         jdbi = Jdbi.create(hikariDataSource)
         jdbi.installPlugin(PostgresPlugin())
         jdbi.registerRowMapper(FileDTOMapper())
+        jdbi.registerRowMapper(ShareDTOMapper())
         jdbi.registerArrayType(UUID::class.java, "uuid")
         jdbi.registerArgument(PgArrayFactory())
 
