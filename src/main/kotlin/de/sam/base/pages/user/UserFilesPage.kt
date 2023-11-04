@@ -35,10 +35,9 @@ class UserFilesPage(private val fileService: FileService) : Page(
     }
 
     override fun get() {
-        val sortingDirection =
-            FileSortingDirection.sortDirections.first {
-                it.name == (ctx.queryParam("sort") ?: "name")
-            }
+        val sortingDirection = FileSortingDirection.sortDirections.first {
+            it.name == (ctx.queryParam("sort") ?: "name")
+        }
 
         parent = ctx.fileDTOFromId!!
 
@@ -54,8 +53,8 @@ class UserFilesPage(private val fileService: FileService) : Page(
                         throw NotFoundResponse("File not found")
                     }
                     logTimeSpent("getting the file list") {
-                        fileDTOs = fileService.getFolderContentForUser(ctx.currentUserDTO!!.id, parent.id)
-                            .sortedWith { a, b ->
+                        fileDTOs =
+                            fileService.getFolderContentForUser(parent.id, ctx.currentUserDTO!!.id).sortedWith { a, b ->
                                 sortingDirection.compare(a, b)
                                 //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
                                 // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
@@ -75,8 +74,7 @@ class UserFilesPage(private val fileService: FileService) : Page(
         if (ctx.queryParam("table") != null) {
             renderTemplate = false
             ctx.render(
-                "components/files/fileListComp.kte",
-                mapOf(
+                "components/files/fileListComp.kte", mapOf(
                     "fileDTOs" to fileDTOs,
                     "sortBy" to sortBy,
                     "sortByName" to sortByName,

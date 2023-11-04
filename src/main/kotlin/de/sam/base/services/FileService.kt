@@ -85,7 +85,7 @@ class FileService {
      * @return A list of FileDTO objects representing the contents of the folder.
      * @throws FileServiceException If there is an error fetching the folder contents.
      */
-    fun getFolderContentForUser(userId: UUID, folderId: UUID): List<FileDTO> {
+    fun getFolderContentForUser(folderId: UUID, userId: UUID): List<FileDTO> {
         val sql = """
             SELECT * FROM t_files WHERE owner = CAST(:userId AS uuid) 
             AND parent = CAST(:folderId AS uuid);
