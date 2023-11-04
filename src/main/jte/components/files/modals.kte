@@ -376,7 +376,7 @@
 <div hx-ext="loading-states" class="ui small modal" id="searchModal">
     <i class="close icon"></i>
     <div class="header">
-        Search for Items
+        Search for Files
     </div>
     <div class="content" data-loading-states>
         <div class="ui fluid icon input">
