@@ -12,13 +12,22 @@ import okhttp3.Request
 class Captcha {
     companion object {
         private val captchaServiceUrlMap = mapOf(
-            "recaptcha" to "https://www.google.com/recaptcha/api/siteverify"
+            "recaptcha" to Pair("https://www.google.com/recaptcha/api/siteverify", "g-recaptcha-response"),
+            "turnstile" to Pair("https://challenges.cloudflare.com/turnstile/v0/siteverify", "cf-turnstile-response")
         )
+
+        private fun getServicePair(ctx: Context): Pair<String, String>? {
+            return captchaServiceUrlMap.values.firstOrNull { ctx.formParam(it.second) != null }
+        }
 
         fun validate(ctx: Context): List<String> {
             val errors = arrayListOf<String>()
+
+            val (verifyUrl, formKey) = getServicePair(ctx)
+                ?: throw InternalServerErrorResponse("Unknown captcha service")
+
             val captchaSolution =
-                ctx.formParamAsClass<String>("g-recaptcha-response")
+                ctx.formParamAsClass<String>(formKey)
                     .allowNullable()
                     .check({ it != null && it.isNotBlank() }, "Solving the captcha is required")
 
@@ -30,15 +39,11 @@ class Captcha {
             val client = OkHttpClient()
 
             val request = Request.Builder()
-                .url(
-                    captchaServiceUrlMap[Configuration.config.captcha!!.service.lowercase()]
-                        ?: throw InternalServerErrorResponse("Unknown captcha service")
-                )
+                .url(verifyUrl)
                 .post(
                     FormBody.Builder()
                         .add("secret", Configuration.config.captcha!!.secretKey)
                         .add("response", captchaSolution.get() ?: "")
-                        //                            .add("sitekey", "10000000-ffff-ffff-ffff-000000000001")
                         .build()
                 )
                 .build()
@@ -56,6 +61,5 @@ class Captcha {
             }
             return errors
         }
-
     }
 }

@@ -4,6 +4,7 @@ import com.password4j.Password
 import de.sam.base.Page
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
+import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.controllers.AuthenticationController.Companion.argon2Instance
 import de.sam.base.controllers.validateRegistrationAttempt
 import de.sam.base.database.FileDAO
@@ -53,17 +54,12 @@ class UserRegistrationPage : Page(
             val username = ctx.formParam("username")
             val password = ctx.formParam("password")
 
-            if (Configuration.config.captcha != null && Configuration.config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
-                when (Configuration.config.captcha!!.service.lowercase()) {
-                    "recaptcha" -> {
-                        val captchaErrors = Captcha.validate(ctx)
-                        if (captchaErrors.isNotEmpty()) {
-                            //TODO: reset username field if captcha is not valid
-                            lastTryUsername = username ?: ""
-                            errors.addAll(captchaErrors)
-                            return@prolongAtLeast
-                        }
-                    }
+            if (config.captcha != null && config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
+                val captchaErrors = Captcha.validate(ctx)
+                if (captchaErrors.isNotEmpty()) {
+                    lastTryUsername = username ?: ""
+                    errors.addAll(captchaErrors)
+                    return@prolongAtLeast
                 }
             }
 

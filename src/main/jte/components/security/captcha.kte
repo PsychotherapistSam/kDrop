@@ -1,0 +1,26 @@
+@import de.sam.base.config.Configuration.Companion.config
+
+@param location: String
+
+@if(config.captcha != null && config.captcha!!.locations.contains(location))
+    @if (config.captcha!!.service == "recaptcha")
+        <div class="field">
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+            <div class="g-recaptcha" data-sitekey="${config.captcha!!.siteKey}"></div>
+        </div>
+    @elseif (config.captcha!!.service == "turnstile")
+    <%-- Script needs to be manually invoked / ran like this, and can not be ran like recaptcha because of htmx --%>
+        <div class="field">
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+            <div id="turnstile-container"></div>
+        </div>
+        <script>
+            turnstile.ready(function () {
+                turnstile.render('#turnstile-container', {
+                    sitekey: '${config.captcha!!.siteKey}',
+                    theme: 'light',
+                });
+            });
+        </script>
+    @endif
+@endif

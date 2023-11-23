@@ -32,16 +32,11 @@ class UserLoginPage(private val loginLogService: LoginLogService) : Page(
             }
 
             if (config.captcha != null && config.captcha!!.locations.contains("login")) {
-                when (config.captcha!!.service.lowercase()) {
-                    "recaptcha" -> {
-                        val captchaErrors = Captcha.validate(ctx)
-                        if (captchaErrors.isNotEmpty()) {
-                            //TODO: reset username field if captcha is not valid
-                            lastTryUsername = ctx.formParam("username") ?: ""
-                            errors.addAll(captchaErrors)
-                            return@prolongAtLeast
-                        }
-                    }
+                val captchaErrors = Captcha.validate(ctx)
+                if (captchaErrors.isNotEmpty()) {
+                    lastTryUsername = ctx.formParam("username") ?: ""
+                    errors.addAll(captchaErrors)
+                    return@prolongAtLeast
                 }
             }
 

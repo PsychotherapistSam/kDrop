@@ -35,12 +35,7 @@ content = @`
                     <input type="password" name="password" id="password" placeholder="Password"
                            tabindex="2">
                 </div>
-                @if(config.captcha != null && config.captcha!!.locations.contains("login"))
-                    <div class="field">
-                        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-                        <div class="g-recaptcha" data-sitekey="${config.captcha!!.siteKey}"></div>
-                    </div>
-                @endif
+                @template.components.security.captcha("login")
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">
