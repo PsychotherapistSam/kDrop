@@ -5,10 +5,10 @@
 @param files: List<FileDTO>
 
 
-<table class="ui unstackable selectable table" id="fileTable">
+<table class="ui unstackable selectable table">
     <tbody>
     @for(file in files)
-        <tr data-id="398010fe-a064-4ef2-af9e-e69f5d13b52a" data-name="&quot;Bookmarks&quot;" data-folder="true">
+        <tr>
             <td style="word-break: break-all;">
                 <a href="/user/files/${file.id.toString()}" tabindex="${files.indexOf(file)+1}">
                     @if(file.isFolder)
