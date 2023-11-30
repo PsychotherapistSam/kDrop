@@ -2,7 +2,10 @@ package de.sam.base
 
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.controllers.*
+import de.sam.base.controllers.AuthenticationController
+import de.sam.base.controllers.FileController
+import de.sam.base.controllers.ShareController
+import de.sam.base.controllers.UserController
 import de.sam.base.pages.ChangelogPage
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.SetupPage
@@ -45,17 +48,12 @@ class WebServer {
     fun start() {
         Logger.debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->
-            // javalinConfig.enableWebjars()
-
-            // register jte.gg template renderer
             JavalinJte.init(createTemplateEngine())
-            // for uuid validation
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
             javalinConfig.jetty.sessionHandler { Session.sqlSessionHandler(config.devEnvironment) }
             javalinConfig.plugins.register(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
 
-            // limit to one instance per webserver
             val customAccessManager = CustomAccessManager()
 
             javalinConfig.accessManager(customAccessManager::manage)
@@ -66,18 +64,13 @@ class WebServer {
             javalinConfig.staticFiles.add {
                 it.hostedPath = "/"
                 it.directory = "/public"
-                it.location = Location.CLASSPATH // Location.CLASSPATH (jar) or Location.EXTERNAL (file system)
-                it.precompress = false // if the files should be pre-compressed and cached in memory (optimization)
-                it.aliasCheck = null // you can configure this to enable symlinks (= ContextHandler.ApproveAliases())
+                it.location = Location.CLASSPATH
+                it.precompress = true
+                it.aliasCheck = null
             }
-
-
-            // dos with large files
-//            javalinConfig.autogenerateEtags = false
 
             val jackson = JavalinJackson.defaultMapper().apply { registerModule(JodaModule()) }
             javalinConfig.jsonMapper(JavalinJackson(jackson))
-//            javalinConfig.enableCorsForAllOrigins()
         }.start(config.port)
 
         val loginLogService = LoginLogService()
@@ -117,10 +110,6 @@ class WebServer {
         Logger.debug("Registering Javalin routes")
         app.routes {
             before("*") { ctx ->
-//                    ctx.header(
-//                        "Content-Security-Policy",
-//                        "default-src 'self'  https://www.google.com; font-src data: https://cdn.jsdelivr.net; img-src 'self'; object-src 'none'; script-src 'self' https://cdn.jsdelivr.net https://releases.transloadit.com https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://releases.transloadit.com; frame-ancestors 'self'"
-//                    )
                 ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
                 ctx.header("X-Frame-Options", "SAMEORIGIN")
                 ctx.header("X-Content-Type-Options", "nosniff")
@@ -150,7 +139,6 @@ class WebServer {
                     delete("/totp", UserTOTPSettingsPage(), UserRoles.USER)
                     get("/loginHistory", UserLoginLogSettingsPage(loginLogService), UserRoles.USER)
                 }
-                get("/payment", UserPaymentPage(), UserRoles.USER)
                 get("/shares", UserSharesPage(shareService), UserRoles.USER)
                 get("/search", FileController(fileService)::performFileSearch, UserRoles.USER)
                 path("/files") {
@@ -193,27 +181,19 @@ class WebServer {
         app.routes {
             path("/api/v1") {
                 path("/session") {
-//                    post(AuthenticationController()::loginRequest)
                     delete(AuthenticationController()::logoutRequest)
-                    // crud
                 }
                 path("/users") {
-                    // crud stuff
-//                    post(AuthenticationController()::registrationRequest)
                     before("/{userId}*", UserController(fileService)::getUserParameter)
                     path("/{userId}") {
                         delete("/", UserController(fileService)::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
-                        // get(UserController()::getUser)
                         put("/", UserController(fileService)::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                     }
                 }
                 path("/files") {
-                    // get("/", UserController()::getFiles, UserRoles.USER)
-                    // before("/", FileController()::checkFile)
                     post("/", FileController(fileService)::uploadFile, UserRoles.USER)
                     put("/", FileController(fileService)::getFiles, UserRoles.USER)
                     delete("/", FileController(fileService)::deleteFiles, UserRoles.USER)
-                    // before("/{fileId}*", FileController()::getFileParameter)
                     path("/{fileId}") {
                         get("/", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
                         put(
@@ -238,7 +218,6 @@ class WebServer {
                             Requirement.HAS_ACCESS_TO_FILE,
                             UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
                         )
-                        //put("/", FileController()::updateFile, UserRoles.USER)
                     }
                 }
 
@@ -255,11 +234,6 @@ class WebServer {
                         get("/download", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
                         delete("/", ShareController()::delete, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
                     }
-//                    crud("/{shareId}", ShareController(), UserRoles.SHARE_ACCESS_CHECK)
-                }
-                path("/payments") {
-                    post("/create-intent", PaymentController()::createIntent, UserRoles.USER)
-                    get("/finish", PaymentController()::finishPayment, UserRoles.USER)
                 }
             }
         }

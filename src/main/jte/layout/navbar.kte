@@ -79,11 +79,6 @@
                             <i class="settings icon"></i>
                             Settings
                         </a>
-                        <a class="@if(page is UserPaymentPage) active @endif item"
-                           href="${UserPaymentPage.ROUTE}" hx-get="${UserPaymentPage.ROUTE}">
-                            <i class="money icon"></i>
-                            Payments
-                        </a>
                         <div class="divider"></div>
                         @if(highestRole.powerLevel >= UserRoles.ADMIN.powerLevel)
                             <div class="header">

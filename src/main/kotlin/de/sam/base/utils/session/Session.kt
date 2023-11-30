@@ -1,19 +1,12 @@
 package de.sam.base.utils.session
 
 import de.sam.base.database.hikariDataSource
-import org.eclipse.jetty.server.session.*
-import java.io.File
+import org.eclipse.jetty.server.session.DatabaseAdaptor
+import org.eclipse.jetty.server.session.DefaultSessionCache
+import org.eclipse.jetty.server.session.JDBCSessionDataStoreFactory
+import org.eclipse.jetty.server.session.SessionHandler
 
 object Session {
-    fun fileSessionHandler() = SessionHandler().apply {
-        httpOnly = false
-        sessionCache = DefaultSessionCache(this).apply {
-            sessionDataStore = FileSessionDataStore().apply {
-                val baseDir = File(System.getProperty("java.io.tmpdir"))
-                this.storeDir = File(baseDir, "javalin-session-store").apply { mkdir() }
-            }
-        }
-    }
 
     fun sqlSessionHandler(devEnvironment: Boolean) = SessionHandler().apply {
         sessionCache = DefaultSessionCache(this).apply { // create the session handler

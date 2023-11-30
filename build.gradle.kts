@@ -63,9 +63,6 @@ dependencies {
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 
-    // https://mvnrepository.com/artifact/com.stripe/stripe-java
-    implementation("com.stripe:stripe-java:22.21.0-beta.1")
-
     // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
 
