@@ -12,7 +12,7 @@ class UserTOTPValidatePage : Page(
     templateName = "user/totp/validation.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/totp/validate"
     }
 
     var error = ""

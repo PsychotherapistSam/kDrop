@@ -1,11 +1,12 @@
 package de.sam.base.controllers
 
-import com.password4j.Argon2Function
-import com.password4j.Password
-import com.password4j.types.Argon2
-import de.sam.base.config.Configuration
-import de.sam.base.database.*
-import de.sam.base.services.FileService
+import de.sam.base.authentication.PasswordHasher
+import de.sam.base.authentication.UserService
+import de.sam.base.authentication.UserValidator
+import de.sam.base.database.UserDAO
+import de.sam.base.database.UserDTO
+import de.sam.base.database.fetchDAO
+import de.sam.base.database.toDTO
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO
@@ -13,16 +14,16 @@ import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.preferences.Preferences
 import io.javalin.http.*
-import io.javalin.validation.ValidationError
-import io.javalin.validation.Validator
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.lowerCase
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 import kotlin.system.measureNanoTime
 
-class UserController(private val fileService: FileService) {
-
+class UserController : KoinComponent {
+    private val userValidatorNew: UserValidator by inject()
+    private val userService: UserService by inject()
+    private val passwordHasher: PasswordHasher by inject()
     fun updateUser(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
         /*if (ctx.currentUser != selectedUser && !ctx.currentUser!!.hasRolePowerLevel(UserRoles.ADMIN)) {
@@ -37,51 +38,48 @@ class UserController(private val fileService: FileService) {
                 when (key) {
                     "username" -> {
                         val newName = value.first()
+                        //TODO: move all this to the service or something
                         if (selectedUserDTO.name.lowercase() != newName.lowercase()) {
-                            val usernameErrors = validateUsername(newName, false).first
-                            if (usernameErrors.isNotEmpty())
-                                throw BadRequestResponse(usernameErrors.first().message) //.joinToString("\n") { it.message }
+                            val (isValid, errors) = userValidatorNew.validateUsername(newName)
+                            if (!isValid)
+                                throw BadRequestResponse(errors.first())
+
+                            if (userService.getUserByUsername(newName) != null)
+                                throw BadRequestResponse("Username already taken")
+
                             user.name = newName
                         }
                     }
 
                     "password" -> {
                         val newPassword = value.first()
-                        val passwordErrors = validatePassword(null, newPassword)
-                        if (passwordErrors.isNotEmpty())
-                            throw BadRequestResponse(passwordErrors.first().message) //.joinToString("\n") { it.message })
-                        user.password = Password.hash(newPassword)
-                            .addSalt("${selectedUserDTO.id}") // argon2id salts the passwords on itself, but better safe than sorry
-                            .addPepper(Configuration.config.passwordPepper)
-                            .with(argon2Instance)
-                            .result
+
+                        val (isValid, errors) = userValidatorNew.validatePassword(newPassword)
+                        if (!isValid)
+                            throw BadRequestResponse(errors.first())
+
+                        val salt = UUID.randomUUID().toString()
+                        val hashedPassword = passwordHasher.hashPassword(newPassword, salt)
+
+                        user.salt = salt
+                        user.password = hashedPassword
+
                     }
 
                     "roles" -> {
                         if (ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
-                            // map either null, comma seperated list to enum list1
-                            val roleValidationErrors = validateRoles(value.first())
-                            if (roleValidationErrors.isNotEmpty())
-                                throw BadRequestResponse(roleValidationErrors.first().message) //.joinToString("\n") { it.message })
+                            val (isValid, errors) = userValidatorNew.validateRoles(value.first())
+                            if (!isValid)
+                                throw BadRequestResponse(errors.first())
+
                             val roles = value.first().split(",").map { UserRoles.valueOf(it) }
+
                             if (roles != selectedUserDTO.roles) {
                                 user.roles = roles.joinToString(",") { it.name }
                             }
                         }
                     }
-//                    "pref-dark-mode" -> {
-//                        if (ctx.isLoggedIn) {
-//                            val darkMode = value.first().toBoolean()
-//                            val preferences = user.preferences.split(",").filter { it.isNotBlank() }.toMutableList()
-//
-//                            if (darkMode) {
-//                                preferences.add("dark-mode")
-//                            } else {
-//                                preferences.remove("dark-mode")
-//                            }
-//                            user.preferences = preferences.joinToString(",")
-//                        }
-//                    }
+
                     else -> {
                         if (ctx.isLoggedIn) {
                             if (Preferences.preferencesList.any { it.first == key && it.second == Boolean }) {
@@ -106,29 +104,6 @@ class UserController(private val fileService: FileService) {
         }
     }
 
-    fun deleteUser(user: UserDTO) {
-        transaction {
-            // delete all user related data
-            ShareDAO.find { SharesTable.user eq user.id }.forEach { it.delete() }
-
-            // delete login log
-            LoginLogDAO.find { LoginLogTable.user eq user.id }.forEach { it.delete() }
-
-            // delete all files
-            FileController(fileService).deleteFileList(
-                FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.take(1),
-                user
-            )
-
-            // delete all files
-            FileDAO.find { FilesTable.owner eq user.id }.forEach { it.delete() }
-
-            UserDAO
-                .findById(user.id)!!
-                .delete()
-        }
-    }
-
     fun deleteUserFromContext(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
 
@@ -136,7 +111,8 @@ class UserController(private val fileService: FileService) {
             throw UnauthorizedResponse("You are not allowed to delete this user")
         }
 
-        deleteUser(selectedUserDTO)
+        userService.deleteUser(selectedUserDTO.id)
+        CacheInvalidation.userTokens[selectedUserDTO.id] = System.currentTimeMillis()
     }
 
     fun getUserParameter(ctx: Context) {
@@ -161,77 +137,3 @@ class UserController(private val fileService: FileService) {
     }
 }
 
-fun validateUsername(
-    username: String?,
-    userHasToExist: Boolean = true
-): Pair<ArrayList<ValidationError<String>>, UserDTO?> {
-    val fieldName = "username"
-    var userDTO: UserDTO? = null
-
-    val errors: ArrayList<ValidationError<String>> = ArrayList()
-
-    var validator = Validator.create(String::class.java, username, fieldName)
-        .check({ it.isNotBlank() }, "Username is required")
-        .check({ it.length <= 20 }, "Username is too long")
-        .check({ it.length >= 3 }, "Username is too short")
-
-    if (validator.errors().isNotEmpty()) {
-        errors.addAll(validator.errors()[fieldName]!!)
-    } else {
-        val userDao = transaction {
-            return@transaction UserDAO.find { UsersTable.name.lowerCase() like username!!.lowercase() }
-                .firstOrNull()
-        }
-        if (userDao != null)
-            userDTO = userDao.toDTO()
-
-        validator = if (userHasToExist) {
-            Validator.create(String::class.java, username, fieldName)
-                .check({ userDao != null }, "Invalid username or password")
-        } else {
-            Validator.create(String::class.java, username, fieldName)
-                .check({ userDao == null }, "User already exists")
-        }
-
-        if (validator.errors().isNotEmpty()) {
-            errors.addAll(validator.errors()[fieldName]!!)
-        }
-    }
-
-    return Pair(errors, userDTO)
-}
-
-private val argon2Instance = Argon2Function.getInstance(15360, 3, 2, 32, Argon2.ID, 19)
-
-fun validatePassword(userDTO: UserDTO? = null, password: String?): List<ValidationError<String>> {
-    val fieldName = "password"
-    return Validator.create(String::class.java, password, fieldName)
-        .check({ it.isNotBlank() }, "Password is required")
-        .check({ it.length <= 128 }, "Password is too long")
-        .check({ it.length >= 3 }, "Password is too short")
-        .check(
-            {
-                // if no user is specified the password will only get checked for basic validity
-                if (userDTO == null) {
-                    true
-                } else {
-                    Password.check(it, userDTO!!.password)
-                        .addSalt("${userDTO.id}") // argon2id salts the passwords on itself, but better safe than sorry
-                        .addPepper(Configuration.config.passwordPepper)
-                        .with(argon2Instance)
-                }
-            },
-            "Invalid username or password"
-        ).errors().getOrElse(fieldName) { arrayListOf() }
-}
-
-fun validateRoles(roles: String): List<ValidationError<String>> {
-    val fieldName = "role"
-    return Validator.create(String::class.java, roles, fieldName)
-        .check({ it.isNotBlank() }, "Roles must not be empty")
-        .check({
-            it.split(",")
-                .all { splitRole -> splitRole in UserRoles.values().map { role -> role.name } }
-        }, "Invalid roles")
-        .errors().getOrElse(fieldName) { arrayListOf() }
-}

@@ -1,27 +1,29 @@
 package de.sam.base.pages.user
 
 import de.sam.base.Page
+import de.sam.base.authentication.AuthenticationResult
+import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.controllers.validateLoginAttempt
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
+import org.koin.core.component.inject
 
-class UserLoginPage(private val loginLogService: LoginLogService) : Page(
+class UserLoginPage : Page(
     name = "Login",
     templateName = "user/login.kte",
 ) {
+
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/login"
     }
+
+    private val loginLogService: LoginLogService by inject()
+    private val authenticationService: AuthenticationService by inject()
+
 
     var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
-
-    override fun before() {
-        errors.clear()
-        lastTryUsername = ""
-    }
 
     override fun post() {
         val returnToUrl = ctx.loginReturnUrl ?: UserFilesPage.ROUTE
@@ -30,40 +32,33 @@ class UserLoginPage(private val loginLogService: LoginLogService) : Page(
                 ctx.hxRedirect(returnToUrl)
                 return@prolongAtLeast
             }
+            val username = ctx.formParam("username")
+            val password = ctx.formParam("password")
 
             if (config.captcha != null && config.captcha!!.locations.contains("login")) {
                 val captchaErrors = Captcha.validate(ctx)
                 if (captchaErrors.isNotEmpty()) {
-                    lastTryUsername = ctx.formParam("username") ?: ""
+                    lastTryUsername = username ?: ""
                     errors.addAll(captchaErrors)
                     return@prolongAtLeast
                 }
             }
 
-            val attempt = validateLoginAttempt(ctx.formParam("username"), ctx.formParam("password"))
-            // first = user, second = errors
-            if (attempt.second.isNotEmpty()) {
-                lastTryUsername = ctx.formParam("username") ?: ""
-                errors.add(attempt.second.first())
-                return@prolongAtLeast
+            val result = authenticationService.login(username = username!!, password = password!!)
+
+            when (result) {
+                is AuthenticationResult.Success -> {
+                    ctx.currentUserDTO = result.userDTO
+                    loginLogService.logLogin(ctx, result.userDTO)
+                    ctx.hxRedirect(returnToUrl)
+                }
+
+                is AuthenticationResult.Failure -> {
+                    lastTryUsername = username
+                    errors.addAll(result.errors)
+                }
             }
 
-            // new session id to prevent issues with persistance when old serialization objects still exist
-            ctx.req().session.invalidate()
-            ctx.req().getSession(true)
-
-            ctx.currentUserDTO = attempt.first
-
-            loginLogService.logLogin(ctx, attempt.first!!)
-
-            if (!attempt.first?.totpSecret.isNullOrBlank()) {
-                ctx.needsToVerifyTOTP = true
-                ctx.hxRedirect(UserTOTPValidatePage.ROUTE)
-            } else {
-                ctx.hxRedirect(returnToUrl)
-            }
-
-            //ctx.redirect("/")
             return@prolongAtLeast
         }
     }

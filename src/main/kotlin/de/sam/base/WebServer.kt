@@ -19,8 +19,6 @@ import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
 import de.sam.base.services.FileService
-import de.sam.base.services.LoginLogService
-import de.sam.base.services.ShareService
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.currentUserDTO
@@ -65,7 +63,7 @@ class WebServer {
                 it.hostedPath = "/"
                 it.directory = "/public"
                 it.location = Location.CLASSPATH
-                it.precompress = true
+                it.precompress = false
                 it.aliasCheck = null
             }
 
@@ -73,32 +71,14 @@ class WebServer {
             javalinConfig.jsonMapper(JavalinJackson(jackson))
         }.start(config.port)
 
-        val loginLogService = LoginLogService()
-        val fileService = FileService()
-        val shareService = ShareService()
 
-        Logger.debug("Registering Javalin route handlers")
-        app.events {
-            it.handlerAdded { metaInfo ->
-                if (metaInfo.handler is Page) {
-                    // set route variable dynamically (cursed)
-                    val routeField = metaInfo.handler.javaClass.getField("ROUTE")
-                    if (routeField != null) {
-                        val value = routeField.get(String)
-                        if (value == null || value.toString().isEmpty()) {
-                            routeField.set(String, metaInfo.path)
-                        } else {
-                            Logger.debug("Route already set: ${metaInfo.path}, not overwriting")
-                        }
-                    }
-                }
-            }
-        }
+        val fileService = FileService()
+
 
         Logger.debug("Registering Javalin exception handlers")
         app.exception(HttpResponseException::class.java) { e, ctx ->
-            if (ctx.header(Header.ACCEPT)?.contains("application/json") == true
-                || ctx.header("x-client")?.equals("web/api") == true
+            if (ctx.header(Header.ACCEPT)?.contains("application/json") == true || ctx.header("x-client")
+                    ?.equals("web/api") == true
             ) {
                 ctx.status(e.status)
                 ctx.json(arrayOf(e.message))
@@ -122,59 +102,60 @@ class WebServer {
                     ctx.redirect(UserLoginPage.ROUTE)
                 }
             }
-            get("/changelog", ChangelogPage())
-            get("/login", UserLoginPage(loginLogService))
-            post("/login", UserLoginPage(loginLogService))
-            get("/registration", UserRegistrationPage())
-            post("/registration", UserRegistrationPage())
+            get("/changelog") { ChangelogPage().handle(it) }
+            get("/login") { UserLoginPage().handle(it) }
+            post("/login") { UserLoginPage().handle(it) }
+            get("/registration") { UserRegistrationPage().handle(it) }
+            post("/registration") { UserRegistrationPage().handle(it) }
             path("/user") {
                 get("/quota", { ctx ->
                     val file = fileService.getRootFolderForUser(ctx.currentUserDTO!!.id)
                     ctx.render("components/usageQuotaComponent.kte", Collections.singletonMap("file", file))
                 }, Requirement.IS_LOGGED_IN)
                 path("/settings") {
-                    get("/", UserEditPage(), UserRoles.USER)
-                    get("/totp", UserTOTPSettingsPage(), UserRoles.USER)
-                    post("/totp", UserTOTPSettingsPage(), UserRoles.USER)
-                    delete("/totp", UserTOTPSettingsPage(), UserRoles.USER)
-                    get("/loginHistory", UserLoginLogSettingsPage(loginLogService), UserRoles.USER)
+                    get("/", { UserEditPage().handle(it) }, UserRoles.USER)
+                    get("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                    post("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                    delete("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                    get("/loginHistory", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
                 }
-                get("/shares", UserSharesPage(shareService), UserRoles.USER)
-                get("/search", FileController(fileService)::performFileSearch, UserRoles.USER)
+                get("/shares", { UserSharesPage().handle(it) }, UserRoles.USER)
+                get("/search", FileController()::performFileSearch, UserRoles.USER)
                 path("/files") {
                     get(
                         "/",
-                        UserFilesPage(fileService),
+                        { UserFilesPage().handle(it) },
                         UserRoles.USER,
                         Requirement.HAS_ACCESS_TO_FILE,
                         Requirement.IS_LOGGED_IN
                     )
                     path("/{fileId}") {
-                        get("/", UserFilesPage(fileService), Requirement.HAS_ACCESS_TO_FILE)
+                        get("/", { UserFilesPage().handle(it) }, Requirement.HAS_ACCESS_TO_FILE)
                         get("/shares", UserSharePage()::shareList, Requirement.HAS_ACCESS_TO_FILE)
                     }
                 }
                 path("/totp") {
-                    get("/validate", UserTOTPValidatePage())
-                    post("/validate", UserTOTPValidatePage())
+                    get("/validate", { UserTOTPValidatePage().handle(it) }, Requirement.IS_LOGGED_IN)
+                    post("/validate", { UserTOTPValidatePage().handle(it) }, Requirement.IS_LOGGED_IN)
                 }
             }
             path("/admin") {
-                get("/", AdminIndexPage(), UserRoles.ADMIN)
+                get("/", { AdminIndexPage().handle(it) }, UserRoles.ADMIN)
                 path("/users") {
-                    get("/", AdminUsersPage(), UserRoles.ADMIN)
-                    before("/{userId}*", UserController(fileService)::getUserParameter)
+                    get("/", { AdminUsersPage().handle(it) }, UserRoles.ADMIN)
+                    //TODO: change this
+                    before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
-                        get("/", AdminUserViewPage(), UserRoles.ADMIN)
-                        get("/edit", AdminUserEditPage(), UserRoles.ADMIN)
+                        get("/", { AdminUserViewPage().handle(it) }, UserRoles.ADMIN)
+                        get("/edit", { AdminUserEditPage().handle(it) }, UserRoles.ADMIN)
                     }
                 }
             }
             path("/setup") {
-                get("/", SetupPage(), Requirement.IS_IN_SETUP_STAGE)
-                post("/", SetupPage(), Requirement.IS_IN_SETUP_STAGE)
+                get("/", { SetupPage().handle(it) }, Requirement.IS_IN_SETUP_STAGE)
+                post("/", { SetupPage().handle(it) }, Requirement.IS_IN_SETUP_STAGE)
             }
-            get("/s/{shareId}", UserSharePage(), Requirement.HAS_ACCESS_TO_SHARE)
+            get("/s/{shareId}", { UserSharePage().handle(it) }, Requirement.HAS_ACCESS_TO_SHARE)
         }
 
         // https://stackoverflow.com/a/7260540
@@ -184,36 +165,26 @@ class WebServer {
                     delete(AuthenticationController()::logoutRequest)
                 }
                 path("/users") {
-                    before("/{userId}*", UserController(fileService)::getUserParameter)
+                    before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
-                        delete("/", UserController(fileService)::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
-                        put("/", UserController(fileService)::updateUser, UserRoles.SELF, UserRoles.ADMIN)
+                        delete("/", UserController()::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
+                        put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                     }
                 }
                 path("/files") {
-                    post("/", FileController(fileService)::uploadFile, UserRoles.USER)
-                    put("/", FileController(fileService)::getFiles, UserRoles.USER)
-                    delete("/", FileController(fileService)::deleteFiles, UserRoles.USER)
+                    post("/", FileController()::uploadFile, UserRoles.USER)
+                    put("/", FileController()::getFiles, UserRoles.USER)
+                    delete("/", FileController()::deleteFiles, UserRoles.USER)
                     path("/{fileId}") {
-                        get("/", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
-                        put(
-                            "/",
-                            FileController(fileService)::updateFile,
-                            UserRoles.USER,
-                            Requirement.HAS_ACCESS_TO_FILE
-                        )
-                        delete(
-                            "/",
-                            FileController(fileService)::deleteSingleFile,
-                            UserRoles.USER,
-                            Requirement.HAS_ACCESS_TO_FILE
-                        )
+                        get("/", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
+                        put("/", FileController()::updateFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
+                        delete("/", FileController()::deleteSingleFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
 
-                        get("/metadata", FileController(fileService)::getFileMetadata, Requirement.HAS_ACCESS_TO_FILE)
+                        get("/metadata", FileController()::getFileMetadata, Requirement.HAS_ACCESS_TO_FILE)
 
                         post(
                             "/setAsChildren",
-                            FileController(fileService)::moveFiles,
+                            FileController()::moveFiles,
                             UserRoles.USER,
                             Requirement.HAS_ACCESS_TO_FILE,
                             UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
@@ -223,15 +194,15 @@ class WebServer {
 
                 path("/directories") {
                     //TODO: move this to the files post (uploadFile) but accept no file if it has to be a directory
-                    post("/", FileController(fileService)::createDirectory, Requirement.IS_LOGGED_IN)
-                    get("/root", FileController(fileService)::getRootDirectory, Requirement.IS_LOGGED_IN)
+                    post("/", FileController()::createDirectory, Requirement.IS_LOGGED_IN)
+                    get("/root", FileController()::getRootDirectory, Requirement.IS_LOGGED_IN)
                 }
 
                 path("/shares") {
                     post("/", ShareController()::create, UserRoles.USER)
                     path("/{shareId}") {
                         get("/", ShareController()::getOne, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
-                        get("/download", FileController(fileService)::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
+                        get("/download", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_SHARE)
                         delete("/", ShareController()::delete, UserRoles.USER, Requirement.HAS_ACCESS_TO_SHARE)
                     }
                 }
@@ -239,12 +210,12 @@ class WebServer {
         }
     }
 
+
     // https://github.com/casid/jte-javalin-tutorial/blob/d75d550cd6cd1dd33fcf461047851409e18a0525/src/main/java/app/App.java#L51
     private fun createTemplateEngine(): TemplateEngine {
         if (false) {
             val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
-            return TemplateEngine
-                .create(codeResolver, ContentType.Html)
+            return TemplateEngine.create(codeResolver, ContentType.Html)
 
         } else {
             val templateEngine = TemplateEngine.createPrecompiled(ContentType.Html)

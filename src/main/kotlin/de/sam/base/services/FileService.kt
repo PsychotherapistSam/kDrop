@@ -33,8 +33,7 @@ class FileService {
                 handle.createQuery(sql)
                     .bind("id", fileID.toString())
                     .mapTo<FileDTO>()
-                    .findOne()
-                    .orElse(null)
+                    .one()
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not fetch file with id $fileID", e)
@@ -125,8 +124,7 @@ class FileService {
                 handle.createQuery(sql)
                     .bind("owner", userId.toString())
                     .mapTo<FileDTO>()
-                    .findOne()
-                    .orElse(null)
+                    .one()
             }
         } catch (e: Exception) {
             throw FileServiceException("Error fetching root folder for user with ID $userId", e)
@@ -177,8 +175,8 @@ class FileService {
             handle.createQuery(sql)
                 .bind("id", folderId.toString())
                 .mapTo(Long::class.java)
-                .findOne()
-                .orElse(0)
+                .one()
+                .or(0)
         }
     }
 
@@ -198,15 +196,14 @@ class FileService {
                 .bind("created", created.toDate())
                 .executeAndReturnGeneratedKeys()
                 .mapTo<FileDTO>()
-                .findOne()
-                .orElse(null)
+                .one()
         }
     }
 
     fun createFile(handle: Handle, file: FileDTO): FileDTO {
         val sql = """
-        INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, private, created, is_folder, hash, is_root)
-        VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :private, :created, :is_folder, :hash, :is_root)
+        INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, created, is_folder, hash, is_root)
+        VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :created, :is_folder, :hash, :is_root)
         RETURNING *;
     """.trimIndent()
 
@@ -221,15 +218,13 @@ class FileService {
                 .bind("size", file.size)
                 .bind("size_hr", file.sizeHR)
                 .bind("password", file.password)
-                .bind("private", file.private)
                 .bind("created", file.created?.toDate())
                 .bind("is_folder", file.isFolder)
                 .bind("hash", file.hash)
                 .bind("is_root", file.isRoot)
                 .executeAndReturnGeneratedKeys()
                 .mapTo<FileDTO>()
-                .findOne()
-                .orElse(null)
+                .one()
         } catch (e: Exception) {
             throw FileServiceException("Error executing createFile")
         }
@@ -247,7 +242,7 @@ class FileService {
             UPDATE t_files
             SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
                 owner = CAST(:owner AS uuid), size = :size, size_hr = :size_hr, password = :password, 
-                private = :private, created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
+                created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
             WHERE id = CAST(:id AS uuid)
             RETURNING *;
         """.trimIndent()
@@ -264,7 +259,6 @@ class FileService {
                     .bind("size", file.size)
                     .bind("size_hr", file.sizeHR)
                     .bind("password", file.password)
-                    .bind("private", file.private)
                     .bind("created", file.created?.toDate())
                     .bind("is_folder", file.isFolder)
                     .bind("hash", file.hash)
@@ -332,6 +326,7 @@ class FileService {
             )
             SELECT * FROM file_tree
         """.trimIndent()
+
         return jdbi.withHandle<List<FileDTO>, Exception> { handle ->
             val conn = handle.jdbi.open().connection
             val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it.toString() }.toTypedArray())
@@ -418,4 +413,20 @@ class FileService {
         }
     }
 
+    fun deleteAllFilesFromUser(userId: UUID) {
+        val sql = """
+            DELETE FROM t_files
+            WHERE owner = CAST(:owner AS uuid);
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("owner", userId)
+                    .execute()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not delete all files for user", e)
+        }
+    }
 }

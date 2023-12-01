@@ -4,15 +4,19 @@ import de.sam.base.Page
 import de.sam.base.database.LoginLogDTO
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.currentUserDTO
+import org.koin.core.component.inject
 
 
-class UserLoginLogSettingsPage(private val loginLogService: LoginLogService) : Page(
+class UserLoginLogSettingsPage() : Page(
     name = "Login History",
     templateName = "user/settings/login_log.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/settings/loginHistory"
     }
+
+    private val loginLogService: LoginLogService by inject()
+
 
     var loginLogList = listOf<LoginLogDTO>()
 

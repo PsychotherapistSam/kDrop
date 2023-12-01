@@ -10,15 +10,19 @@ import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.NotFoundResponse
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 
-class UserFilesPage(private val fileService: FileService) : Page(
+class UserFilesPage : Page(
     name = "My Files",
-    templateName = "user/files.kte",
+    templateName = "user/files.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/files/"
     }
+
+    private val fileService: FileService by inject()
+
 
     lateinit var parent: FileDTO
 
@@ -29,10 +33,6 @@ class UserFilesPage(private val fileService: FileService) : Page(
     var sortBy: String = FileSortingDirection.sortDirections.first().name
 
 //    lateinit var rootFile: FileDTO
-
-    override fun before() {
-        breadcrumbs = listOf()
-    }
 
     override fun get() {
         val sortingDirection = FileSortingDirection.sortDirections.first {

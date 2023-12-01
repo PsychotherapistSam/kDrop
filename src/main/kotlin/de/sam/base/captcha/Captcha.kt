@@ -11,7 +11,7 @@ import okhttp3.Request
 
 class Captcha {
     companion object {
-        private val captchaServiceUrlMap = mapOf(
+        val captchaServiceUrlMap = mapOf(
             "recaptcha" to Pair("https://www.google.com/recaptcha/api/siteverify", "g-recaptcha-response"),
             "turnstile" to Pair("https://challenges.cloudflare.com/turnstile/v0/siteverify", "cf-turnstile-response")
         )

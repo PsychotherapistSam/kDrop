@@ -9,7 +9,7 @@ class AdminUserEditPage : Page(
     templateName = "user/edit.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/admin/user/edit"
     }
 
     var selectedUserDTO: UserDTO? = null

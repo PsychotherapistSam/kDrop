@@ -24,4 +24,21 @@ class ShareService {
             throw FileServiceException("Could not fetch shares for user $userId", e)
         }
     }
+
+    fun deleteAllSharesForUser(userId: UUID) {
+        val sql = """
+            DELETE FROM t_shares
+            WHERE "user" = CAST(:userId AS uuid);
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("userId", userId.toString())
+                    .execute()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not delete shares for user $userId", e)
+        }
+    }
 }

@@ -65,7 +65,14 @@ class CustomAccessManager : AccessManager {
 
             if (sessionToken < currentToken) {
                 transaction {
-                    val user = UserDAO.findById(userId)!!.toDTO()
+                    val dao = UserDAO.findById(userId)
+                    if (dao == null) {
+                        ctx.currentUserDTO = null
+                        ctx.req().session.invalidate()
+
+                        return@transaction
+                    }
+                    val user = dao.toDTO()
                     ctx.currentUserDTO = user
                     ctx.tokenTime = currentToken
                 }

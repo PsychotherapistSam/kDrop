@@ -7,6 +7,6 @@ class UserEditPage : Page(
     templateName = "user/edit.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/settings"
     }
 }

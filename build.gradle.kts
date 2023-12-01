@@ -80,7 +80,8 @@ dependencies {
     // https://mvnrepository.com/artifact/org.jdbi/jdbi3-postgres
     implementation("org.jdbi:jdbi3-postgres:3.39.1")
 
-
+    // https://mvnrepository.com/artifact/io.insert-koin/koin-core
+    implementation("io.insert-koin:koin-core:3.5.2-RC1")
 }
 
 tasks.test {

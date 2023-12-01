@@ -7,7 +7,7 @@ class ChangelogPage : Page(
     templateName = "changelog.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/changelog"
     }
 
 }

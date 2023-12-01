@@ -18,7 +18,8 @@ class UserSharePage : Page(
     templateName = "user/share.kte",
 ) {
     companion object {
-        lateinit var ROUTE: String
+        // never used since it contains a path parameter
+        const val ROUTE: String = "/s/"
     }
 
     var file: FileDTO? = null

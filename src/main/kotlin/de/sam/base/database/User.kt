@@ -1,6 +1,8 @@
 package de.sam.base.database
 
 import de.sam.base.users.UserRoles
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.UUIDEntity
 import org.jetbrains.exposed.dao.UUIDEntityClass
@@ -8,6 +10,7 @@ import org.jetbrains.exposed.dao.UUIDTable
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import java.io.Serializable
+import java.sql.ResultSet
 import java.util.*
 
 // The UserDTO exists to be a serializable object for the session persistance.
@@ -19,7 +22,8 @@ class UserDTO(
     var preferences: String,
     var registrationDate: DateTime,
     var totpSecret: String?,
-    var rootFolderId: UUID,
+    var rootFolderId: UUID?,
+    var salt: String?
 ) : Serializable {
 
     fun getHighestRolePowerLevel(): Int = roles.maxOf { it.powerLevel }
@@ -62,11 +66,11 @@ object UsersTable : UUIDTable("t_users") {
     val name = varchar("name", 50)
     val password = varchar("password", 256)
     val roles = varchar("roles", 50)
-    val hidden = bool("hidden")
     val preferences = varchar("preferences", 256)
     val registrationDate = datetime("registration_date")
     var totpSecret = varchar("totp_secret", 256).nullable()
-    val rootFolderId = uuid("root_folder_id")
+    val rootFolderId = uuid("root_folder_id").nullable()
+    val salt = varchar("salt", 64).nullable()
 }
 
 class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
@@ -75,11 +79,11 @@ class UserDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     var name by UsersTable.name
     var password by UsersTable.password
     var roles by UsersTable.roles
-    var hidden by UsersTable.hidden
     var preferences by UsersTable.preferences
     var registrationDate by UsersTable.registrationDate
     var totpSecret by UsersTable.totpSecret
     var rootFolderId by UsersTable.rootFolderId
+    var salt by UsersTable.salt
 }
 
 
@@ -92,6 +96,23 @@ fun UserDAO.toDTO(): UserDTO {
         this.preferences,
         this.registrationDate,
         this.totpSecret,
-        this.rootFolderId
+        this.rootFolderId,
+        this.salt
     )
+}
+
+class UserDTOMapper : RowMapper<UserDTO> {
+    override fun map(rs: ResultSet, ctx: StatementContext): UserDTO {
+        return UserDTO(
+            id = UUID.fromString(rs.getString("id")),
+            name = rs.getString("name"),
+            password = rs.getString("password"),
+            roles = rs.getString("roles").split(",").map { UserRoles.valueOf(it) },
+            preferences = rs.getString("preferences"),
+            registrationDate = DateTime(rs.getTimestamp("registration_date")),
+            totpSecret = rs.getString("totp_secret"),
+            rootFolderId = rs.getString("root_folder_id")?.let { UUID.fromString(it) },
+            salt = rs.getString("salt")
+        )
+    }
 }

@@ -5,6 +5,7 @@ import de.sam.base.utils.currentUserDTO
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.HandlerType.*
+import org.koin.core.component.KoinComponent
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.*
@@ -16,7 +17,7 @@ abstract class Page(
     var title: String = name,
     var pageDescription: String = name,
     var templateName: String
-) : Handler {
+) : Handler, KoinComponent {
 
     var pageDiff: Long = 0
     private var templateStartTime: Long? = null // = System.nanoTime()

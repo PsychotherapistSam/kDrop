@@ -13,7 +13,7 @@ class AdminIndexPage : Page(
     templateName = "admin/index.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/admin"
     }
 
     var userCount = 0

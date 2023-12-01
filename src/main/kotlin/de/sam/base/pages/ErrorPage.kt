@@ -8,7 +8,6 @@ import org.tinylog.kotlin.Logger
 class ErrorPage(val e: HttpResponseException) : Page(
     name = "Error " + e.status, templateName = "error.kte"
 ) {
-
     override fun get() {
         ctx.status(e.status)
         if (e.status == 401) {

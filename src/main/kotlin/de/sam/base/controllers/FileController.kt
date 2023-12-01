@@ -13,6 +13,8 @@ import io.javalin.util.FileUtil
 import jakarta.servlet.MultipartConfigElement
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.EOFException
 import java.io.File
@@ -24,7 +26,10 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
 
-class FileController(private val fileService: FileService) {
+class FileController : KoinComponent {
+
+    private val fileService: FileService by inject()
+
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
         val fileSize = ctx.header(Header.CONTENT_LENGTH)?.toLong() ?: 0L
@@ -40,11 +45,9 @@ class FileController(private val fileService: FileService) {
         val parentFileId = ctx.queryParamAsClass<UUID>("parent").get()
 
         val files = try {
-            ctx.req()
-                .setAttribute(
-                    "org.eclipse.jetty.multipartConfig",
-                    MultipartConfigElement(config.fileTempDirectory, -1, -1, 1)
-                )
+            ctx.req().setAttribute(
+                "org.eclipse.jetty.multipartConfig", MultipartConfigElement(config.fileTempDirectory, -1, -1, 1)
+            )
             ctx.uploadedFiles()
         } catch (EofException: EOFException) {
             Logger.error("Early EOF, aborting request")
@@ -90,8 +93,7 @@ class FileController(private val fileService: FileService) {
                 }
 
                 val createdFile = fileService.createFile(
-                    handle,
-                    FileDTO(
+                    handle, FileDTO(
                         id = UUID.randomUUID(),
                         name = it.filename(),
                         path = "upload/${UUID.randomUUID()}",
@@ -101,7 +103,6 @@ class FileController(private val fileService: FileService) {
                         size = it.size(),
                         sizeHR = humanReadableByteCountBin(it.size()),
                         password = null,
-                        private = false,
                         created = DateTime.now(),
                         isFolder = false,
                         isRoot = false,
@@ -114,9 +115,7 @@ class FileController(private val fileService: FileService) {
 
                 try {
                     java.nio.file.Files.move(
-                        temporaryFile.toPath(),
-                        targetFile.toPath(),
-                        StandardCopyOption.REPLACE_EXISTING
+                        temporaryFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING
                     )
                 } catch (e: IOException) {
                     Logger.error("Target file ${targetFile.path} could not be moved")
@@ -154,10 +153,9 @@ class FileController(private val fileService: FileService) {
     fun getSingleFile(ctx: Context) {
         //TODO: this using a context extension
 
-        val file = ctx.fileDTOFromId
-            ?: fileService.getFileById(ctx.share!!.second.file)
-            ?: throw NotFoundResponse("File not found") // if not throw an error
-                .also { Logger.error(it.message) }
+        val file = ctx.fileDTOFromId ?: fileService.getFileById(ctx.share!!.second.file)
+        ?: throw NotFoundResponse("File not found") // if not throw an error
+            .also { Logger.error(it.message) }
 
         val systemFile = File("${config.fileDirectory}/${file.id}")
         if (!systemFile.exists()) {
@@ -175,7 +173,6 @@ class FileController(private val fileService: FileService) {
     fun updateFile(ctx: Context) {
         val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
 
-        // the file is private and the user isn't logged in or the file isn't owned by the user
         if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
             throw NotFoundResponse("File not found")
         }
@@ -187,7 +184,6 @@ class FileController(private val fileService: FileService) {
             when (key) {
                 "name" -> updatedFile = updatedFile.copy(name = value.first())
 //              "password" -> updatedFile = updatedFile.copy(password = value)
-//              "public" -> updatedFile = updatedFile.copy(private = value.first() != "on" && value.first() != "true")
 //              "parent" -> updatedFile = updatedFile.copy(parent = FileDAO.findById(UUID.fromString(value)))
             }
         }
@@ -205,15 +201,11 @@ class FileController(private val fileService: FileService) {
             throw BadRequestResponse("You cannot download two zip files at once")
         }
 
-        val fileListString = ctx.formParamAsClass<String>("files")
-            .check({ files ->
-                files
-                    .split(",")
-                    .all { file ->
-                        file.isValidUUID()
-                    }
-            }, "Invalid UUID")
-            .get()
+        val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
+            files.split(",").all { file ->
+                file.isValidUUID()
+            }
+        }, "Invalid UUID").get()
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
 
         val fileList = arrayListOf<Pair<File, String>>()
@@ -272,9 +264,7 @@ class FileController(private val fileService: FileService) {
 
         if (tempZipFile.exists()) {
             ctx.resultFile(
-                tempZipFile,
-                "download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip",
-                "application/zip"
+                tempZipFile, "download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip", "application/zip"
             )
         } else {
             throw NotFoundResponse("File not found")
@@ -330,7 +320,7 @@ class FileController(private val fileService: FileService) {
 
         val fileIDs = listOf(file.id)
 
-        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!)
+        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!.id)
 
         val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
         if (filesNotDeleted.isNotEmpty()) {
@@ -355,19 +345,15 @@ class FileController(private val fileService: FileService) {
     }
 
     fun deleteFiles(ctx: Context) {
-        val fileListString = ctx.formParamAsClass<String>("files")
-            .check({ files ->
-                files
-                    .split(",")
-                    .all { file ->
-                        file.isValidUUID()
-                    }
-            }, "Invalid UUID")
-            .get()
+        val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
+            files.split(",").all { file ->
+                file.isValidUUID()
+            }
+        }, "Invalid UUID").get()
 
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
 
-        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!)
+        val deletedFileIDs = deleteFileList(fileIDs, ctx.currentUserDTO!!.id)
 
         val filesNotDeleted = fileIDs.filter { !deletedFileIDs.contains(it) }
         if (filesNotDeleted.isNotEmpty()) {
@@ -377,12 +363,12 @@ class FileController(private val fileService: FileService) {
         }
     }
 
-    fun deleteFileList(fileIDs: List<UUID>, user: UserDTO): List<UUID> {
+    fun deleteFileList(fileIDs: List<UUID>, userId: UUID): List<UUID> {
         if (fileIDs.isEmpty()) {
             return emptyList()
         }
 
-        val fileList = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(user.id) }
+        val fileList = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(userId) }
 
         val filesToDelete = fileList.toMutableList()
 
@@ -390,8 +376,7 @@ class FileController(private val fileService: FileService) {
 
         // only do recursive step on folders
         if (folders.isNotEmpty()) {
-            val recursiveFiles =
-                fileService.getAllFilesFromFolderListRecursively(folders)
+            val recursiveFiles = fileService.getAllFilesFromFolderListRecursively(folders)
 
             filesToDelete.addAll(recursiveFiles)
         }
@@ -406,16 +391,15 @@ class FileController(private val fileService: FileService) {
             }
         }
 
-        fileList.groupBy { it.parent }
-            .forEach { (parent) ->
-                if (parent != null) {
-                    val parentFile = fileService.getFileById(parent)
-                    if (parentFile != null && parentFile.isFolder) {
-                        Logger.debug("Recalculating folder size for ${parentFile.id}")
-                        fileService.recalculateFolderSize(parentFile.id, user.id)
-                    }
+        fileList.groupBy { it.parent }.forEach { (parent) ->
+            if (parent != null) {
+                val parentFile = fileService.getFileById(parent)
+                if (parentFile != null && parentFile.isFolder) {
+                    Logger.debug("Recalculating folder size for ${parentFile.id}")
+                    fileService.recalculateFolderSize(parentFile.id, userId)
                 }
             }
+        }
 
 
 //        transaction {
@@ -480,15 +464,11 @@ class FileController(private val fileService: FileService) {
     }
 
     fun moveFiles(ctx: Context) {
-        val fileListString = ctx.formParamAsClass<String>("files")
-            .check({ files ->
-                files
-                    .split(",")
-                    .all { file ->
-                        file.isValidUUID()
-                    }
-            }, "Invalid file UUID")
-            .get()
+        val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
+            files.split(",").all { file ->
+                file.isValidUUID()
+            }
+        }, "Invalid file UUID").get()
 
         val targetFile = ctx.fileDAOFromId
 
@@ -554,7 +534,6 @@ class FileController(private val fileService: FileService) {
                 this.size = 0
                 this.sizeHR = "0 B"
                 this.password = null
-                this.private = parent.private
                 this.created = DateTime.now()
                 this.isFolder = true
                 this.isRoot = false
@@ -564,21 +543,19 @@ class FileController(private val fileService: FileService) {
     }
 
     fun getFileMetadata(ctx: Context) {
-        val file =
-            transaction {
-                ctx.fileDTOFromId // first check if the file is set by id
-                    ?: FileDAO.findById(ctx.share!!.first.file.id)?.toDTO() // if not check if the file is set by share
-                    ?: throw NotFoundResponse("File not found") // if not throw an error
-                        .also { Logger.error(it.message) }
-            }
+        val file = transaction {
+            ctx.fileDTOFromId // first check if the file is set by id
+                ?: FileDAO.findById(ctx.share!!.first.file.id)?.toDTO() // if not check if the file is set by share
+                ?: throw NotFoundResponse("File not found") // if not throw an error
+                    .also { Logger.error(it.message) }
+        }
 
         val shares = transaction {
             ShareDAO.find { SharesTable.file eq file.id }.map { it.toDTO() }
         }
         ctx.json(
             mapOf(
-                "file" to file,
-                "shares" to shares
+                "file" to file, "shares" to shares
             )
         )
     }

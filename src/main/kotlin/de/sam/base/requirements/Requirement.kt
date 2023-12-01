@@ -1,6 +1,5 @@
 package de.sam.base.requirements
 
-import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.*
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDAOFromId
@@ -33,10 +32,14 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                 return false
             }
 
+            if (ctx.currentUserDTO!!.rootFolderId == null) {
+                return false
+            }
+
             val fileId = try {
-                ctx.pathParamAsClass<UUID>("fileId").getOrDefault(ctx.currentUserDTO!!.rootFolderId)
+                ctx.pathParamAsClass<UUID>("fileId").getOrDefault(ctx.currentUserDTO!!.rootFolderId!!)
             } catch (e: IllegalArgumentException) {
-                ctx.currentUserDTO!!.rootFolderId
+                ctx.currentUserDTO!!.rootFolderId!!
             }
 
             if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {

@@ -4,19 +4,19 @@ import de.sam.base.Page
 import de.sam.base.database.ShareDTO
 import de.sam.base.services.ShareService
 import de.sam.base.utils.currentUserDTO
+import org.koin.core.component.inject
 
-class UserSharesPage(private val shareService: ShareService) : Page(
+class UserSharesPage() : Page(
     name = "Shared Files",
     templateName = "user/shares.kte",
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/shares"
     }
 
+    private val shareService: ShareService by inject()
+
     var shares = listOf<ShareDTO>()
-    override fun before() {
-        shares = ArrayList()
-    }
 
     override fun get() {
         shares = shareService.getAllSharesForUser(ctx.currentUserDTO!!.id)

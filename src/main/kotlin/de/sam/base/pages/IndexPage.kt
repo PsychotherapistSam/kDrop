@@ -12,7 +12,7 @@ class IndexPage : Page(
     templateName = "index.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/"
     }
 
     lateinit var firstUserDAO: UserDAO

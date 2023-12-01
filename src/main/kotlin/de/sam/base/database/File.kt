@@ -27,7 +27,6 @@ data class FileDTO(
     var size: Long? = null,
     var sizeHR: String? = null,
     var password: String? = null,
-    var private: Boolean? = null,
     var created: DateTime? = null,
     var isFolder: Boolean,
     var hash: String? = null,
@@ -54,7 +53,6 @@ object FilesTable : UUIDTable("t_files") {
     val size = long("size")
     val sizeHR = varchar("size_hr", 128)
     val password = varchar("password", 256).nullable()
-    val private = bool("private")
     val created = datetime("created")
     val isFolder = bool("is_folder")
     val hash = varchar("hash", 128).nullable()
@@ -63,7 +61,7 @@ object FilesTable : UUIDTable("t_files") {
 
 class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     fun canBeViewedByUserId(id: UUID): Boolean {
-        return !private || owner.id.value == id
+        return owner.id.value == id
     }
 
     fun isOwnedByUserId(id: UUID): Boolean {
@@ -80,7 +78,6 @@ class FileDAO(id: EntityID<UUID>) : Serializable, UUIDEntity(id) {
     var size by FilesTable.size
     var sizeHR by FilesTable.sizeHR
     var password by FilesTable.password
-    var private by FilesTable.private
     var created by FilesTable.created
     var isFolder by FilesTable.isFolder
     var hash by FilesTable.hash
@@ -99,7 +96,6 @@ fun FileDAO.toDTO(): FileDTO {
         this.size,
         this.sizeHR,
         this.password,
-        this.private,
         this.created,
         this.isFolder,
         this.hash,

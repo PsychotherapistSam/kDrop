@@ -24,7 +24,7 @@ class UserTOTPSettingsPage : Page(
     templateName = "user/settings/totp.kte"
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/user/settings/totp"
     }
 
     var qrCodeDaraUri: String = ""

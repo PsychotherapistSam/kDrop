@@ -17,7 +17,7 @@ class AdminUsersPage : Page(
     templateName = "admin/users.kte",
 ) {
     companion object {
-        lateinit var ROUTE: String
+        const val ROUTE: String = "/admin/users"
     }
 
     var userDTOs = listOf<UserDTO>()
