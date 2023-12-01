@@ -17,7 +17,7 @@ import org.koin.dsl.module
 import org.tinylog.kotlin.Logger
 import java.io.File
 
-fun main(args: Array<String>) {
+fun main() {
     val configFile = File("./config.yml")
     if (!configFile.exists()) {
         Logger.warn("Config file not found, creating new one with defaults")

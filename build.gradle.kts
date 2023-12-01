@@ -1,17 +1,20 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val tinylog = "2.6.2"
-val jte = "2.0.2"
+
+tasks.wrapper {
+    gradleVersion = "8.5"
+    distributionType = Wrapper.DistributionType.BIN
+}
 
 plugins {
-    kotlin("jvm") version "1.8.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("gg.jte.gradle") version ("2.3.2")
+    kotlin("jvm") version "1.9.21"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("gg.jte.gradle") version "3.1.5"
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
     application
 }
 
-group = "me.sam"
+group = "de.sam"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -20,68 +23,54 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.20-RC")
-    // https://mvnrepository.com/artifact/io.javalin/javalin
+    // Kotlin
+    val kotlin = "1.9.21"
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin")
+
+    // Javalin
     implementation("io.javalin:javalin:5.6.1")
     implementation("io.javalin:javalin-rendering:5.6.0")
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+
+    // Logging
     implementation("org.slf4j:slf4j-simple:2.0.5")
-    // https://mvnrepository.com/artifact/gg.jte/jte
-    implementation("gg.jte:jte:2.3.2")
-    implementation("gg.jte:jte-kotlin:2.3.2")
-    // https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed
-    implementation("org.jetbrains.exposed:exposed:0.17.14")
-    // https://mvnrepository.com/artifact/me.liuwj.ktorm/ktorm-core
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.5.4")
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-joda
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.14.2")
-
-    // https://mvnrepository.com/artifact/com.password4j/password4j
-    implementation("com.password4j:password4j:1.7.0")
-
-    // https://mvnrepository.com/artifact/org.ocpsoft.prettytime/prettytime
-    implementation("org.ocpsoft.prettytime:prettytime:5.0.6.Final")
-
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation("commons-io:commons-io:2.11.0")
-
-
-    // Tinylog
-    // https://mvnrepository.com/artifact/org.tinylog/tinylog-api-kotlin
+    val tinylog = "2.6.2"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
-    // https://mvnrepository.com/artifact/org.tinylog/tinylog-impl
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
-    // https://mvnrepository.com/artifact/com.google.guava/guava
+    // Database and ORM
+    implementation("org.jetbrains.exposed:exposed:0.17.14")
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.postgresql:postgresql:42.5.4")
+    val jdbi = "3.39.1"
+    implementation("org.jdbi:jdbi3-core:$jdbi")
+    implementation("org.jdbi:jdbi3-kotlin:$jdbi")
+    implementation("org.jdbi:jdbi3-postgres:$jdbi")
+
+    // Jackson
+    val jackson = "2.15.1"
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jackson")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:$jackson")
+
+    // JTE
+    val jte = "3.1.5"
+    implementation("gg.jte:jte:$jte")
+    implementation("gg.jte:jte-kotlin:$jte")
+
+    // Misc
+    implementation("com.password4j:password4j:1.7.0")
+    implementation("org.ocpsoft.prettytime:prettytime:5.0.6.Final")
+    implementation("commons-io:commons-io:2.11.0")
     implementation("com.google.guava:guava:31.1-jre")
-
-    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
-
-    // https://mvnrepository.com/artifact/dev.samstevens.totp/totp
     implementation("dev.samstevens.totp:totp:1.7.1")
+    implementation("org.jetbrains:markdown:0.4.0")
+    implementation("io.insert-koin:koin-core:3.5.2-RC1")
 
     //TODO: implement maybe
     // https://mvnrepository.com/artifact/io.konform/konform
     //implementation("io.konform:konform:0.4.0")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20-RC")
-
-    implementation("org.jetbrains:markdown:0.4.0")
-
-    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-core
-    implementation("org.jdbi:jdbi3-core:3.39.1")
-    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-kotlin
-    implementation("org.jdbi:jdbi3-kotlin:3.39.1")
-    // https://mvnrepository.com/artifact/org.jdbi/jdbi3-postgres
-    implementation("org.jdbi:jdbi3-postgres:3.39.1")
-
-    // https://mvnrepository.com/artifact/io.insert-koin/koin-core
-    implementation("io.insert-koin:koin-core:3.5.2-RC1")
 }
 
 tasks.test {
@@ -89,7 +78,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = "18"
 }
 
 application {
@@ -124,6 +113,9 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
         // exclude totp
         exclude(dependency("dev.samstevens.totp:totp"))
+
+        // exclude koin
+        exclude(dependency("io.insert-koin:koin-core"))
     }
 }
 
@@ -137,10 +129,11 @@ tasks {
     }
 }
 
+
 // https://github.com/casid/jte/blob/7de70921c2832a119517cc135d387a03790645e8/DOCUMENTATION.md?plain=1#L684
 jte {
     generate()
 }
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(18)
 }

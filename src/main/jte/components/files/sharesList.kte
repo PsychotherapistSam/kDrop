@@ -5,22 +5,20 @@
 @param shares: List<ShareDAO>
 
 <div class="ui relaxed list" style="margin-bottom: unset">
-    @if(shares.isNotEmpty())
-        @for(share in shares)
-            <div class="item" data-id="${share.id.value.toString()}">
-                <div class="right floated content">
-                    <div class="ui compact secondary shareEdit button">Edit</div>
-                    <div class="ui compact red shareDelete button">Delete</div>
-                </div>
-                <div class="content">
-                    !{val name = if(share.vanityName.isNullOrEmpty()) share.id.value.toString() else share.vanityName}
-                    <a class="header" href="/s/${name}" target="_blank">
-                        /s/${name}
-                    </a>
-                    <div class="description">Created ${share.creationDate.toRecentTimeString()}</div>
-                </div>
+    @for(share in shares)
+        <div class="item" data-id="${share.id.value.toString()}">
+            <div class="right floated content">
+                <div class="ui compact secondary shareEdit button">Edit</div>
+                <div class="ui compact red shareDelete button">Delete</div>
             </div>
-        @endfor
+            <div class="content">
+                !{val name = if(share.vanityName.isNullOrEmpty()) share.id.value.toString() else share.vanityName}
+                <a class="header" href="/s/${name}" target="_blank">
+                    /s/${name}
+                </a>
+                <div class="description">Created ${share.creationDate.toRecentTimeString()}</div>
+            </div>
+        </div>
     @else
         <div class="ui basic placeholder segment">
             <div class="ui icon header" style="margin: unset">
@@ -28,7 +26,7 @@
                 This folder has not been shared.
             </div>
         </div>
-    @endif
+    @endfor
 </div>
 <script>
     $(".shareDelete").click(function (e) {
