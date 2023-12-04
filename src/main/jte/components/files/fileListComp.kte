@@ -1,4 +1,3 @@
-@import de.sam.base.database.FileDAO
 @import de.sam.base.database.FileDTO
 @import de.sam.base.database.ShareDTO
 @import de.sam.base.pages.user.UserFilesPage

@@ -9,6 +9,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
 import org.tinylog.kotlin.Logger
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -33,7 +34,8 @@ class FileService {
                 handle.createQuery(sql)
                     .bind("id", fileID.toString())
                     .mapTo<FileDTO>()
-                    .one()
+                    .findOne()
+                    .getOrNull()
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not fetch file with id $fileID", e)
@@ -266,12 +268,50 @@ class FileService {
                     .executeAndReturnGeneratedKeys()
                     .mapTo<FileDTO>()
                     .findOne()
-                    .orElse(null)
+                    .getOrNull()
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not update file with id ${file.id}", e)
         }
     }
+
+    fun updateFilesBatch(files: List<FileDTO>) {
+        val sql = """
+            UPDATE t_files
+            SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
+                owner = CAST(:owner AS uuid), size = :size, size_hr = :size_hr, password = :password, 
+                created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
+            WHERE id = CAST(:id AS uuid)
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<IntArray, Exception> { handle ->
+                handle.prepareBatch(sql).use { batch ->
+                    files.forEach { file ->
+                        batch
+                            .bind("id", file.id.toString())
+                            .bind("name", file.name)
+                            .bind("path", file.path)
+                            .bind("mime_type", file.mimeType)
+                            .bind("parent", file.parent?.toString())
+                            .bind("owner", file.owner.toString())
+                            .bind("size", file.size)
+                            .bind("size_hr", file.sizeHR)
+                            .bind("password", file.password)
+                            .bind("created", file.created?.toDate())
+                            .bind("is_folder", file.isFolder)
+                            .bind("hash", file.hash)
+                            .bind("is_root", file.isRoot)
+                            .add()
+                    }
+                    batch.execute()
+                }
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not update files", e)
+        }
+    }
+
 
     /**
      * Fetches a list of files from the database by their IDs.
@@ -413,6 +453,13 @@ class FileService {
         }
     }
 
+
+    /**
+     * Deletes all files owned by the given user.
+     *
+     * @param userId The unique identifier of the user whose files need to be deleted.
+     * @throws FileServiceException if an error occurs while deleting the files.
+     */
     fun deleteAllFilesFromUser(userId: UUID) {
         val sql = """
             DELETE FROM t_files
@@ -427,6 +474,29 @@ class FileService {
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not delete all files for user", e)
+        }
+    }
+
+
+    /**
+     * Retrieves the total number of files in the database.
+     *
+     * @return The total number of files.
+     * @throws FileServiceException If there was an error counting the total files.
+     */
+    fun countTotalFiles(): Int {
+        val sql = """
+            SELECT COUNT(*) FROM t_files;
+        """.trimIndent()
+
+        return try {
+            jdbi.withHandle<Int, Exception> { handle ->
+                handle.createQuery(sql)
+                    .mapTo(Int::class.java)
+                    .one()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not count total files", e)
         }
     }
 }

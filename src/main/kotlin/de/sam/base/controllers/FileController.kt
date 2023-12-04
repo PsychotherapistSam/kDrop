@@ -3,15 +3,17 @@ package de.sam.base.controllers
 import com.google.common.hash.Hashing
 import com.google.common.io.Files
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.*
+import de.sam.base.database.FileDTO
+import de.sam.base.database.UserDTO
+import de.sam.base.database.jdbi
 import de.sam.base.services.FileService
+import de.sam.base.services.ShareService
 import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.*
 import io.javalin.util.FileUtil
 import jakarta.servlet.MultipartConfigElement
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -29,6 +31,7 @@ import kotlin.system.measureNanoTime
 class FileController : KoinComponent {
 
     private val fileService: FileService by inject()
+    private val shareService: ShareService by inject()
 
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
@@ -225,23 +228,6 @@ class FileController : KoinComponent {
                 }
             }
         }
-//        transaction {
-//            FileDAO.find { FilesTable.id inList fileIDs }.forEach { file ->
-//                if (!file.toDTO().isOwnedByUserId(ctx.currentUserDTO!!.id)) {
-//                    return@forEach
-//                }
-//
-//                if (file.isFolder) {
-//                    // add all files and subfolders recursively
-//                    fileList.addAll(getChildren(file, ctx.currentUserDTO!!, file.name + "/"))
-//                } else {
-//                    val systemFile = File("./${file.path}")
-//                    if (systemFile.exists()) {
-//                        fileList.add(Pair(systemFile, file.name))
-//                    }
-//                }
-//            }
-//        }
 
         val tempZipFile = File("${config.fileTempDirectory}/${UUID.randomUUID()}.zip")
 
@@ -297,18 +283,6 @@ class FileController : KoinComponent {
                 children.add(Pair(systemFile, namePrefix + child.name))
             }
         }
-//        FileDAO.find { FilesTable.parent eq file.id }.forEach { child ->
-//            if (!child.toDTO().isOwnedByUserId(user.id)) {
-//                return@forEach
-//            }
-//            if (child.isFolder) {
-//                children.addAll(getChildren(child, user, namePrefix + child.name + "/"))
-//            }
-//            val systemFile = File("./${child.path}")
-//            if (systemFile.exists()) {
-//                children.add(Pair(systemFile, namePrefix + child.name))
-//            }
-//        }
         return children
     }
 
@@ -328,20 +302,6 @@ class FileController : KoinComponent {
         } else {
             ctx.json(mapOf("status" to "ok", "filesDeleted" to fileIDs))
         }
-
-//        val systemFile = File("./${file.path}")
-//        if (systemFile.exists()) {
-//            systemFile.delete()
-//        }
-//        if (!systemFile.exists()) {
-//            transaction {
-//                FileDAO.findById(file.id)!!.delete()
-//            }
-//        }
-//
-//        //TODO: if file is a folder, delete all files in it
-//
-//        ctx.json(mapOf("status" to "ok"))
     }
 
     fun deleteFiles(ctx: Context) {
@@ -400,66 +360,6 @@ class FileController : KoinComponent {
                 }
             }
         }
-
-
-//        transaction {
-//            allFiles.addAll(FileDAO.find { FilesTable.id inList fileIDs })
-//        }
-//
-//        transaction {
-//            allFiles.forEach { file ->
-//                if (!file.isOwnedByUserId(user.id)) {
-//                    return@forEach
-//                }
-//
-//                fun deleteFile(file: FileDAO) {
-//                    // delete all logs
-//                    DownloadLogTable.deleteWhere { DownloadLogTable.file eq file.id }
-//                    // delete all shares
-//                    SharesTable.deleteWhere { SharesTable.file eq file.id }
-//                    file.delete()
-//                    deletedFileIDs.add(file.id.value)
-//                }
-//
-//                if (file.isFolder) {
-//                    logTimeSpent("recursively deleting folder ${file.name}") {
-//                        val folderFiles = FileDAO.find { FilesTable.parent eq file.id }.toList().map { it.id.value }
-//                        deleteFileList(folderFiles, user)
-//                        deleteFile(file)
-//                    }
-//                } else {
-//                    logTimeSpent("deleting file ${file.name}") {
-//                        val systemFile = File("./${file.path}")
-//                        if (systemFile.exists()) {
-//                            systemFile.delete()
-//                        }
-//                        if (!systemFile.exists()) {
-//                            deleteFile(file)
-//                        }
-//                    }
-//                }
-//                //TODO: only do this once (and last) if there are multiple files with the same parent
-////                logTimeSpent("recalculating parent size") {
-////                    if (file.parent != null) {
-////                        if (file.parent != null) {
-////                            file.parent!!.size = calculateFileSize(file.parent!!, user)
-////                            file.parent!!.sizeHR = humanReadableByteCountBin(file.parent!!.size)
-////                        }
-////                    }
-////                }
-//            }
-        //TODO: KEEP THIS
-//            logTimeSpent("refreshing all deleted files parents size") {
-//                val keys = allFiles.groupBy { it.parent }.keys
-//
-//                keys.forEach { parent ->
-//                    if (parent != null) {
-//                        Logger.debug("refreshing size of ${parent.name}")
-//                        fileService.recalculateFolderSize(parent.id.value, user.id)
-//                    }
-//                }
-//            }
-//        }
         return deletedFiles.map { it.id }
     }
 
@@ -470,43 +370,37 @@ class FileController : KoinComponent {
             }
         }, "Invalid file UUID").get()
 
-        val targetFile = ctx.fileDAOFromId
+        val targetFile = ctx.fileDTOFromId
 
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
 
         val user = ctx.currentUserDTO!!
 
-        val allFiles = arrayListOf<FileDAO>()
-        var oldParents = listOf<FileDAO?>()
-        transaction {
-            allFiles.addAll(FileDAO.find { FilesTable.id inList fileIDs })
+        val allFiles = fileService.getFilesByIds(fileIDs)
+            .filter { it.isOwnedByUserId(user.id) }
+
+        if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
+            return
         }
 
-        transaction {
-            if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
-                return@transaction
-            }
+        val oldParents: List<UUID?> = allFiles.map { it.parent }.distinct()
 
-            oldParents = allFiles.map { it.parent }
+        val updatedFiles = allFiles.map {
+            it.copy(parent = targetFile.id)
+        }
 
-            allFiles.forEach { file ->
-                if (!file.isOwnedByUserId(user.id)) {
-                    return@forEach
-                }
-
-                file.parent = targetFile
-            }
+        logTimeSpent("updating ${updatedFiles.size} moved files parents") {
+            fileService.updateFilesBatch(updatedFiles)
         }
 
         logTimeSpent("refreshing all moved files parents size") {
             oldParents.forEach { parent ->
                 if (parent != null) {
-                    Logger.debug("refreshing size of ${parent.name}")
-                    fileService.recalculateFolderSize(parent.id.value, user.id)
+                    Logger.debug("refreshing size of $parent")
+                    fileService.recalculateFolderSize(parent, user.id)
                 }
             }
-
-            fileService.recalculateFolderSize(targetFile!!.id.value, user.id)
+            fileService.recalculateFolderSize(targetFile.id, user.id)
         }
         ctx.json(mapOf("status" to "ok"))
     }
@@ -517,42 +411,47 @@ class FileController : KoinComponent {
 
         val parentId = UUID.fromString(ctx.queryParam("parent"))
 
-        transaction {
-            val owner = UserDAO.find { UsersTable.id eq ctx.currentUserDTO!!.id }.first()
-            val parent = FileDAO.findById(parentId)
+        val parent = fileService.getFileById(parentId)
 
-            if (parent == null || !parent.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
-                throw BadRequestResponse("Parent folder does not exist or is not owned by you")
-            }
+        if (parent == null || !parent.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
+            throw BadRequestResponse("Parent folder does not exist or is not owned by you")
+        }
 
-            val file = FileDAO.new {
-                this.name = folderName
-                this.path = "upload/${this.id}"
-                this.mimeType = ""
-                this.parent = parent
-                this.owner = owner
-                this.size = 0
-                this.sizeHR = "0 B"
-                this.password = null
-                this.created = DateTime.now()
-                this.isFolder = true
-                this.isRoot = false
-            }
+        val newFileId = UUID.randomUUID()
+        jdbi.useTransaction<Exception> { handle ->
+            val file =
+                fileService.createFile(
+                    handle,
+                    FileDTO(
+                        id = newFileId,
+                        name = folderName,
+                        path = "upload/${newFileId}",
+                        mimeType = "",
+                        parent = parent.id,
+                        owner = ctx.currentUserDTO!!.id,
+                        size = 0,
+                        sizeHR = "0 B",
+                        password = null,
+                        created = DateTime.now(),
+                        isFolder = true,
+                        isRoot = false
+                    )
+                )
             ctx.json(mapOf("id" to file.id.toString()))
         }
     }
 
     fun getFileMetadata(ctx: Context) {
-        val file = transaction {
-            ctx.fileDTOFromId // first check if the file is set by id
-                ?: FileDAO.findById(ctx.share!!.first.file.id)?.toDTO() // if not check if the file is set by share
-                ?: throw NotFoundResponse("File not found") // if not throw an error
-                    .also { Logger.error(it.message) }
-        }
+        val file: FileDTO =
+            if (ctx.fileDTOFromId != null) {
+                ctx.fileDTOFromId!!
+            } else {
+                val fileId = ctx.queryParamAsClass<UUID>("file").get()
+                fileService.getFileById(fileId) ?: throw NotFoundResponse("File not found")
+            }
 
-        val shares = transaction {
-            ShareDAO.find { SharesTable.file eq file.id }.map { it.toDTO() }
-        }
+        val shares = shareService.getSharesForFile(file.id)
+
         ctx.json(
             mapOf(
                 "file" to file, "shares" to shares

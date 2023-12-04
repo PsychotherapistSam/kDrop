@@ -25,6 +25,7 @@ class ShareDTO(
     var maxDownloads: Long?,
     var downloadCount: Long,
     var vanityName: String?,
+    @JsonIgnore
     var password: String?,
 ) : Serializable
 

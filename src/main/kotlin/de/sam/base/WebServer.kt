@@ -167,7 +167,7 @@ class WebServer {
                 path("/users") {
                     before("/{userId}*", UserController()::getUserParameter)
                     path("/{userId}") {
-                        delete("/", UserController()::deleteUserFromContext, UserRoles.SELF, UserRoles.ADMIN)
+                        delete("/", UserController()::deleteUser, UserRoles.SELF, UserRoles.ADMIN)
                         put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                     }
                 }

@@ -1,8 +1,6 @@
 package de.sam.base.utils
 
 import de.sam.base.config.Configuration.Companion.config
-import de.sam.base.database.FileDAO
-import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDAO
 import de.sam.base.database.toDTO
 import de.sam.base.requirements.Requirement
@@ -15,16 +13,12 @@ import org.tinylog.kotlin.Logger
 import java.net.URI
 import java.util.*
 import kotlin.time.DurationUnit
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
-@OptIn(ExperimentalTime::class)
 class CustomAccessManager : AccessManager {
-    private val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: Set<RouteRole>) {
-
         if (ctx.path().startsWith("/api/v1/payments")) {
             //TODO: change this, without this an error get's thrown from stripejs
             ctx.header(Header.CONTENT_SECURITY_POLICY, "default-src *")

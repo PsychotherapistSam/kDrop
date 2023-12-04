@@ -1,6 +1,9 @@
 package de.sam.base.utils
 
-import de.sam.base.database.*
+import de.sam.base.database.FileDTO
+import de.sam.base.database.ShareDAO
+import de.sam.base.database.ShareDTO
+import de.sam.base.database.UserDTO
 import io.javalin.http.Context
 
 // https://github.com/tipsy/javalinstagram/blob/7d03477b89a21addc8cf734b52b292828d48eefe/src/main/kotlin/javalinstagram/Extensions.kt#L7
@@ -27,10 +30,6 @@ var Context.isMobileUser: Boolean
 var Context.fileDTOFromId: FileDTO?
     get() = this.attribute<FileDTO>("requestFileDTOParameter")
     set(value) = this.attribute("requestFileDTOParameter", value)
-
-var Context.fileDAOFromId: FileDAO?
-    get() = this.attribute<FileDAO>("requestFileDAOParameter")
-    set(value) = this.attribute("requestFileDAOParameter", value)
 
 val Context.requestStartTime: Long
     get() = this.attribute("javalin-request-log-start-time") as Long? ?: 0L

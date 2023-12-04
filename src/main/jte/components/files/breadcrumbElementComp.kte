@@ -13,7 +13,7 @@
                 <a class="section" href="${UserFilesPage.ROUTE}"
                    data-id="${breadcrumb.id!!.toString()}">${breadcrumb.name}</a>
             @else
-                <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id!!.toString()}/"
+                <a class="section" href="${UserFilesPage.ROUTE}${breadcrumb.id.toString()}/"
                    data-id="${breadcrumb.id!!.toString()}">
                     ${breadcrumb.name}
                 </a>

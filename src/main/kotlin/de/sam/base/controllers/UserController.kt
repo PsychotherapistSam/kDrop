@@ -104,7 +104,7 @@ class UserController : KoinComponent {
         }
     }
 
-    fun deleteUserFromContext(ctx: Context) {
+    fun deleteUser(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
 
         if (ctx.currentUserDTO != selectedUserDTO && !ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {

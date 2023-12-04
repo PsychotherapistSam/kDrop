@@ -1,8 +1,11 @@
 package de.sam.base.requirements
 
-import de.sam.base.database.*
+import de.sam.base.database.FileDTO
+import de.sam.base.database.ShareDAO
+import de.sam.base.database.SharesTable
+import de.sam.base.database.toDTO
+import de.sam.base.services.FileService
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.fileDAOFromId
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.share
@@ -13,12 +16,14 @@ import io.javalin.http.HttpStatus
 import io.javalin.http.pathParamAsClass
 import io.javalin.security.RouteRole
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.util.*
 
-private val fileCache = mutableMapOf<UUID, Triple<Long, FileDAO, FileDTO>>()
+private val fileCache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
 
-enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : RouteRole {
+enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : RouteRole, KoinComponent {
 
     IS_LOGGED_IN("You need to be logged in to access this resource.", HttpStatus.FORBIDDEN) {
         override fun isMet(ctx: Context): Boolean {
@@ -44,22 +49,21 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
 
             if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
                 val fileCacheEntry = fileCache[fileId]!!
-                ctx.fileDAOFromId = fileCacheEntry.second
-                ctx.fileDTOFromId = fileCacheEntry.third
+                ctx.fileDTOFromId = fileCacheEntry.second
             } else {
                 if (fileCache.containsKey(fileId)) {
                     fileCache.remove(fileId)
                 }
+
                 transaction {
                     logTimeSpent("Getting file by id") {
-                        val fileDAO = FileDAO.findById(fileId)
+                        val fileService: FileService by inject()
+                        val fileDTO = fileService.getFileById(fileId)
 
-                        if (fileDAO != null) {
-                            val fileDTO = fileDAO.toDTO()
+                        if (fileDTO != null) {
                             Logger.trace("Setting fileDTO and DAO to request attribute")
-                            ctx.fileDAOFromId = fileDAO
                             ctx.fileDTOFromId = fileDTO
-                            fileCache[fileId] = Triple(System.currentTimeMillis(), fileDAO, fileDTO)
+                            fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO)
                         }
                     }
                 }

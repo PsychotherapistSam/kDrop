@@ -26,6 +26,7 @@ data class FileDTO(
     var owner: UUID? = null,
     var size: Long? = null,
     var sizeHR: String? = null,
+    @JsonIgnore
     var password: String? = null,
     var created: DateTime? = null,
     var isFolder: Boolean,

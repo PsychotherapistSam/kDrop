@@ -1,18 +1,18 @@
-@import de.sam.base.database.ShareDAO
+@import de.sam.base.database.ShareDTO
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.toRecentTimeString
 
-@param shares: List<ShareDAO>
+@param shares: List<ShareDTO>
 
 <div class="ui relaxed list" style="margin-bottom: unset">
     @for(share in shares)
-        <div class="item" data-id="${share.id.value.toString()}">
+        <div class="item" data-id="${share.id.toString()}">
             <div class="right floated content">
                 <div class="ui compact secondary shareEdit button">Edit</div>
                 <div class="ui compact red shareDelete button">Delete</div>
             </div>
             <div class="content">
-                !{val name = if(share.vanityName.isNullOrEmpty()) share.id.value.toString() else share.vanityName}
+                !{val name = if(share.vanityName.isNullOrEmpty()) share.id.toString() else share.vanityName}
                 <a class="header" href="/s/${name}" target="_blank">
                     /s/${name}
                 </a>

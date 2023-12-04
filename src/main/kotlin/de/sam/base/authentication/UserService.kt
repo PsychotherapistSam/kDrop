@@ -13,11 +13,18 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 class UserService : KoinComponent {
     private val loginLogService: LoginLogService by inject()
     private val fileService: FileService by inject()
 
+    /**
+     * Retrieves a user from the database based on the username.
+     *
+     * @param username the username of the user to retrieve
+     * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
+     */
     fun getUserByUsername(username: String?): UserDTO? {
         val sql = """
             SELECT * FROM t_users
@@ -30,7 +37,7 @@ class UserService : KoinComponent {
                     .bind("name", username)
                     .mapTo<UserDTO>()
                     .findOne()
-                    .orElse(null)
+                    .getOrNull()
             }
         } catch (e: Exception) {
             Logger.error(e)
@@ -38,7 +45,15 @@ class UserService : KoinComponent {
         return null
     }
 
-    /*
+    /**
+     * Creates a new user with the given parameters.
+     *
+     * @param username The username of the user.
+     * @param passwordHash The password hash of the user.
+     * @param passwordSalt The password salt of the user.
+     * @param role The role of the user (default is UserRoles.USER).
+     * @return The created UserDTO object if successful, null otherwise.
+     *//*
     * CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
     * ALTER TABLE public.t_users ALTER COLUMN id SET default uuid_generate_v4();
     */
@@ -116,6 +131,12 @@ class UserService : KoinComponent {
     }
 
 
+    /**
+     * Deletes user data for the specified user.
+     *
+     * @param userId The ID of the user to delete.
+     * @throws Exception if any error occurs during the deletion process.
+     */
     fun deleteUser(userId: UUID) {
 //        shareService.deleteAllSharesForUser(userId)
         Logger.debug("Deleting user data for $userId")
@@ -148,44 +169,27 @@ class UserService : KoinComponent {
             throw Exception("Could not delete user $userId", e)
         }
 
-        /**
-         * transaction {
-         *             // delete all user related data
-         *             ShareDAO.find { SharesTable.user eq user.id }.forEach { it.delete() }
-         *
-         *             // delete login log
-         *             LoginLogDAO.find { LoginLogTable.user eq user.id }.forEach { it.delete() }
-         *
-         *             // delete all files
-         *             FileController(fileService).deleteFileList(
-         *                 FileDAO.find { FilesTable.owner eq user.id and FilesTable.isRoot }.map { it.id.value }.take(1),
-         *                 user
-         *             )
-         *
-         *             // delete all files
-         *             FileDAO.find { FilesTable.owner eq user.id }.forEach { it.delete() }
-         *
-         *             UserDAO
-         *                 .findById(user.id)!!
-         *                 .delete()
-         *  }
-         */
+    }
 
+    /**
+     * Returns the total number of users in the database.
+     *
+     * @return the total number of users
+     */
+    fun countTotalUsers(): Int {
+        val sql = """
+            SELECT COUNT(*) FROM t_users;
+        """.trimIndent()
 
-//        val sql = """
-//            SELECT * FROM t_files
-//            WHERE id = CAST(:id AS uuid);
-//        """.trimIndent()
-//
-//        try {
-//            jdbi.withHandle<FileDTO?, Exception> { handle ->
-//                handle.createQuery(sql)
-//                    .bind("id", fileID.toString())
-//                    .mapTo<FileDTO>()
-//                    .findOne()
-//                    .orElse(null)
-//            }
-//        } catch (e: Exception) {
-//        }
+        return try {
+            jdbi.withHandle<Int, Exception> { handle ->
+                handle.createQuery(sql)
+                    .mapTo<Int>()
+                    .one()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+            0
+        }
     }
 }
