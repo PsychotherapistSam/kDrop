@@ -6,7 +6,7 @@ import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.services.FileService
 import de.sam.base.services.ShareService
-import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.share
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
@@ -53,7 +53,8 @@ class UserSharePage : Page(
     }
 
     fun shareList(ctx: Context) {
-        val shares = shareService.getSharesForUser(ctx.currentUserDTO!!.id)
+        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+        val shares = shareService.getSharesForFile(file.id)
 
         ctx.render(
             "components/files/sharesList.kte", mapOf(

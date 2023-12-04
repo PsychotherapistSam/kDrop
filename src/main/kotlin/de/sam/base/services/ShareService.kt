@@ -45,24 +45,24 @@ class ShareService {
 
 
     /**
-     * Retrieves the shares associated with a given file.
+     * Retrieves the list of shares for a given file.
      *
-     * @param id The ID of the file.
-     * @return The ShareDTO object representing the shares associated with the file.
-     * @throws FileServiceException if there is an error fetching the shares for the file.
+     * @param id The unique identifier of the file.
+     * @return The list of shares associated with the file.
+     * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getSharesForFile(id: UUID): ShareDTO {
+    fun getSharesForFile(id: UUID): List<ShareDTO> {
         val sql = """
             SELECT * FROM t_shares
             WHERE "file" = CAST(:id AS uuid);
         """.trimIndent()
 
         return try {
-            jdbi.withHandle<ShareDTO, Exception> { handle ->
+            jdbi.withHandle<List<ShareDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("id", id.toString())
                     .mapTo<ShareDTO>()
-                    .one()
+                    .list()
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not fetch shares for file $id", e)
