@@ -309,19 +309,24 @@
               onsubmit="$('#shareCreationModal').find('button.approve').first().click(); return false;">
             <div class="field">
                 <label for="vanityName">Vanity Name (optional)</label>
-                <input type="text" name="vanityName" id="vanityName" placeholder="Name" tabindex="1">
+                <input type="text" name="vanityName" id="vanityName" placeholder="Leave blank for random id"
+                       tabindex="1">
             </div>
-
+            <div class="field">
+                <label for="password">Password (optional)</label>
+                <input type="password" name="password" id="password" placeholder="Leave blank to disable" tabindex="2">
+            </div>
             <div class="field">
                 <label for="maxDownloads">Downloads (optional)</label>
-                <input type="number" name="maxDownloads" id="maxDownloads" placeholder="0" tabindex="1">
+                <input type="number" name="maxDownloads" id="maxDownloads" placeholder="Leave blank to disable"
+                       tabindex="3">
             </div>
             <input type="submit" hidden/>
         </form>
     </div>
     <div class="actions">
-        <button class="ui compact green approve button">Create</button>
-        <button class="ui compact secondary deny button">Close</button>
+        <button class="ui compact green approve button" tabindex="4">Create</button>
+        <button class="ui compact secondary deny button" tabindex="5">Cancel</button>
     </div>
 </div>
 <script>

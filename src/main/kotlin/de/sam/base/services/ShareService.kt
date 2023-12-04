@@ -89,7 +89,7 @@ class ShareService {
                     .bind("id", share.id.toString())
                     .bind("file", share.file.toString())
                     .bind("user", share.user.toString())
-                    .bind("creationDate", share.creationDate)
+                    .bind("creationDate", share.creationDate.toDate())
                     .bind("maxDownloads", share.maxDownloads)
                     .bind("downloadCount", share.downloadCount)
                     .bind("vanityName", share.vanityName)

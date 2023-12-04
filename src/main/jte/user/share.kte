@@ -18,10 +18,12 @@ content = @`
     !{val currentIsFolder = page.file == null || page.file!!.isFolder!!}
     !{val fileIsOwnedByCurrentUser = page.file?.isOwnedByUserId(page.currentUserDTO?.id) == true}
 
-    @if(!currentIsFolder && page.file != null)
-        <h1>${page.file!!.name!!}</h1>
-    @else
-        <h1>Your Files</h1>
+    @if(!page.passwordRequired || page.passwordCorrect)
+        @if(!currentIsFolder && page.file != null)
+            <h1>${page.file!!.name!!}</h1>
+        @else
+            <h1>Your Files</h1>
+        @endif
     @endif
 
     @if(fileIsOwnedByCurrentUser)
@@ -46,11 +48,46 @@ content = @`
             Beacuse we do not have a good way to share folders yet, you are currently not able to do so. This will be a
             feature in the future.
         </div>
-        @template.previews.folderPreview(files = page.fileDTOs , parent = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString(), sortByName = "", sortBy = "")
+    <%--        @template.previews.folderPreview(files = page.fileDTOs , parent = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString(), sortByName = "", sortBy = "")--%>
 
     <%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = "", sortBy = "", ctx = page.ctx, parent = page.file, share = page.ctx.share!!.second)--%>
     @else
-        @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString())
+        @if(page.passwordRequired && !page.passwordCorrect)
+            <br>
+            <div class="ui grid">
+                <div class="ui nine wide computer twelve wide tablet fifteen wide mobile centered column">
+                    <div class="ui center aligned basic fitted segment">
+                        <h1>${page.file!!.name!!}</h1>
+                    </div>
+                    <div class="ui message">
+                        <div class="header">
+                            This file is password protected. You need to enter the password to access it.
+                        </div>
+                    </div>
+                    <form class="ui form" _="${displayLoader}"
+                          hx-get="/s/${page.ctx.share!!.second.id.toString()}"
+                          hx-target="body"
+                          hx-push-url="true">
+                        <div class="field">
+                            <label for="password">Password</label>
+                            <input type="password" name="password" id="password" placeholder="Enter Password"
+                                   tabindex="1">
+                        </div>
+                        @if(page.passwordWrong)
+                            <div class="ui negative message">
+                                <ul class="list">
+                                    <li>Incorrect password</li>
+                                </ul>
+                            </div>
+                        @endif
+                        <button class="ui secondary compact button"
+                                tabindex="2">Next
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @else
+            @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString(), providedPassword = page.providedPassword)
+        @endif
     @endif
-
 `)

@@ -10,8 +10,9 @@
 @param ctx: Context
 @param share: Boolean = false
 @param shareId: String? = null
+@param providedPassword: String? = null
 
-!{val fileUrl = if(share) "/api/v1/shares/${shareId}/download" else "/api/v1/files/${file.id!!}"}
+!{val fileUrl = if(share) "/api/v1/shares/${shareId}/download${if(!providedPassword.isNullOrBlank()) "?password=$providedPassword" else "" }" else "/api/v1/files/${file.id!!}"}
 
 <div class="ui basic fitted segment">
     <a href="${fileUrl}"

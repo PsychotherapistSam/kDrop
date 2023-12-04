@@ -2,6 +2,7 @@ package de.sam.base.controllers
 
 import com.google.common.hash.Hashing
 import com.google.common.io.Files
+import de.sam.base.authentication.PasswordHasher
 import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
@@ -32,6 +33,7 @@ class FileController : KoinComponent {
 
     private val fileService: FileService by inject()
     private val shareService: ShareService by inject()
+    private val passwordHasher: PasswordHasher by inject()
 
     fun uploadFile(ctx: Context) {
         val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
@@ -154,11 +156,25 @@ class FileController : KoinComponent {
 
     // from a share or from a file id
     fun getSingleFile(ctx: Context) {
-        //TODO: this using a context extension
-
         val file = ctx.fileDTOFromId ?: fileService.getFileById(ctx.share!!.second.file)
         ?: throw NotFoundResponse("File not found") // if not throw an error
             .also { Logger.error(it.message) }
+
+
+        val isShareRequest = ctx.share?.second != null
+        if (isShareRequest && ctx.share!!.second.password != null) {
+            // verify password
+            val providedPassword = ctx.queryParam("password") ?: throw BadRequestResponse("No password provided")
+            val passwordCorrect =
+                passwordHasher.verifyPassword(
+                    providedPassword!!, ctx.share!!.second.password!!, file.id.toString()
+                )
+
+            if (!passwordCorrect) {
+                throw BadRequestResponse("Wrong password")
+            }
+        }
+
 
         val systemFile = File("${config.fileDirectory}/${file.id}")
         if (!systemFile.exists()) {
