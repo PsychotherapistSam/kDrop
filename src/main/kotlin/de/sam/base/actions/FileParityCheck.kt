@@ -5,6 +5,7 @@ import de.sam.base.controllers.isValidUUID
 import de.sam.base.services.FileService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.tinylog.kotlin.Logger
 import java.io.File
 import java.util.*
 
@@ -18,13 +19,18 @@ class FileParityCheck : KoinComponent {
             .filter { it.isValidUUID() }
             .map { UUID.fromString(it) }
 
+        if (localFilesList.isEmpty()) {
+            Logger.info("No files found in the file directory, skipping parity check")
+            return
+        }
+
         val existingFiles = fileService.getFilesByIds(localFilesList)
             .map { it.id }
 
         val filesNotInDB = localFilesList.filter { !existingFiles.contains(it) }
 
         filesNotInDB.forEach {
-            println("File $it does not exist in the database, deleting it locally...")
+            Logger.info("File $it is not in the database, deleting it")
             File("${config.fileDirectory}/$it").delete()
         }
     }
