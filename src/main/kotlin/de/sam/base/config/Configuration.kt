@@ -28,7 +28,7 @@ class Configuration {
     var tracking = Tracking()
 
     @JsonIgnore
-    var version = "v0.0.4"
+    var version = "v0.0.5"
 
     class Database {
         var host: String = "localhost"

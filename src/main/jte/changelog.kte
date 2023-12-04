@@ -11,10 +11,24 @@ content = @`
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.4 - 10 July 2023
+            v0.0.5 - 04. December 2023
         </div>
         <div class="active content">
-            <h4 class="ui dividing header">Enhancements</h4>
+            <h4 class="ui dividing header">Changes</h4>
+            <ul class="ui list">
+                <li>Added File Search within the File Browser. Available via the search button or the shortcut Ctrl+K
+                </li>
+                <li>Added a list of shared links</li>
+                <li>Improved some legacy database related code.</li>
+                <li>Switched to enhanced page routing (less magic)</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.4 - 10. July 2023
+        </div>
+        <div class="content">
+            <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
                 <li>Improved the general speed of most file-related actions (2-10x improvements)</li>
                 <li>Improved usage quota display</li>
@@ -22,7 +36,7 @@ content = @`
         </div>
         <div class="title">
             <i class="dropdown icon"></i>
-            v0.0.3 - 02 July 2023
+            v0.0.3 - 02. July 2023
         </div>
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
@@ -33,7 +47,7 @@ content = @`
         </div>
         <div class="title">
             <i class="dropdown icon"></i>
-            v0.0.2 - 27 June 2023
+            v0.0.2 - 27. June 2023
         </div>
         <div class="content">
             <%--            <h4 class="ui dividing header">Notes</h4>--%>
@@ -46,7 +60,7 @@ content = @`
         </div>
         <div class="title">
             <i class="dropdown icon"></i>
-            v0.0.1 - 26 June 2023
+            v0.0.1 - 26. June 2023
         </div>
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
@@ -56,7 +70,7 @@ content = @`
         </div>
         <div class="title">
             <i class="dropdown icon"></i>
-            v0.0.0 - 26 June 2023
+            v0.0.0 - 26. June 2023
         </div>
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
