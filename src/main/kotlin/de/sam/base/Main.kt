@@ -12,10 +12,12 @@ import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.services.ShareService
 import de.sam.base.utils.logging.logTimeSpent
+import me.desair.tus.server.TusFileUploadService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.tinylog.kotlin.Logger
 import java.io.File
+import java.nio.file.Paths
 
 fun main() {
     val configFile = File("./config.yml")
@@ -41,6 +43,13 @@ fun main() {
             single<UserValidator> { UserValidator() }
             single<PasswordHasher> { PasswordHasher() }
             single<AuthenticationService> { AuthenticationService() }
+            single<TusFileUploadService> {
+                val uploadDir = Paths.get("uploads")
+                TusFileUploadService()
+                    .withStoragePath(uploadDir.toAbsolutePath().toString())
+                    .withUploadUri("/api/v1/files/upload")
+                    .withUploadExpirationPeriod(1000 * 60 * 60) // 1 hour
+            }
         })
     }
 

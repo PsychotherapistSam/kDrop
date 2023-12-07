@@ -6,8 +6,7 @@
 
 @param parent: FileDTO
 @param ctx: Context
-<script src="https://releases.transloadit.com/uppy/v3.7.0/uppy.min.js"></script>
-<link href="https://releases.transloadit.com/uppy/v3.7.0/uppy.min.css" rel="stylesheet">
+<link href="https://releases.transloadit.com/uppy/v3.20.0/uppy.min.css" rel="stylesheet">
 
 <style>
     polygon {
@@ -16,11 +15,25 @@
 </style>
 
 <script>
-    var uppy = new Uppy.Uppy({
+    let uppy = null;
+</script>
+
+<script type="module">
+    import {
+        Dashboard,
+        ImageEditor,
+        ScreenCapture,
+        Tus,
+        Uppy,
+        GoldenRetriever
+    } from "https://releases.transloadit.com/uppy/v3.20.0/uppy.min.mjs"
+
+    uppy = new Uppy()
+    uppy.setOptions({
         debug: true,
         autoProceed: false,
     })
-    uppy.use(Uppy.Dashboard, {
+    uppy.use(Dashboard, {
         inline: false,
         trigger: "#fileUploadModal",
         closeModalOnClickOutside: true,
@@ -30,37 +43,41 @@
         showProgressDetails: true,
         proudlyDisplayPoweredByUppy: false,
         doneButtonHandler: () => {
-            // this.uppy.reset()
             uppy.getPlugin('Dashboard').closeModal()
         },
     });
     uppy.on('dashboard:modal-closed', () => {
-        this.uppy.cancelAll({reason: 'user'})
+        uppy.cancelAll({reason: 'user'})
         htmx.trigger("#refreshButton", "refreshTable");
     })
-    uppy.use(Uppy.XHRUpload, {
-        endpoint: '/api/v1/files?parent=${parent.id.toString()}',
-        timeout: 1000 * 60 * 5,  // file hashing can take a while (especially on very large files), allow 5 minutes.
-        //  bundle: true,
+
+    uppy.use(Tus, {
+        endpoint: '/api/v1/files/upload',
         headers: (file) => {
             if (uppy.getFiles().length > 1) {
                 console.log(file)
                 return {
-                    "Accept": "application/json",
+                    "X-File-Parent-Id": "${parent.id.toString()}",
                     "x-batch-upload": true,
                     "x-batch-size": uppy.getFiles().length,
                     "x-batch-index": uppy.getFiles().findIndex(f => f.id === file.id)
                 }
             } else {
                 return {
-                    "Accept": "application/json",
+                    "X-File-Parent-Id": "${parent.id.toString()}",
                     "x-batch-upload": false
                 }
             }
         }
     });
 
+    uppy.use(ScreenCapture, {target: Dashboard})
+    uppy.use(ImageEditor, {target: Dashboard})
+    uppy.use(GoldenRetriever)
+    uppy.use(Compressor);
+</script>
 
+<script>
     document.addEventListener("dragover", event => {
         if (event.dataTransfer.types.indexOf("Files") !== -1 || event.dataTransfer.types.indexOf("application/x-moz-file") !== -1) {
             const dashboard = uppy.getPlugin('Dashboard');

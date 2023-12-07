@@ -1,12 +1,26 @@
 package de.sam.base.actions
 
 import de.sam.base.config.Configuration.Companion.config
+import me.desair.tus.server.TusFileUploadService
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.File
 
-class FileCleanupAction {
+class FileCleanupAction : KoinComponent {
+    private val tusFileUploadSerivce: TusFileUploadService by inject()
+
     fun cleanup() {
         Logger.info("Starting file cleanup")
+
+        try {
+            Logger.info("Starting tusFileUploadSerivce cleanup")
+            tusFileUploadSerivce.cleanup()
+            Logger.info("Finished tusFileUploadSerivce cleanup successfully")
+        } catch (e: Exception) {
+            Logger.error("Error while cleaning up tus uploads", e)
+        }
+
         File(config.fileTempDirectory)
             .walk()
             .forEach {

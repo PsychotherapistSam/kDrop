@@ -14,12 +14,11 @@ import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.*
 import io.javalin.util.FileUtil
-import jakarta.servlet.MultipartConfigElement
+import me.desair.tus.server.TusFileUploadService
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
-import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -34,41 +33,29 @@ class FileController : KoinComponent {
     private val fileService: FileService by inject()
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()
+    private val tusFileUploadSerivce: TusFileUploadService by inject()
 
-    fun uploadFile(ctx: Context) {
-        val maxFileSize = 1024L * 1024L * 1024L * 10L // 1024 MB || 10 GiB
-        val fileSize = ctx.header(Header.CONTENT_LENGTH)?.toLong() ?: 0L
+    fun handleTUSUpload(ctx: Context) {
+        val servletRequest = ctx.req()
+        val servletResponse = ctx.res()
 
-        if (fileSize > maxFileSize) {
-            val error = "File size of ${humanReadableByteCountBin(fileSize)} exceeds the max allowed size of ${
-                humanReadableByteCountBin(maxFileSize)
-            }"
-            throw BadRequestResponse(error)
-        }
+        tusFileUploadSerivce.process(servletRequest, servletResponse)
 
-        val userId = ctx.currentUserDTO!!.id
-        val parentFileId = ctx.queryParamAsClass<UUID>("parent").get()
+        val uploadURI = servletRequest.requestURI
 
-        val files = try {
-            ctx.req().setAttribute(
-                "org.eclipse.jetty.multipartConfig", MultipartConfigElement(config.fileTempDirectory, -1, -1, 1)
-            )
-            ctx.uploadedFiles()
-        } catch (EofException: EOFException) {
-            Logger.error("Early EOF, aborting request")
-            throw BadRequestResponse("Early EOF")
-        }
-        val owner = ctx.currentUserDTO!!
-        val parentFile = fileService.getFileById(parentFileId)
+        val uploadInfo = tusFileUploadSerivce.getUploadInfo(uploadURI)
+        if (uploadInfo != null && !uploadInfo.isUploadInProgress) {
 
-        if (parentFile != null && !parentFile.isOwnedByUserId(userId)) {
-            throw BadRequestResponse("Parent folder does not exist or is not owned by you")
-        }
+            val userId = ctx.currentUserDTO!!.id
+            val parentFileId = UUID.fromString(ctx.header("X-File-Parent-Id"))
 
-        val idMap = mutableMapOf<String, UUID>()
+            val parentFile = fileService.getFileById(parentFileId)
+            if (parentFile != null && !parentFile.isOwnedByUserId(userId)) {
+                tusFileUploadSerivce.deleteUpload(uploadURI)
+                throw BadRequestResponse("Parent folder does not exist or is not owned by you")
+            }
 
-        jdbi.useTransaction<Exception> { handle ->
-            files.forEach {
+            jdbi.useTransaction<Exception> { handle ->
                 val uploadFolder = File(config.fileDirectory)
                 if (!uploadFolder.exists()) {
                     uploadFolder.mkdir()
@@ -77,16 +64,13 @@ class FileController : KoinComponent {
                 if (!uploadTempFolder.exists()) {
                     uploadTempFolder.mkdir()
                 }
-
                 val temporaryFileID = UUID.randomUUID()
-
                 val temporaryFile = File("${config.fileTempDirectory}/${temporaryFileID}")
 
                 logTimeSpent("downloading the file from the user") {
-                    FileUtil.streamToFile(it.content(), temporaryFile.path)
+                    FileUtil.streamToFile(tusFileUploadSerivce.getUploadedBytes(uploadURI), temporaryFile.path)
                 }
 
-                // log error if temporary file could not be written
                 if (!temporaryFile.exists()) {
                     Logger.error("Temporary file ${temporaryFile.path} could not be written")
                 } else {
@@ -97,16 +81,17 @@ class FileController : KoinComponent {
                     temporaryFile.sha512()
                 }
 
+
                 val createdFile = fileService.createFile(
                     handle, FileDTO(
                         id = UUID.randomUUID(),
-                        name = it.filename(),
+                        name = uploadInfo.fileName,
                         path = "upload/${UUID.randomUUID()}",
-                        mimeType = it.contentType() ?: "application/octet-stream",
+                        mimeType = uploadInfo.fileMimeType ?: "application/octet-stream",
                         parent = parentFile!!.id,
-                        owner = owner.id,
-                        size = it.size(),
-                        sizeHR = humanReadableByteCountBin(it.size()),
+                        owner = ctx.currentUserDTO!!.id,
+                        size = temporaryFile.length(),
+                        sizeHR = humanReadableByteCountBin(temporaryFile.length()),
                         password = null,
                         created = DateTime.now(),
                         isFolder = false,
@@ -115,7 +100,6 @@ class FileController : KoinComponent {
                     )
                 )
 
-                // move file to upload folder with database id
                 val targetFile = File("${config.fileDirectory}/${createdFile.id}")
 
                 try {
@@ -131,27 +115,29 @@ class FileController : KoinComponent {
                     // delete the temporary file
                     temporaryFile.delete()
 
+                    tusFileUploadSerivce.deleteUpload(uploadURI)
+
                     throw BadRequestResponse("Target file could not be moved")
                 }
                 Logger.debug("Target file ${targetFile.path} moved")
-
-                idMap[createdFile.name] = createdFile.id
+                tusFileUploadSerivce.deleteUpload(uploadURI)
             }
-            ctx.json(idMap)
-        }
-        if (ctx.header("x-batch-upload")?.toBoolean() == true) {
-            val batchSize = ctx.header("x-batch-size")?.toInt() ?: 0
-            val currentIndex = ctx.header("x-batch-index")?.toInt() ?: 0
 
-            // do the calculation once when half of the files have been uploaded and once when the upload is finished
-            if (batchSize / 2 == currentIndex + 1 || batchSize == currentIndex + 1) {
-                Logger.debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
+            if (ctx.header("x-batch-upload")?.toBoolean() == true) {
+                val batchSize = ctx.header("x-batch-size")?.toInt() ?: 0
+                val currentIndex = ctx.header("x-batch-index")?.toInt() ?: 0
+
+                // do the calculation once when half of the files have been uploaded and once when the upload is finished
+                if (batchSize / 2 == currentIndex + 1 || batchSize == currentIndex + 1) {
+                    Logger.debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
+                    fileService.recalculateFolderSize(parentFileId, userId)
+                }
+            } else {
+                Logger.debug("updating folder size during upload a singular file")
                 fileService.recalculateFolderSize(parentFileId, userId)
             }
-        } else {
-            Logger.debug("updating folder size during upload a singular file")
-            fileService.recalculateFolderSize(parentFileId, userId)
         }
+        ctx.status(servletResponse.status)
     }
 
     // from a share or from a file id

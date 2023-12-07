@@ -36,12 +36,15 @@ import io.javalin.json.JavalinJackson
 import io.javalin.plugin.bundled.RouteOverviewPlugin
 import io.javalin.rendering.template.JavalinJte
 import io.javalin.validation.JavalinValidation
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.nio.file.Path
 import java.util.*
 
 
-class WebServer {
+class WebServer : KoinComponent {
+    private val fileService: FileService by inject()
 
     fun start() {
         Logger.debug("Creating javalin app")
@@ -70,9 +73,6 @@ class WebServer {
             val jackson = JavalinJackson.defaultMapper().apply { registerModule(JodaModule()) }
             javalinConfig.jsonMapper(JavalinJackson(jackson))
         }.start(config.port)
-
-
-        val fileService = FileService()
 
 
         Logger.debug("Registering Javalin exception handlers")
@@ -172,7 +172,16 @@ class WebServer {
                     }
                 }
                 path("/files") {
-                    post("/", FileController()::uploadFile, UserRoles.USER)
+                    path("/upload") {
+                        get("/", FileController()::handleTUSUpload, UserRoles.USER)
+                        post("/", FileController()::handleTUSUpload, UserRoles.USER)
+                        head("/", FileController()::handleTUSUpload, UserRoles.USER)
+                        path("/{fileId}") {
+                            head("/", FileController()::handleTUSUpload, UserRoles.USER)
+                            patch("/", FileController()::handleTUSUpload, UserRoles.USER)
+                        }
+                    }
+
                     put("/", FileController()::getFiles, UserRoles.USER)
                     delete("/", FileController()::deleteFiles, UserRoles.USER)
                     path("/{fileId}") {

@@ -374,7 +374,7 @@ var customDragging = false;
 var startElement = null;
 
 
-document.addEventListener("dragstart", function (e) {
+document.addEventListener("DS:start", function (e) {
     if ($(e.target).hasClass("drag-startable")) {
         startElement = $(e.target).closest("tr").attr("data-id");
         customDragging = true;
@@ -491,7 +491,7 @@ function initializeDragSelect() {
         draggability: false, // implement this instead: https://interactjs.io/docs/
         keyboardDrag: false,
     });
-    ds.subscribe('predragstart', ({event}) => {
+    ds.subscribe('DS:start:pre', ({event}) => {
         if (event.type != "mousedown") {
             ds.stop()
         }
@@ -505,13 +505,13 @@ function initializeDragSelect() {
             ds.break();
         }
     });
-    ds.subscribe('dragstart', ({event}) => {
+    ds.subscribe('DS:start', ({event}) => {
         if (event === "mousedown") {
             // console.log(event)
         }
         hideMenu();
     })
-    ds.subscribe('elementselect', ({item, items}) => {
+    ds.subscribe('DS:select', ({item, items}) => {
         // console.log(item)
         // $(item).find(".checkbox")[0].checked = true;
 
@@ -520,7 +520,7 @@ function initializeDragSelect() {
             $("#toggleAllSelection")[0].checked = true;
         }
     });
-    ds.subscribe('elementunselect', ({item, items}) => {
+    ds.subscribe('DS:unselect', ({item, items}) => {
         /// $(item).find(".checkbox")[0].checked = false;
 
         deselectRow(item);

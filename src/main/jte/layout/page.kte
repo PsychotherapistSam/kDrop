@@ -38,10 +38,10 @@
 
     <!-- You MUST include jQuery before Fomantic -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.2/dist/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.2/dist/semantic.min.js"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.8.5/dist/htmx.min.js"></script>
-    <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.8/dist/_hyperscript.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.9/dist/htmx.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
 
     @if(config.captcha != null)
