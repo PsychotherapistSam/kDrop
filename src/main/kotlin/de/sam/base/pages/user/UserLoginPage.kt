@@ -47,16 +47,24 @@ class UserLoginPage : Page(
             val result = authenticationService.login(username = username!!, password = password!!)
 
             when (result) {
-                is AuthenticationResult.Success -> {
+                is AuthenticationResult.Success
+                -> {
                     ctx.currentUserDTO = result.userDTO
                     loginLogService.logLogin(ctx, result.userDTO)
-                    ctx.hxRedirect(returnToUrl)
+
+                    if (result.requireTOTPValidation) {
+                        ctx.needsToVerifyTOTP = true
+                        ctx.hxRedirect(UserTOTPValidatePage.ROUTE)
+                    } else {
+                        ctx.hxRedirect(returnToUrl)
+                    }
                 }
 
                 is AuthenticationResult.Failure -> {
                     lastTryUsername = username
                     errors.addAll(result.errors)
                 }
+
             }
 
             return@prolongAtLeast

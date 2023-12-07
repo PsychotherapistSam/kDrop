@@ -30,6 +30,10 @@ class AuthenticationService : KoinComponent {
             return AuthenticationResult.Failure(listOf("Invalid username or password"))
         }
 
+        if (userDTO.totpSecret != null) {
+            return AuthenticationResult.Success(userDTO, true)
+        }
+
         return AuthenticationResult.Success(userDTO)
     }
 
