@@ -1,7 +1,10 @@
 @import de.sam.base.Page
+@import de.sam.base.pages.user.UserRegistrationPage
+@import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
 @import gg.jte.Content
+@import de.sam.base.config.Configuration.Companion.config
 
 @param page: Page
 @param content: Content
@@ -40,6 +43,14 @@
     <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.8.5/dist/htmx.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.8/dist/_hyperscript.min.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
+
+    @if(config.captcha != null)
+        @if (config.captcha!!.service == "recaptcha")
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        @elseif (config.captcha!!.service == "turnstile")
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+        @endif
+    @endif
 
     @if(page.ctx.isLoggedIn && page.ctx.preferencesString!!.split(",").contains("dark-mode"))
         <link rel="stylesheet" type="text/css" href="/css/dark_mode.min.css">
