@@ -17,7 +17,6 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.tinylog.kotlin.Logger
 import java.io.File
-import java.nio.file.Paths
 
 fun main() {
     val configFile = File("./config.yml")
@@ -44,9 +43,8 @@ fun main() {
             single<PasswordHasher> { PasswordHasher() }
             single<AuthenticationService> { AuthenticationService() }
             single<TusFileUploadService> {
-                val uploadDir = Paths.get("uploads")
                 TusFileUploadService()
-                    .withStoragePath(uploadDir.toAbsolutePath().toString())
+                    .withStoragePath(config.tusTempDirectory)
                     .withUploadUri("/api/v1/files/upload")
                     .withUploadExpirationPeriod(1000 * 60 * 60) // 1 hour
             }

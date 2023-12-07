@@ -25,6 +25,7 @@ class Configuration {
     var logLevel = "TRACE"
     var fileDirectory = File("./upload").canonicalPath
     var fileTempDirectory = File("./upload_temp").canonicalPath
+    var tusTempDirectory = File("./upload_tus").canonicalPath
     var tracking = Tracking()
 
     @JsonIgnore
