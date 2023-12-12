@@ -41,15 +41,19 @@ $.fn.serializeArray = function (options) {
 
 // CONTEXT MENU
 
-var contextMenu = document.getElementById("context-menu");
+const contextMenu = document.getElementById("context-menu");
 
-var menuTargetClass = "table";
+const menuTargetId = "fileTable";
 
-var clientX = 0;
-var clientY = 0;
+let clientX = 0;
+let clientY = 0;
 
+
+/**
+ * Handles the clicks inside the context menu
+ */
 document.addEventListener("click", function (event) {
-    var target = event.target;
+    let target = event.target;
 
     const isClickInside = contextMenu.contains(target);
 
@@ -57,8 +61,6 @@ document.addEventListener("click", function (event) {
     if (target.tagName === "I") {
         target = target.parentElement;
     }
-
-    console.log(target);
 
     switch (target.getAttribute("data-action")) {
         case "new-folder":
@@ -187,11 +189,11 @@ function startFileDownload(rows) {
 }
 
 function elementInsideTarget(element) {
-    return element.closest("." + menuTargetClass) != null;
+    return element.closest("#" + menuTargetId) != null;
 }
 
 document.addEventListener("contextmenu", function (event) {
-    var isClickInsideTable = elementInsideTarget(event.target);
+    const isClickInsideTable = elementInsideTarget(event.target);
     if (isClickInsideTable) {
         event.preventDefault();
         event.stopPropagation();
@@ -202,14 +204,14 @@ document.addEventListener("contextmenu", function (event) {
     }
 });
 
-var timeoutId = null;
+let timeoutId = null;
 
 document.addEventListener("mousemove", function (event) {
     if (menuIsOpen()) {
         clientX = event.clientX;
         clientY = event.clientY;
 
-        var mouseInsideMenu = contextMenu.contains(event.target);
+        const mouseInsideMenu = contextMenu.contains(event.target);
         if (mouseInsideMenu) {
             stopTimeout();
         } else {
@@ -234,7 +236,7 @@ function menuIsOpen() {
     return contextMenu.classList.contains("visible");
 }
 
-var lastTarget = null;
+let lastTarget = null;
 
 function showMenu(x, y, target = null, related = null) {
     stopTimeout();
@@ -297,16 +299,20 @@ function showMenu(x, y, target = null, related = null) {
     }
 }
 
+/**
+ * Filters the buttons in the context menu based on the target
+ * @param table
+ * @param target
+ */
 function filterMenuButtons(table, target) {
-    let tableId = table.getAttribute("id");
     // hide all buttons
     contextMenu.querySelectorAll(".item").forEach(function (item) {
         item.style.display = "none";
     });
 
-    var itemType = "file";
+    let itemType = "file";
 
-    if (target.dataset.folder != null && target.dataset.folder == "true") {
+    if (target.dataset.folder != null && target.dataset.folder === "true") {
         itemType = "folder";
     } else if (target.dataset.mime != null && target.dataset.mime.split("/")[0] === "image") {
         itemType = "image";
@@ -336,7 +342,6 @@ function filterMenuButtons(table, target) {
 function hideMenu() {
     stopTimeout();
 
-    // contextMenu.style.display = "none";
     contextMenu.classList.remove("visible");
 
     if (lastTarget != null)
@@ -369,28 +374,27 @@ function withoutTransition(element, ignore = false, callback) {
 let ds = null;
 
 // custom drag drop handling
-
-var customDragging = false;
-var startElement = null;
-
+let customDragging = false;
+let startElement = null;
 
 document.addEventListener("DS:start", function (e) {
     if ($(e.target).hasClass("drag-startable")) {
         startElement = $(e.target).closest("tr").attr("data-id");
         customDragging = true;
-        var elem = document.createElement("div");
-        elem.id = "drag-ghost";
-        elem.textNode = "Dragging";
-        elem.classList.add("ui")
-        elem.classList.add("inverted")
-        elem.classList.add("segment")
-        elem.style.position = "absolute";
-        elem.style.top = "-1000px";
 
-        elem.appendChild(document.createTextNode("Moving " + getSelectedRows().length + " item" + (getSelectedRows().length > 1 ? "s" : "")));
+        const ghost = document.createElement("div");
+        ghost.id = "drag-ghost";
+        ghost.textNode = "Dragging";
+        ghost.classList.add("ui")
+        ghost.classList.add("inverted")
+        ghost.classList.add("segment")
+        ghost.style.position = "absolute";
+        ghost.style.top = "-1000px";
 
-        document.body.appendChild(elem);
-        e.dataTransfer.setDragImage(elem, -20, 0);
+        ghost.appendChild(document.createTextNode("Moving " + getSelectedRows().length + " item" + (getSelectedRows().length > 1 ? "s" : "")));
+
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, -20, 0);
     }
 }, false);
 
@@ -409,15 +413,13 @@ document.addEventListener("dragover", function (e) {
         } else if (target.hasClass("section")) {
             target.addClass("ds-drop-target")
             e.preventDefault();
-        } else {
-
         }
     }
 });
 
 document.addEventListener("drop", function (e) {
     if (customDragging) {
-        var targetId = "";
+        let targetId = "";
         const target = $(e.target)
         const closestTr = target.closest("tr")
 
@@ -475,7 +477,7 @@ document.addEventListener("dragend", function (e) {
     if (customDragging) {
         $("tr").removeClass("ds-drop-target");
         $(".section").removeClass("ds-drop-target");
-        var ghost = document.getElementById("drag-ghost");
+        const ghost = document.getElementById("drag-ghost");
         if (ghost.parentNode) {
             ghost.parentNode.removeChild(ghost);
         }
@@ -492,7 +494,7 @@ function initializeDragSelect() {
         keyboardDrag: false,
     });
     ds.subscribe('DS:start:pre', ({event}) => {
-        if (event.type != "mousedown") {
+        if (event.type !== "mousedown") {
             ds.stop()
         }
         // only show custom mdoal when we are dragging a link; TODO: check if this is a custom element, or other things will cause this too.
@@ -506,27 +508,18 @@ function initializeDragSelect() {
         }
     });
     ds.subscribe('DS:start', ({event}) => {
-        if (event === "mousedown") {
-            // console.log(event)
-        }
         hideMenu();
     })
     ds.subscribe('DS:select', ({item, items}) => {
-        // console.log(item)
-        // $(item).find(".checkbox")[0].checked = true;
-
         selectRow(item);
-        if (items.length == $(".context-clickable").length - 1) {
+        if (items.length === $(".context-clickable").length - 1) {
             $("#toggleAllSelection")[0].checked = true;
         }
     });
     ds.subscribe('DS:unselect', ({item, items}) => {
-        /// $(item).find(".checkbox")[0].checked = false;
-
         deselectRow(item);
 
         $("#toggleAllSelection")[0].checked = false;
-        // console.log(items)
     });
 }
 

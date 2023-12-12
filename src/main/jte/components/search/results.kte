@@ -5,7 +5,7 @@
 @param files: List<FileDTO>
 
 
-<table class="ui unstackable selectable table">
+<table class="ui unstackable table">
     <tbody>
     @for(file in files)
         <tr>
