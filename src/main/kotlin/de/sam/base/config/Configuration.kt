@@ -69,21 +69,18 @@ class Configuration {
     }
 
     companion object {
-        var config = Configuration()
-    }
+        fun fromFile(file: File): Configuration {
+            val mapper = ObjectMapper(YAMLFactory())
+            return mapper.readValue(file, Configuration::class.java)
+        }
 
-    fun loadFromFile(file: File) {
-        // load config from yaml file and parse with jackson
-        val mapper = ObjectMapper(YAMLFactory())
-        config = mapper.readValue(file, Configuration::class.java)
-    }
-
-    fun saveToFile(file: File) {
-        // save config to yaml file and parse with jackson
-        val mapper = ObjectMapper(YAMLFactory())
-        //   mapper.enable(SerializationFeature.WRAP_ROOT_VALUE)
-        mapper.enable(SerializationFeature.INDENT_OUTPUT)
-        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-        mapper.writeValue(file, this)
+        fun saveToFile(file: File) {
+            // save config to yaml file and parse with jackson
+            val mapper = ObjectMapper(YAMLFactory())
+            //   mapper.enable(SerializationFeature.WRAP_ROOT_VALUE)
+            mapper.enable(SerializationFeature.INDENT_OUTPUT)
+            mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+            mapper.writeValue(file, this)
+        }
     }
 }

@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserLoginPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.database.ShareDTO
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.pages.user.UserSharesPage

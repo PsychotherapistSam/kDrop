@@ -8,58 +8,61 @@ import io.javalin.http.formParamAsClass
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class Captcha {
-    companion object {
-        val captchaServiceUrlMap = mapOf(
-            "recaptcha" to Pair("https://www.google.com/recaptcha/api/siteverify", "g-recaptcha-response"),
-            "turnstile" to Pair("https://challenges.cloudflare.com/turnstile/v0/siteverify", "cf-turnstile-response")
-        )
+class Captcha : KoinComponent {
+    private val config: Configuration by inject()
 
-        private fun getServicePair(ctx: Context): Pair<String, String>? {
-            return captchaServiceUrlMap.values.firstOrNull { ctx.formParam(it.second) != null }
-        }
+    private val captchaServiceUrlMap = mapOf(
+        "recaptcha" to Pair("https://www.google.com/recaptcha/api/siteverify", "g-recaptcha-response"),
+        "turnstile" to Pair("https://challenges.cloudflare.com/turnstile/v0/siteverify", "cf-turnstile-response")
+    )
 
-        fun validate(ctx: Context): List<String> {
-            val errors = arrayListOf<String>()
+    private fun getServicePair(ctx: Context): Pair<String, String>? {
+        return captchaServiceUrlMap.values.firstOrNull { ctx.formParam(it.second) != null }
+    }
 
-            val (verifyUrl, formKey) = getServicePair(ctx)
-                ?: throw InternalServerErrorResponse("Unknown captcha service")
+    fun validate(ctx: Context): List<String> {
+        val errors = arrayListOf<String>()
 
-            val captchaSolution =
-                ctx.formParamAsClass<String>(formKey)
-                    .allowNullable()
-                    .check({ it != null && it.isNotBlank() }, "Solving the captcha is required")
+        val (verifyUrl, formKey) = getServicePair(ctx)
+            ?: throw InternalServerErrorResponse("Unknown captcha service")
 
-            if (captchaSolution.errors().isNotEmpty()) {
-                errors.add(captchaSolution.errors().values.first()[0].message)
-                return errors
-            }
+        val captchaSolution =
+            ctx.formParamAsClass<String>(formKey)
+                .allowNullable()
+                .check({ it != null && it.isNotBlank() }, "Solving the captcha is required")
 
-            val client = OkHttpClient()
-
-            val request = Request.Builder()
-                .url(verifyUrl)
-                .post(
-                    FormBody.Builder()
-                        .add("secret", Configuration.config.captcha!!.secretKey)
-                        .add("response", captchaSolution.get() ?: "")
-                        .build()
-                )
-                .build()
-
-
-            val response = client.newCall(request).execute()
-            val json = response.body?.string() ?: throw InternalServerErrorResponse("no response body")
-
-            val mapper = ObjectMapper()
-            val jsonNode = mapper.readTree(json)
-            val success = jsonNode.get("success").asBoolean()
-            if (!success) {
-                errors.add("The provided captcha solution is invalid")
-                // throw BadRequestResponse("captcha solution is invalid")
-            }
+        if (captchaSolution.errors().isNotEmpty()) {
+            errors.add(captchaSolution.errors().values.first()[0].message)
             return errors
         }
+
+        val client = OkHttpClient()
+
+        val request = Request.Builder()
+            .url(verifyUrl)
+            .post(
+                FormBody.Builder()
+                    .add("secret", config.captcha!!.secretKey)
+                    .add("response", captchaSolution.get() ?: "")
+                    .build()
+            )
+            .build()
+
+
+        val response = client.newCall(request).execute()
+        val json = response.body.string()
+
+        val mapper = ObjectMapper()
+        val jsonNode = mapper.readTree(json)
+        val success = jsonNode.get("success").asBoolean()
+        if (!success) {
+            errors.add("The provided captcha solution is invalid")
+            // throw BadRequestResponse("captcha solution is invalid")
+        }
+        return errors
+
     }
 }

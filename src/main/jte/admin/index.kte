@@ -1,6 +1,5 @@
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
-@import de.sam.base.config.Configuration.Companion.config
 
 @param page: AdminIndexPage
 

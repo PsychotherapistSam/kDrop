@@ -6,7 +6,8 @@ import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.authentication.UserService
 import de.sam.base.authentication.UserValidator
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.captcha.Captcha
+import de.sam.base.config.Configuration
 import de.sam.base.database.DatabaseManager
 import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
@@ -20,18 +21,20 @@ import org.tinylog.kotlin.Logger
 import java.io.File
 
 fun main() {
+
     val configFile = File("./config.yml")
     if (!configFile.exists()) {
         Logger.warn("Config file not found, creating new one with defaults")
-        config.saveToFile(configFile)
+        Configuration.saveToFile(configFile)
     }
-    config.loadFromFile(configFile)
+    val config = Configuration.fromFile(configFile)
+
     org.tinylog.configuration.Configuration.set("writer.level", config.logLevel)
     Logger.info("Log Level: " + config.logLevel)
     Logger.debug("Loaded config file")
 
     Logger.debug("Starting database connection")
-    DatabaseManager().start()
+    DatabaseManager(config).start()
 
     Logger.debug("Starting koin")
     startKoin {
@@ -43,6 +46,8 @@ fun main() {
             single { UserValidator() }
             single { PasswordHasher() }
             single { AuthenticationService() }
+            single { config }
+            single { Captcha() }
             single {
                 TusFileUploadService()
                     .withStoragePath(config.tusTempDirectory)

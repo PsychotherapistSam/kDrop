@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserRegistrationPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.displayLoader
 
 @param page: UserRegistrationPage
@@ -22,7 +21,7 @@ content = @`
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
                 </div>
-                @template.components.security.captcha("registration")
+                @template.components.security.captcha("registration", page.config)
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">

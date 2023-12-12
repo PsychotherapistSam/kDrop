@@ -1,6 +1,5 @@
 @import de.sam.base.pages.ErrorPage
 @import de.sam.base.pages.user.UserLoginPage
-@import de.sam.base.config.Configuration.Companion.config
 
 @param page: ErrorPage
 

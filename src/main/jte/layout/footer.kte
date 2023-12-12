@@ -1,17 +1,16 @@
 @import de.sam.base.Page
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.ChangelogPage
 
 @param page: Page
 
-@if(config.tracking != null)
-    @if(config.tracking.cronitor != null)
-        <script async src="${config.tracking.cronitor.url}"></script>
+@if(page.config.tracking != null)
+    @if(page.config.tracking.cronitor != null)
+        <script async src="${page.config.tracking.cronitor.url}"></script>
         <script>
             window.cronitor = window.cronitor || function () {
                 (window.cronitor.q = window.cronitor.q || []).push(arguments);
             };
-            cronitor('config', {clientKey: '${config.tracking.cronitor.clientKey}'});
+            cronitor('config', {clientKey: '${page.config.tracking.cronitor.clientKey}'});
         </script>
     @endif
 @endif
@@ -24,28 +23,28 @@
             <div class="ui stackable grid">
                 <div class="two column computer tablet only row">
                     <div class="left aligned column">
-                        <p>${config.copyrightLine}</p>
+                        <p>${page.config.copyrightLine}</p>
                     </div>
                     <div class="right aligned column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item"
                                href="${ChangelogPage.ROUTE}"
-                               hx-get="${ChangelogPage.ROUTE}">${config.version}</a>
+                               hx-get="${ChangelogPage.ROUTE}">${page.config.version}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>
                 </div>
                 <div class="two column mobile only center aligned row">
                     <div class="column">
-                        <p>${config.copyrightLine}</p>
+                        <p>${page.config.copyrightLine}</p>
                     </div>
                     <div class="column">
                         <div class="ui horizontal small divided link list">
                             <a class="item" href="#">Contact Us</a>
                             <a class="item"
                                href="${ChangelogPage.ROUTE}"
-                               hx-get="${ChangelogPage.ROUTE}">${config.version}</a>
+                               hx-get="${ChangelogPage.ROUTE}">${page.config.version}</a>
                             <a class="item" href="/about" hx-get="/about">${page.getRenderTime()}</a>
                         </div>
                     </div>

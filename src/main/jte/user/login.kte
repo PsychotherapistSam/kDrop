@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserLoginPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.GitCommitInfo.Companion.gitCommitId
 @import de.sam.base.utils.GitCommitInfo.Companion.gitCommitTime
@@ -35,7 +34,7 @@ content = @`
                     <input type="password" name="password" id="password" placeholder="Password"
                            tabindex="2">
                 </div>
-                @template.components.security.captcha("login")
+                @template.components.security.captcha("login", page.config)
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">

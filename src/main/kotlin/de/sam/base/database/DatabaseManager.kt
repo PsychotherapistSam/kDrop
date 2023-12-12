@@ -2,7 +2,7 @@ package de.sam.base.database
 
 
 import com.zaxxer.hikari.HikariDataSource
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
@@ -23,7 +23,8 @@ import java.util.*
 lateinit var hikariDataSource: HikariDataSource
 lateinit var jdbi: Jdbi
 
-class DatabaseManager {
+class DatabaseManager(private val config: Configuration) {
+
     fun start() {
         hikariDataSource = HikariDataSource()
         hikariDataSource.jdbcUrl =

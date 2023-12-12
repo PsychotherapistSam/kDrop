@@ -3,7 +3,7 @@ package de.sam.base.controllers
 import com.google.common.hash.Hashing
 import com.google.common.io.Files
 import de.sam.base.authentication.PasswordHasher
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
@@ -29,6 +29,7 @@ import kotlin.system.measureNanoTime
 
 class FileController : KoinComponent {
 
+    private val config: Configuration by inject()
     private val fileService: FileService by inject()
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()

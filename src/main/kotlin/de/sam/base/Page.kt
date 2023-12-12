@@ -1,15 +1,15 @@
 package de.sam.base
 
+import de.sam.base.config.Configuration
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.currentUserDTO
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.HandlerType.*
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 abstract class Page(
@@ -19,9 +19,11 @@ abstract class Page(
     var templateName: String
 ) : Handler, KoinComponent {
 
+    val config: Configuration by inject()
+
     var pageDiff: Long = 0
-    private var templateStartTime: Long? = null // = System.nanoTime()
-    var currentUserDTO: UserDTO? = null // = ctx.currentUser
+    private var templateStartTime: Long? = null
+    var currentUserDTO: UserDTO? = null
 
     lateinit var ctx: Context
     var renderTemplate = true
@@ -41,12 +43,6 @@ abstract class Page(
         }ms"
     }
 
-    /*
-    open fun render() {
-        //  ctx.render(templateName, Collections.singletonMap("page", this))
-    }*/
-
-    @OptIn(ExperimentalTime::class)
     override fun handle(context: Context) {
         this.ctx = context
         currentUserDTO = this.ctx.currentUserDTO
@@ -71,7 +67,7 @@ abstract class Page(
     }
 
     fun render() {
-        ctx.render(templateName, Collections.singletonMap("page", this))
+        ctx.render(templateName, mapOf("page" to this))
     }
 
     open fun before() {}

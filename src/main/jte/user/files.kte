@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserFilesPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.*
@@ -31,7 +30,7 @@ content = @`
     <%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.ctx, parent = page.parent)--%>
     <%--        @template.components.files.fileUploadComp(parent = page.parent, page = page)--%>
     @else
-        @template.previews.genericFilePreview(file = page.parent!!, ctx = page.ctx )
+        @template.previews.genericFilePreview(file = page.parent!!, ctx = page.ctx, config = page.config)
     <%--        @template.components.files.fileDownloadComponent(file = page.parent!!, ctx = page.ctx)--%>
     @endif
 

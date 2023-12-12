@@ -9,5 +9,4 @@ class ChangelogPage : Page(
     companion object {
         const val ROUTE: String = "/changelog"
     }
-
 }

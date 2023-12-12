@@ -1,7 +1,7 @@
 package de.sam.base
 
 import com.fasterxml.jackson.datatype.joda.JodaModule
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.FileController
 import de.sam.base.controllers.ShareController
@@ -45,6 +45,7 @@ import java.util.*
 
 class WebServer : KoinComponent {
     private val fileService: FileService by inject()
+    private val config: Configuration by inject()
 
     fun start() {
         Logger.debug("Creating javalin app")

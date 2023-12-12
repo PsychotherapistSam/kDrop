@@ -1,6 +1,6 @@
 package de.sam.base.utils
 
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import de.sam.base.database.UserDAO
 import de.sam.base.database.toDTO
 import de.sam.base.requirements.Requirement
@@ -9,6 +9,8 @@ import io.javalin.http.*
 import io.javalin.security.AccessManager
 import io.javalin.security.RouteRole
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.net.URI
 import java.util.*
@@ -16,7 +18,8 @@ import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
-class CustomAccessManager : AccessManager {
+class CustomAccessManager : AccessManager, KoinComponent {
+    private val config: Configuration by inject()
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: Set<RouteRole>) {
         if (ctx.path().startsWith("/api/v1/payments")) {

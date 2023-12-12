@@ -4,8 +4,6 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
-import de.sam.base.config.Configuration
-import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.hxRedirect
@@ -22,6 +20,8 @@ class UserRegistrationPage : Page(
         const val ROUTE: String = "/registration"
     }
 
+    private val captcha: Captcha by inject()
+
     private val authenticationService: AuthenticationService by inject()
 
     private var lastTryUsername: String = ""
@@ -30,7 +30,7 @@ class UserRegistrationPage : Page(
     override fun before() {
         if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
             throw ForbiddenResponse("You are already registered.")
-        } else if (!ctx.isLoggedIn && !Configuration.config.allowUserRegistration) {
+        } else if (!ctx.isLoggedIn && !config.allowUserRegistration) {
             throw ForbiddenResponse("User registration is currently disabled.")
         }
     }
@@ -49,7 +49,7 @@ class UserRegistrationPage : Page(
             val password = ctx.formParam("password")
 
             if (config.captcha != null && config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
-                val captchaErrors = Captcha.validate(ctx)
+                val captchaErrors = captcha.validate(ctx)
                 if (captchaErrors.isNotEmpty()) {
                     lastTryUsername = username ?: ""
                     errors.addAll(captchaErrors)

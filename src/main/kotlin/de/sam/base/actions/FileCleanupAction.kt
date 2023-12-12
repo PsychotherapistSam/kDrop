@@ -1,6 +1,6 @@
 package de.sam.base.actions
 
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import me.desair.tus.server.TusFileUploadService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -9,6 +9,7 @@ import java.io.File
 
 class FileCleanupAction : KoinComponent {
     private val tusFileUploadSerivce: TusFileUploadService by inject()
+    private val config: Configuration by inject()
 
     fun cleanup() {
         Logger.info("Starting file cleanup")

@@ -1,5 +1,4 @@
 @import de.sam.base.pages.SetupPage
-@import de.sam.base.config.Configuration.Companion.config
 
 @param page: SetupPage
 
@@ -8,7 +7,7 @@ page = page,
 content = @`
     <h1>Setup</h1>
     <p>Please create an admin user</p>
-    <p>${config.name}</p>
+    <p>${page.config.name}</p>
 `
 )
 

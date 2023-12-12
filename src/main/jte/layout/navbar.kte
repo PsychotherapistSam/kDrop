@@ -7,7 +7,6 @@
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.user.*
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.pages.user.UserSharesPage
@@ -25,7 +24,7 @@
 
     <div class="ui container">
         <!--Start: Desktop Nav-->
-        <a class="header item" href="${UserFilesPage.ROUTE}">${config.name}</a>
+        <a class="header item" href="${UserFilesPage.ROUTE}">${page.config.name}</a>
         <a class="@if(page is UserFilesPage) active @endif item" href="${UserFilesPage.ROUTE}">My Files</a>
 
         <div class="right menu">
@@ -109,7 +108,7 @@
             @else
                 <a class="@if(page is UserLoginPage) active @endif item"
                    href="${UserLoginPage.ROUTE}" hx-get="${UserLoginPage.ROUTE}">Login</a>
-                @if(config.allowUserRegistration)
+                @if(page.config.allowUserRegistration)
                     <a class="@if(page is UserRegistrationPage) active @endif item"
                        href="${UserRegistrationPage.ROUTE}" hx-get="${UserRegistrationPage.ROUTE}">Register</a>
                 @else

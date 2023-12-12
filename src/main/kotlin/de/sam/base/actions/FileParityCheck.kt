@@ -1,6 +1,6 @@
 package de.sam.base.actions
 
-import de.sam.base.config.Configuration.Companion.config
+import de.sam.base.config.Configuration
 import de.sam.base.controllers.isValidUUID
 import de.sam.base.services.FileService
 import org.koin.core.component.KoinComponent
@@ -11,6 +11,8 @@ import java.util.*
 
 class FileParityCheck : KoinComponent {
     private val fileService: FileService by inject()
+    private val config: Configuration by inject()
+
     fun checkIfLocalFilesExistInDatabase() {
         val localFilesList = File(config.fileDirectory)
             .walk()

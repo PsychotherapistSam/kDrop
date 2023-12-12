@@ -31,7 +31,7 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
     HAS_ACCESS_TO_FILE("This file does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
 
         override fun isMet(ctx: Context): Boolean {
-            val fileCache by inject<FileCache>()
+            val fileCache: FileCache by inject()
 
             if (!IS_LOGGED_IN.isMet(ctx)) {
                 this.errorMessage = IS_LOGGED_IN.errorMessage

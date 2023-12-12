@@ -1,7 +1,6 @@
 package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
-import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.database.UserDAO
 import de.sam.base.database.fetchDAO
 import de.sam.base.database.toDTO

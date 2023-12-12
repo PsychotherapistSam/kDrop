@@ -1,12 +1,11 @@
 @import de.sam.base.pages.ChangelogPage
-@import de.sam.base.config.Configuration.Companion.config
 
 @param page: ChangelogPage
 
 @template.layout.page(
 page = page,
 content = @`
-    <h3 class="ui dividing header">${config.name} Changelog</h3>
+    <h3 class="ui dividing header">${page.config.name} Changelog</h3>
     <div class="ui styled accordion">
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">

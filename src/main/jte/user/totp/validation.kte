@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserTOTPValidatePage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.displayLoader
 
 @param page: UserTOTPValidatePage

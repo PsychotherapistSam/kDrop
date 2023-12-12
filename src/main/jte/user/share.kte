@@ -1,5 +1,4 @@
 @import de.sam.base.pages.user.UserFilesPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.database.FileDTO
 @import de.sam.base.users.UserRoles
 @import de.sam.base.pages.displayLoader
@@ -87,7 +86,7 @@ content = @`
                 </div>
             </div>
         @else
-            @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, share = true, shareId = page.ctx.share!!.second.id.toString(), providedPassword = page.providedPassword)
+            @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, config = page.config, share = true, shareId = page.ctx.share!!.second.id.toString(), providedPassword = page.providedPassword)
         @endif
     @endif
 `)

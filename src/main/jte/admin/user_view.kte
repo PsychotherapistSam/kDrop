@@ -1,5 +1,4 @@
 @import de.sam.base.pages.admin.AdminUserViewPage
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.admin.AdminUsersPage
 @import de.sam.base.users.UserRoles
 

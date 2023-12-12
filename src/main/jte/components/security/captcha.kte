@@ -1,6 +1,7 @@
-@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.config.Configuration
 
 @param location: String
+@param config: Configuration
 
 @if(config.captcha != null && config.captcha!!.locations.contains(location))
     @if (config.captcha!!.service == "recaptcha")

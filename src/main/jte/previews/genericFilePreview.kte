@@ -1,17 +1,17 @@
-@import de.sam.base.config.Configuration
 @import de.sam.base.database.FileDTO
 @import de.sam.base.utils.file.FileType
 @import io.javalin.http.Context
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
-@import de.sam.base.config.Configuration.Companion.config
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.*
 @import de.sam.base.utils.toReadableTimeString
 @import de.sam.base.utils.toRecentTimeString
+@import de.sam.base.config.Configuration
 
 @param file: FileDTO
 @param ctx: Context
+@param config: Configuration
 @param share: Boolean = false
 @param shareId: String? = null
 @param providedPassword: String? = null

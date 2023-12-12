@@ -1,5 +1,4 @@
 @import de.sam.base.pages.IndexPage
-@import de.sam.base.config.Configuration.Companion.config
 
 @param page: IndexPage
 
@@ -9,7 +8,7 @@ content = @`
     <h1>Hello World</h1>
     <p>This is a simple example of a JTE page.</p>
     <a class="ui green button">Buttons also work :D</a>
-    <p>${config.name}</p>
+    <p>${page.config.name}</p>
     <div class="ui segment">
         <p>The first user is: ${page.firstUserDAO.name}, they registered
             on ${page.firstUserDAO.registrationDate.toLocalDate().toString()}</p>

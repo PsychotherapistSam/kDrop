@@ -4,7 +4,6 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
-import de.sam.base.config.Configuration.Companion.config
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
 import org.koin.core.component.inject
@@ -13,10 +12,11 @@ class UserLoginPage : Page(
     name = "Login",
     templateName = "user/login.kte",
 ) {
-
     companion object {
         const val ROUTE: String = "/login"
     }
+
+    private val captcha: Captcha by inject()
 
     private val loginLogService: LoginLogService by inject()
     private val authenticationService: AuthenticationService by inject()
@@ -36,7 +36,7 @@ class UserLoginPage : Page(
             val password = ctx.formParam("password")
 
             if (config.captcha != null && config.captcha!!.locations.contains("login")) {
-                val captchaErrors = Captcha.validate(ctx)
+                val captchaErrors = captcha.validate(ctx)
                 if (captchaErrors.isNotEmpty()) {
                     lastTryUsername = username ?: ""
                     errors.addAll(captchaErrors)
