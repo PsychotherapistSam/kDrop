@@ -10,12 +10,29 @@ content = @`
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.6 - 07. December 2023
+            v0.0.7 - 12. December 2023
         </div>
         <div class="active content">
+            <h4 class="ui dividing header">New Features</h4>
+            <ul class="ui list">
+                <li>Introduced adjustable hashing settings for administrators, enabling the option to hash files on
+                    demand.
+                </li>
+            </ul>
+            <h4 class="ui dividing header">Improvements</h4>
+            <ul class="ui list">
+                <li>Enhanced the robustness of the file manager code.</li>
+                <li>Implemented several backend optimizations to improve system performance and reliability.</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.6 - 07. December 2023
+        </div>
+        <div class="content">
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
-                <li>Switched to TUS for File Uploads</li>
+                <li>Transitioned to the TUS protocol for file uploads.</li>
             </ul>
         </div>
         <div class="title">
@@ -25,11 +42,11 @@ content = @`
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
-                <li>Added File Search within the File Browser. Available via the search button or the shortcut Ctrl+K
+                <li>Added File Search within the File Browser. Available via the search button or the shortcut Ctrl+K.
                 </li>
-                <li>Added a list of shared links</li>
+                <li>Introduced a new list view for shared links.</li>
                 <li>Improved some legacy database related code.</li>
-                <li>Switched to enhanced page routing (less magic)</li>
+                <li>Switched to enhanced page routing (less magic).</li>
             </ul>
         </div>
         <div class="title">
@@ -39,8 +56,8 @@ content = @`
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
-                <li>Improved the general speed of most file-related actions (2-10x improvements)</li>
-                <li>Improved usage quota display</li>
+                <li>Improved the general speed of most file-related actions (2-10x improvements).</li>
+                <li>Enhanced the display of usage quotas.</li>
             </ul>
         </div>
         <div class="title">
@@ -50,8 +67,8 @@ content = @`
         <div class="content">
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
-                <li>Fixed context menu opening on Firefox on Android.</li>
-                <li>Fixed usage quota not displaying correctly</li>
+                <li>Resolved an issue with the context menu opening on Firefox on Android.</li>
+                <li>Fixed a bug where the usage quota was not displaying correctly.</li>
             </ul>
         </div>
         <div class="title">
@@ -63,7 +80,7 @@ content = @`
             <%--            <p>This version is not tested very well, please report any issues to an administrator.</p>--%>
             <h4 class="ui dividing header">Changes</h4>
             <ul class="ui list">
-                <li>Removed "new" layer from file manager context menu</li>
+                <li>Removed "new" layer from file manager context menu.</li>
                 <li>Added a user <a href="/user/settings/loginHistory">login history page</a> in the settings.</li>
             </ul>
         </div>
@@ -92,6 +109,11 @@ content = @`
     <script>
         $('.ui.accordion').accordion();
     </script>
+    <style>
+        .ui.dividing.header:not(:first-child) {
+            margin-top: 14px
+        }
+    </style>
 `
 )
 
