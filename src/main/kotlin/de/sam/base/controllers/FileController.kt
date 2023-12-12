@@ -15,15 +15,14 @@ import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.*
 import io.javalin.util.FileUtil
 import me.desair.tus.server.TusFileUploadService
+import me.desair.tus.server.exception.UploadNotFoundException
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.lang.Thread.sleep
-import java.nio.file.StandardCopyOption
 import java.util.*
 import kotlin.concurrent.thread
 import kotlin.system.measureNanoTime
@@ -42,9 +41,10 @@ class FileController : KoinComponent {
         tusFileUploadSerivce.process(servletRequest, servletResponse)
 
         val uploadURI = servletRequest.requestURI
-
         val uploadInfo = tusFileUploadSerivce.getUploadInfo(uploadURI)
+
         if (uploadInfo != null && !uploadInfo.isUploadInProgress) {
+            val uploadId = UUID.fromString(uploadInfo.id.toString())
 
             val userId = ctx.currentUserDTO!!.id
             val parentFileId = UUID.fromString(ctx.header("X-File-Parent-Id"))
@@ -64,34 +64,44 @@ class FileController : KoinComponent {
                 if (!uploadTempFolder.exists()) {
                     uploadTempFolder.mkdir()
                 }
-                val temporaryFileID = UUID.randomUUID()
-                val temporaryFile = File("${config.fileTempDirectory}/${temporaryFileID}")
+
+                val targetFile = File("${config.fileDirectory}/${uploadId}")
 
                 logTimeSpent("downloading the file from the user") {
-                    FileUtil.streamToFile(tusFileUploadSerivce.getUploadedBytes(uploadURI), temporaryFile.path)
+                    try {
+                        FileUtil.streamToFile(tusFileUploadSerivce.getUploadedBytes(uploadURI), targetFile.path)
+                    } catch (e: UploadNotFoundException) {
+                        throw BadRequestResponse("Upload not found")
+                    }
                 }
 
-                if (!temporaryFile.exists()) {
-                    Logger.error("Temporary file ${temporaryFile.path} could not be written")
+                if (!targetFile.exists()) {
+                    Logger.error("Target file ${targetFile.path} could not be written")
                 } else {
-                    Logger.debug("Temporary file ${temporaryFile.path} written")
+                    Logger.debug("Target file ${targetFile.path} written")
                 }
 
-                val hash = logTimeSpent("hashing file") {
-                    temporaryFile.sha512()
+                val hash: String?
+                if (config.hashing.enabled && config.hashing.onUpload) {
+                    hash = logTimeSpent("hashing file") {
+                        targetFile.sha512()
+                    }
+                } else {
+                    hash = null
+                    Logger.debug("Skipping hashing since it is disabled")
                 }
 
 
                 val createdFile = fileService.createFile(
                     handle, FileDTO(
-                        id = UUID.randomUUID(),
+                        id = uploadId,
                         name = uploadInfo.fileName,
                         path = "upload/${UUID.randomUUID()}",
                         mimeType = uploadInfo.fileMimeType ?: "application/octet-stream",
                         parent = parentFile!!.id,
                         owner = ctx.currentUserDTO!!.id,
-                        size = temporaryFile.length(),
-                        sizeHR = humanReadableByteCountBin(temporaryFile.length()),
+                        size = targetFile.length(),
+                        sizeHR = humanReadableByteCountBin(targetFile.length()),
                         password = null,
                         created = DateTime.now(),
                         isFolder = false,
@@ -100,25 +110,6 @@ class FileController : KoinComponent {
                     )
                 )
 
-                val targetFile = File("${config.fileDirectory}/${createdFile.id}")
-
-                try {
-                    java.nio.file.Files.move(
-                        temporaryFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING
-                    )
-                } catch (e: IOException) {
-                    Logger.error("Target file ${targetFile.path} could not be moved")
-
-                    // delete the file from the database
-                    fileService.deleteFilesAndShares(listOf(createdFile.id))
-
-                    // delete the temporary file
-                    temporaryFile.delete()
-
-                    tusFileUploadSerivce.deleteUpload(uploadURI)
-
-                    throw BadRequestResponse("Target file could not be moved")
-                }
                 Logger.debug("Target file ${targetFile.path} moved")
                 tusFileUploadSerivce.deleteUpload(uploadURI)
             }
@@ -405,6 +396,45 @@ class FileController : KoinComponent {
             fileService.recalculateFolderSize(targetFile.id, user.id)
         }
         ctx.json(mapOf("status" to "ok"))
+    }
+
+    fun hashFile(ctx: Context) {
+        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+
+        if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
+            throw NotFoundResponse("File not found")
+        }
+
+        val systemFile = File("${config.fileDirectory}/${file.id}")
+        if (!systemFile.exists()) {
+            throw NotFoundResponse("File not found")
+        }
+
+        if (file.hash != null) {
+            ctx.html(file.hash!!)
+            return
+        }
+
+
+        val hash =
+            logTimeSpent("hashing file ${file.id}") {
+                systemFile.sha512()
+            }
+
+        val fileCache by inject<FileCache>()
+        fileCache.remove(file.id)
+
+        try {
+            jdbi.useTransaction<Exception> { handle ->
+                fileService.updateFile(
+                    handle, file.copy(hash = hash)
+                )
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+            ctx.html("Error while updating file hash")
+        }
+        ctx.html(hash)
     }
 
 

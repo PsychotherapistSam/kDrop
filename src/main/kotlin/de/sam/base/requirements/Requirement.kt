@@ -1,10 +1,10 @@
 package de.sam.base.requirements
 
-import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDAO
 import de.sam.base.database.SharesTable
 import de.sam.base.database.toDTO
 import de.sam.base.services.FileService
+import de.sam.base.utils.FileCache
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
@@ -21,17 +21,18 @@ import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.util.*
 
-private val fileCache = mutableMapOf<UUID, Pair<Long, FileDTO>>()
 
 enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : RouteRole, KoinComponent {
-
     IS_LOGGED_IN("You need to be logged in to access this resource.", HttpStatus.FORBIDDEN) {
         override fun isMet(ctx: Context): Boolean {
             return ctx.currentUserDTO != null
         }
     },
     HAS_ACCESS_TO_FILE("This file does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
+
         override fun isMet(ctx: Context): Boolean {
+            val fileCache by inject<FileCache>()
+
             if (!IS_LOGGED_IN.isMet(ctx)) {
                 this.errorMessage = IS_LOGGED_IN.errorMessage
                 return false
@@ -125,5 +126,4 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
     open fun isMet(ctx: Context): Boolean {
         return false
     }
-
 }

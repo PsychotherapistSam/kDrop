@@ -240,6 +240,24 @@ class FileService {
      * @throws FileServiceException if the file could not be updated.
      */
     fun updateFile(file: FileDTO): FileDTO? {
+        return try {
+            jdbi.withHandle<FileDTO?, Exception> { handle ->
+                updateFile(handle, file)
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not update file with id ${file.id}", e)
+        }
+    }
+
+    /**
+     * Updates a file in the database.
+     *
+     * @param handle the JDBI Handle to use for the update.
+     * @param file the file to update.
+     * @return the updated file or null if it does not exist.
+     * @throws FileServiceException if the file could not be updated.
+     */
+    fun updateFile(handle: Handle, file: FileDTO): FileDTO? {
         val sql = """
             UPDATE t_files
             SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
@@ -250,26 +268,24 @@ class FileService {
         """.trimIndent()
 
         return try {
-            jdbi.withHandle<FileDTO?, Exception> { handle ->
-                handle.createUpdate(sql)
-                    .bind("id", file.id.toString())
-                    .bind("name", file.name)
-                    .bind("path", file.path)
-                    .bind("mime_type", file.mimeType)
-                    .bind("parent", file.parent?.toString())
-                    .bind("owner", file.owner.toString())
-                    .bind("size", file.size)
-                    .bind("size_hr", file.sizeHR)
-                    .bind("password", file.password)
-                    .bind("created", file.created?.toDate())
-                    .bind("is_folder", file.isFolder)
-                    .bind("hash", file.hash)
-                    .bind("is_root", file.isRoot)
-                    .executeAndReturnGeneratedKeys()
-                    .mapTo<FileDTO>()
-                    .findOne()
-                    .getOrNull()
-            }
+            handle.createUpdate(sql)
+                .bind("id", file.id.toString())
+                .bind("name", file.name)
+                .bind("path", file.path)
+                .bind("mime_type", file.mimeType)
+                .bind("parent", file.parent?.toString())
+                .bind("owner", file.owner.toString())
+                .bind("size", file.size)
+                .bind("size_hr", file.sizeHR)
+                .bind("password", file.password)
+                .bind("created", file.created?.toDate())
+                .bind("is_folder", file.isFolder)
+                .bind("hash", file.hash)
+                .bind("is_root", file.isRoot)
+                .executeAndReturnGeneratedKeys()
+                .mapTo<FileDTO>()
+                .findOne()
+                .getOrNull()
         } catch (e: Exception) {
             throw FileServiceException("Could not update file with id ${file.id}", e)
         }

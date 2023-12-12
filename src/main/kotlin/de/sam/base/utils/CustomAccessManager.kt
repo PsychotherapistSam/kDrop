@@ -80,6 +80,7 @@ class CustomAccessManager : AccessManager {
             }
             Logger.debug("Requirement ${it.name} took ${duration.toDouble(DurationUnit.MILLISECONDS)} ms")
             if (!isMet) {
+                Logger.debug("Requirement ${it.name} failed")
                 when (it.httpStatus) {
                     HttpStatus.NOT_FOUND -> throw NotFoundResponse(it.errorMessage)
                     HttpStatus.FORBIDDEN -> throw ForbiddenResponse(it.errorMessage)

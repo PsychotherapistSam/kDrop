@@ -11,6 +11,7 @@ import de.sam.base.database.DatabaseManager
 import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.services.ShareService
+import de.sam.base.utils.FileCache
 import de.sam.base.utils.logging.logTimeSpent
 import me.desair.tus.server.TusFileUploadService
 import org.koin.core.context.startKoin
@@ -35,19 +36,20 @@ fun main() {
     Logger.debug("Starting koin")
     startKoin {
         modules(module {
-            single<LoginLogService> { LoginLogService() }
-            single<FileService> { FileService() }
-            single<ShareService> { ShareService() }
-            single<UserService> { UserService() }
-            single<UserValidator> { UserValidator() }
-            single<PasswordHasher> { PasswordHasher() }
-            single<AuthenticationService> { AuthenticationService() }
-            single<TusFileUploadService> {
+            single { LoginLogService() }
+            single { FileService() }
+            single { ShareService() }
+            single { UserService() }
+            single { UserValidator() }
+            single { PasswordHasher() }
+            single { AuthenticationService() }
+            single {
                 TusFileUploadService()
                     .withStoragePath(config.tusTempDirectory)
                     .withUploadUri("/api/v1/files/upload")
                     .withUploadExpirationPeriod(1000 * 60 * 60) // 1 hour
             }
+            single { FileCache() }
         })
     }
 

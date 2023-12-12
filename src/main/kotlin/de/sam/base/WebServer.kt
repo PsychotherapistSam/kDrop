@@ -179,6 +179,7 @@ class WebServer : KoinComponent {
                         path("/{fileId}") {
                             head("/", FileController()::handleTUSUpload, UserRoles.USER)
                             patch("/", FileController()::handleTUSUpload, UserRoles.USER)
+                            delete("/", FileController()::handleTUSUpload, UserRoles.USER)
                         }
                     }
 
@@ -197,6 +198,13 @@ class WebServer : KoinComponent {
                             UserRoles.USER,
                             Requirement.HAS_ACCESS_TO_FILE,
                             UserRoles.FILE_ACCESS_CHECK_ALLOW_HOME
+                        )
+
+                        post(
+                            "/hash",
+                            FileController()::hashFile,
+                            UserRoles.USER,
+                            Requirement.HAS_ACCESS_TO_FILE
                         )
                     }
                 }

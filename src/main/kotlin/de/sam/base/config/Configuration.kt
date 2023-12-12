@@ -27,6 +27,12 @@ class Configuration {
     var fileTempDirectory = File("./upload_temp").canonicalPath
     var tusTempDirectory = File("./upload_tus").canonicalPath
     var tracking = Tracking()
+    var hashing = Hashing()
+
+    class Hashing {
+        var enabled = false
+        var onUpload = false
+    }
 
     @JsonIgnore
     var version = "v0.0.6"

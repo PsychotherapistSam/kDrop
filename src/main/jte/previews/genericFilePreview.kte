@@ -1,8 +1,12 @@
+@import de.sam.base.config.Configuration
 @import de.sam.base.database.FileDTO
 @import de.sam.base.utils.file.FileType
 @import io.javalin.http.Context
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
+@import de.sam.base.config.Configuration.Companion.config
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.utils.*
 @import de.sam.base.utils.toReadableTimeString
 @import de.sam.base.utils.toRecentTimeString
 
@@ -59,7 +63,7 @@
         <table class="ui compact definition table">
             <tbody>
             <tr>
-                <td>Name</td>
+                <td class="collapsing">Name</td>
                 <td style="word-break: break-all;">${file.name!!}</td>
             </tr>
             <tr>
@@ -71,7 +75,7 @@
                 <td>${file.sizeHR!!}</td>
             </tr>
             <tr>
-                <td>Creation Date</td>
+                <td style="word-break: keep-all;">Created</td>
                 <td>${file.created!!.toRecentTimeString()}
                     (${file.created!!.toReadableTimeString()})
                 </td>
@@ -80,10 +84,27 @@
                 <td>ID</td>
                 <td>${file.id!!.toString()}</td>
             </tr>
-            <tr>
-                <td>SHA512</td>
-                <td style="word-break: break-all;">${file.hash ?: "not yet computed"}</td>
-            </tr>
+            @if(config.hashing.enabled)
+                <tr>
+                    <td>SHA512</td>
+                    @if(file.hash == null)
+                        @if(ctx.isLoggedIn && file.isOwnedByUserId(ctx.currentUserDTO!!.id!!))
+                            <td style="word-break: break-all;">
+                                <button class="ui compact button"
+                                        hx-post="/api/v1/files/${file.id.toString()}/hash"
+                                        hx-target="closest td"
+                                        _="${displayLoader}">
+                                    Compute
+                                </button>
+                            </td>
+                        @else
+                            <td>Not computed yet</td>
+                        @endif
+                    @else
+                        <td style="word-break: break-all;">${file.hash}</td>
+                    @endif
+                </tr>
+            @endif
             </tbody>
         </table>
     </div>
