@@ -493,7 +493,7 @@ function initializeDragSelect() {
         draggability: false, // implement this instead: https://interactjs.io/docs/
         keyboardDrag: false,
     });
-    ds.subscribe('DS:start:pre', ({event}) => {
+    ds.subscribe('predragstart', ({event}) => {
         if (event.type !== "mousedown") {
             ds.stop()
         }
@@ -501,22 +501,22 @@ function initializeDragSelect() {
         if (event.target instanceof HTMLAnchorElement) {
             const row = event.target.closest(".context-clickable");
             if (!isSelected(row)) {
-                clearSelection()
+                clearSelection();
                 selectRow(row);
             }
             ds.break();
         }
     });
-    ds.subscribe('DS:start', ({event}) => {
+    ds.subscribe('dragstart', ({event}) => {
         hideMenu();
     })
-    ds.subscribe('DS:select', ({item, items}) => {
+    ds.subscribe('elementselect', ({item, items}) => {
         selectRow(item);
         if (items.length === $(".context-clickable").length - 1) {
             $("#toggleAllSelection")[0].checked = true;
         }
     });
-    ds.subscribe('DS:unselect', ({item, items}) => {
+    ds.subscribe('elementunselect', ({item, items}) => {
         deselectRow(item);
 
         $("#toggleAllSelection")[0].checked = false;
@@ -533,19 +533,11 @@ function isSelected(row) {
     return ds.getSelection().indexOf(row) !== -1;
 }
 
-function toggleSelection() {
-    if ($("#toggleAllSelection")[0].checked) {
-        selectAll();
-    } else {
-        clearSelection();
-    }
-}
 
 function selectAll() {
     $(".context-clickable").each(function (_, item) {
         selectRow(item)
     });
-    //ds.addSelection($(".context-clickable"))
 }
 
 function clearSelection() {
@@ -562,10 +554,6 @@ function selectRow(row) {
 function deselectRow(row) {
     ds.removeSelection(row)
     $(row).find(":checkbox")[0].checked = false;
-}
-
-function getAllRows() {
-    return ds.getSelectables();
 }
 
 // Search Modal
