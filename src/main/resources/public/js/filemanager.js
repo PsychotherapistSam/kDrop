@@ -377,7 +377,7 @@ let ds = null;
 let customDragging = false;
 let startElement = null;
 
-document.addEventListener("DS:start", function (e) {
+document.addEventListener("dragstart", function (e) {
     if ($(e.target).hasClass("drag-startable")) {
         startElement = $(e.target).closest("tr").attr("data-id");
         customDragging = true;
