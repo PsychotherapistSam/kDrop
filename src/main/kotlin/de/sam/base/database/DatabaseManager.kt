@@ -3,6 +3,7 @@ package de.sam.base.database
 
 import com.zaxxer.hikari.HikariDataSource
 import de.sam.base.config.Configuration
+import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
@@ -10,10 +11,6 @@ import org.jdbi.v3.core.config.ConfigRegistry
 import org.jdbi.v3.core.statement.StatementContext
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.postgresql.jdbc.PgArray
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
@@ -40,18 +37,11 @@ class DatabaseManager(private val config: Configuration) {
         jdbi.registerArrayType(UUID::class.java, "uuid")
         jdbi.registerArgument(PgArrayFactory())
 
+        val flyway = Flyway.configure().dataSource(hikariDataSource).load()
+        flyway.migrate()
+
         Database.connect(hikariDataSource)
 
-        transaction {
-            // print sql to std-out
-            addLogger(StdOutSqlLogger)
-            // create users table
-            SchemaUtils.create(UsersTable)
-            SchemaUtils.create(FilesTable)
-            SchemaUtils.create(DownloadLogTable)
-            SchemaUtils.create(SharesTable)
-            SchemaUtils.create(LoginLogTable)
-        }
     }
 }
 

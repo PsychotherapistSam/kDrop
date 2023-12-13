@@ -46,6 +46,8 @@ dependencies {
     implementation("org.jdbi:jdbi3-core:$jdbi")
     implementation("org.jdbi:jdbi3-kotlin:$jdbi")
     implementation("org.jdbi:jdbi3-postgres:$jdbi")
+    implementation("org.flywaydb:flyway-core:10.2.0")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql:10.2.0")
 
     // Jackson
     val jackson = "2.15.1"
