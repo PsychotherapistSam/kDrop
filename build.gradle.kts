@@ -29,8 +29,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin")
 
     // Javalin
-    implementation("io.javalin:javalin:5.6.1")
-    implementation("io.javalin:javalin-rendering:5.6.0")
+    implementation("io.javalin:javalin:5.6.3")
+    implementation("io.javalin:javalin-rendering:5.6.2")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.5")
@@ -121,6 +121,10 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
         // exclude koin
         exclude(dependency("io.insert-koin:koin-core"))
+
+        // exclude flyway
+        exclude(dependency("org.flywaydb:flyway-core"))
+        exclude(dependency("org.flywaydb:flyway-database-postgresql"))
     }
 }
 
