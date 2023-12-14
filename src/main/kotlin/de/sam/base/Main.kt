@@ -14,6 +14,7 @@ import de.sam.base.services.LoginLogService
 import de.sam.base.services.ShareService
 import de.sam.base.utils.FileCache
 import de.sam.base.utils.logging.logTimeSpent
+import de.sam.base.utils.session.Session
 import me.desair.tus.server.TusFileUploadService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -39,6 +40,7 @@ fun main() {
     Logger.debug("Starting koin")
     startKoin {
         modules(module {
+            single { config }
             single { LoginLogService() }
             single { FileService() }
             single { ShareService() }
@@ -46,7 +48,7 @@ fun main() {
             single { UserValidator() }
             single { PasswordHasher() }
             single { AuthenticationService() }
-            single { config }
+            single { Session() }
             single { Captcha() }
             single {
                 TusFileUploadService()

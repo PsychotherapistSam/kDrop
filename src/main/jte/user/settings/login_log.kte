@@ -15,28 +15,56 @@ page = page,
 content = @`
     <h1>Settings</h1>
     @template.layout.user.settingsNavbar(page=page)
-    <table class="ui compact celled striped table">
-        <thead>
-        <tr>
-            <th>Date</th>
-            <th>IP</th>
-            <th>User-Agent</th>
-        </tr>
-        </thead>
-        <tbody>
-        @for(loginLog in page.loginLogList)
+    <div class="ui basic fitted segment"
+         _="${displayLoader}">
+        <table class="ui compact celled striped table" id="loginLogTable">
+            <thead>
             <tr>
-                <td>${loginLog.date.toReadableTimeString()}</td>
-                <td>
-                    <a href="https://www.abuseipdb.com/check/${loginLog.ip}#ip"
-                       target="_blank">
-                        ${loginLog.ip}
-                    </a>
-                </td>
-                <td>${loginLog.userAgent}</td>
+                <th>Date</th>
+                <th>IP</th>
+                <th>User-Agent</th>
+                <th class="collapsing">Actions</th>
             </tr>
-        @endfor
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            @for(loginLog in page.loginLogList)
+                <tr>
+                    !{val marking = if(loginLog.sessionId == page.ctx.req().session.id) "left green marked" else null}
+                    <td class="${marking}">${loginLog.date.toReadableTimeString()}</td>
+                    <td>
+                        <a href="https://www.abuseipdb.com/check/${loginLog.ip}#ip"
+                           target="_blank">
+                            ${loginLog.ip}
+                        </a>
+                    </td>
+                    <td>${loginLog.userAgent}</td>
+                    @if(loginLog.revoked)
+                        <td class="disabled center aligned selectable negative">
+                            Revoked
+                        </td>
+                    @elseif(loginLog.sessionId == null)
+                        <td class="disabled center aligned selectable negative" style="white-space: nowrap">
+                            Logged out
+                        </td>
+                    @else
+                        <td class="center aligned selectable negative">
+                            <a hx-post="/user/sessions/revoke"
+                               hx-include="next #logId"
+                               hx-swap="outerHTML"
+                               hx-target="#loginLogTable"
+                               hx-select="#loginLogTable"
+                            >Revoke</a>
+                        </td>
+                        <input type="hidden"
+                               id="logId"
+                               name="logId"
+                               value="${loginLog.id.toString()}"
+                        />
+                    @endif
+                </tr>
+            @endfor
+            </tbody>
+        </table>
+    </div>
 `
 )

@@ -46,6 +46,7 @@ import java.util.*
 class WebServer : KoinComponent {
     private val fileService: FileService by inject()
     private val config: Configuration by inject()
+    private val session: Session by inject()
 
     fun start() {
         Logger.debug("Creating javalin app")
@@ -53,7 +54,7 @@ class WebServer : KoinComponent {
             JavalinJte.init(createTemplateEngine())
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
-            javalinConfig.jetty.sessionHandler { Session.sqlSessionHandler(config.devEnvironment) }
+            javalinConfig.jetty.sessionHandler { session.sessionHandler }
             javalinConfig.plugins.register(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
 
             val customAccessManager = CustomAccessManager()
@@ -120,6 +121,9 @@ class WebServer : KoinComponent {
                     delete("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
                     get("/loginHistory", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
                 }
+                path("/sessions") {
+                    post("/revoke", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
+                }
                 get("/shares", { UserSharesPage().handle(it) }, UserRoles.USER)
                 get("/search", FileController()::performFileSearch, UserRoles.USER)
                 path("/files") {
@@ -163,7 +167,7 @@ class WebServer : KoinComponent {
         app.routes {
             path("/api/v1") {
                 path("/session") {
-                    delete(AuthenticationController()::logoutRequest)
+                    delete(AuthenticationController()::logoutRequest, UserRoles.USER, Requirement.IS_LOGGED_IN)
                 }
                 path("/users") {
                     before("/{userId}*", UserController()::getUserParameter)

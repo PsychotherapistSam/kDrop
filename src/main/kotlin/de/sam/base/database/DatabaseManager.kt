@@ -34,6 +34,7 @@ class DatabaseManager(private val config: Configuration) {
         jdbi.registerRowMapper(FileDTOMapper())
         jdbi.registerRowMapper(UserDTOMapper())
         jdbi.registerRowMapper(ShareDTOMapper())
+        jdbi.registerRowMapper(LoginLogDTOMapper())
         jdbi.registerArrayType(UUID::class.java, "uuid")
         jdbi.registerArgument(PgArrayFactory())
 
