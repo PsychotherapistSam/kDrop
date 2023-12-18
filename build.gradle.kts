@@ -70,8 +70,15 @@ dependencies {
     implementation("org.jetbrains:markdown:0.4.0")
     implementation("io.insert-koin:koin-core:3.5.2-RC1")
 
-    // https://mvnrepository.com/artifact/me.desair.tus/tus-java-server
+    // TUS
     implementation("me.desair.tus:tus-java-server:1.0.0-3.0")
+
+    // krate
+    implementation("io.github.lpicanco:krate-core:1.0.2")
+
+    // coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
 
     //TODO: implement maybe
     // https://mvnrepository.com/artifact/io.konform/konform

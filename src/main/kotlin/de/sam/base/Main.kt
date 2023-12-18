@@ -13,6 +13,7 @@ import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.services.ShareService
 import de.sam.base.utils.FileCache
+import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.session.Session
 import me.desair.tus.server.TusFileUploadService
@@ -41,6 +42,7 @@ fun main() {
     startKoin {
         modules(module {
             single { config }
+            single { RateLimiter() }
             single { LoginLogService() }
             single { FileService() }
             single { ShareService() }

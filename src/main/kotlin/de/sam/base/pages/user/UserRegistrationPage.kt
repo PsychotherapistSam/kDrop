@@ -5,11 +5,9 @@ import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
 import de.sam.base.users.UserRoles
-import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.hxRedirect
-import de.sam.base.utils.isLoggedIn
-import de.sam.base.utils.prolongAtLeast
+import de.sam.base.utils.*
 import io.javalin.http.ForbiddenResponse
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 
 class UserRegistrationPage : Page(
@@ -23,6 +21,8 @@ class UserRegistrationPage : Page(
     private val captcha: Captcha by inject()
 
     private val authenticationService: AuthenticationService by inject()
+
+    private val rateLimiter: RateLimiter by inject()
 
     private var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
@@ -47,6 +47,15 @@ class UserRegistrationPage : Page(
 
             val username = ctx.formParam("username")
             val password = ctx.formParam("password")
+
+            val taken = runBlocking {
+                rateLimiter.authentication.tryTake(ctx.realIp)
+            }
+
+            if (!taken) {
+                errors.add("Too many registration attempts. Please try again later.")
+                return@prolongAtLeast
+            }
 
             if (config.captcha != null && config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
                 val captchaErrors = captcha.validate(ctx)

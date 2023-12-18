@@ -6,6 +6,7 @@ import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.inject
 
 class UserLoginPage : Page(
@@ -21,6 +22,7 @@ class UserLoginPage : Page(
     private val loginLogService: LoginLogService by inject()
     private val authenticationService: AuthenticationService by inject()
 
+    private val rateLimiter: RateLimiter by inject()
 
     var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
@@ -34,6 +36,15 @@ class UserLoginPage : Page(
             }
             val username = ctx.formParam("username")
             val password = ctx.formParam("password")
+
+            val taken = runBlocking {
+                rateLimiter.authentication.tryTake(ctx.realIp)
+            }
+
+            if (!taken) {
+                errors.add("Too many login attempts. Please try again later.")
+                return@prolongAtLeast
+            }
 
             if (config.captcha != null && config.captcha!!.locations.contains("login")) {
                 val captchaErrors = captcha.validate(ctx)

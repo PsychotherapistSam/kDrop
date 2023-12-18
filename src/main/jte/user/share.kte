@@ -72,7 +72,13 @@ content = @`
                             <input type="password" name="password" id="password" placeholder="Enter Password"
                                    tabindex="1">
                         </div>
-                        @if(page.passwordWrong)
+                        @if(page.rateLimited)
+                            <div class="ui negative message">
+                                <ul class="list">
+                                    <li>Too many attempts. Please try again later.</li>
+                                </ul>
+                            </div>
+                        @elseif(page.passwordWrong)
                             <div class="ui negative message">
                                 <ul class="list">
                                     <li>Incorrect password</li>

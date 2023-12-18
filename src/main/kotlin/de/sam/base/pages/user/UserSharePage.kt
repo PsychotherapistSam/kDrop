@@ -6,10 +6,13 @@ import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.services.FileService
 import de.sam.base.services.ShareService
+import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.fileDTOFromId
+import de.sam.base.utils.realIp
 import de.sam.base.utils.share
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
+import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -26,16 +29,20 @@ class UserSharePage : Page(
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()
 
+    private val rateLimiter: RateLimiter by inject()
+
     var file: FileDTO? = null
     lateinit var share: ShareDTO
 
     var providedPassword: String? = null
 
-    var passwordRequired: Boolean = false
-    var passwordCorrect: Boolean = false // this shows whether the user has provieded the correct password
-    var passwordWrong: Boolean = false // this shows whether the user has tried a wrong password
+    var passwordRequired = false
+    var passwordCorrect = false // this shows whether the user has provieded the correct password
+    var passwordWrong = false // this shows whether the user has tried a wrong password
+    var rateLimited = false
 
     override fun get() {
+
         share = ctx.share?.second ?: throw NotFoundResponse("Share not found")
         file = fileService.getFileById(share.file) ?: throw NotFoundResponse("File not found")
 
@@ -43,10 +50,19 @@ class UserSharePage : Page(
 
         if (passwordRequired) {
             providedPassword = ctx.queryParam("password")
+            if (providedPassword != null) {
+                val taken = runBlocking {
+                    rateLimiter.share.tryTake(ctx.realIp)
+                }
+
+                if (!taken) {
+                    rateLimited = true
+                }
+            }
 
             passwordCorrect = providedPassword != null && passwordHasher.verifyPassword(
                 providedPassword!!, share.password!!, file!!.id.toString()
-            )
+            ) && !rateLimited
 
             passwordWrong = providedPassword != null && !passwordCorrect
         }
