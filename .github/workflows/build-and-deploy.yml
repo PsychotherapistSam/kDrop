@@ -40,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: shadowJar
-          path: build/libs
+          path: .
       - name: Log in to Gitea package registry
         uses: docker/login-action@v3
         with:
@@ -60,6 +60,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: shadowJar
+          path: build/libs
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
