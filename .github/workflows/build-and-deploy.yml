@@ -68,7 +68,7 @@ jobs:
   deploy:
     needs: [ build, docker-build ]
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
