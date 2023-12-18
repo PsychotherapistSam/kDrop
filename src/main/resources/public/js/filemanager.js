@@ -533,6 +533,13 @@ function isSelected(row) {
     return ds.getSelection().indexOf(row) !== -1;
 }
 
+function toggleSelection() {
+    if ($("#toggleAllSelection")[0].checked) {
+        selectAll();
+    } else {
+        clearSelection();
+    }
+}
 
 function selectAll() {
     $(".context-clickable").each(function (_, item) {
@@ -554,6 +561,10 @@ function selectRow(row) {
 function deselectRow(row) {
     ds.removeSelection(row)
     $(row).find(":checkbox")[0].checked = false;
+}
+
+function getAllRows() {
+    return ds.getSelectables();
 }
 
 // Search Modal
