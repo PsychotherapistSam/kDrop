@@ -4,7 +4,17 @@ on:
   push:
     branches: [ "master" ]
   workflow_dispatch:
-
+    inputs:
+      build_docker:
+        description: 'Build & Push Docker Image'
+        required: false
+        type: boolean
+        default: true
+      deploy:
+        description: 'Deploy Application'
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 
@@ -33,7 +43,7 @@ jobs:
   docker-build:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_docker == 'true')
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.build_docker)
     steps:
       - uses: actions/checkout@v3
       - name: Download artifact
@@ -58,7 +68,7 @@ jobs:
   deploy:
     needs: [ build, docker-build ]
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy'
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
