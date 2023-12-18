@@ -1,5 +1,6 @@
 package de.sam.base.authentication
 
+import de.sam.base.users.UserRoles
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
@@ -45,7 +46,12 @@ class AuthenticationService : KoinComponent {
         val salt = UUID.randomUUID().toString()
         val hashedPassword = passwordHasher.hashPassword(password, salt)
 
-        val newUser = userService.createUser(username, hashedPassword, salt)
+        val role = if (userService.countTotalUsers() == 0)
+            UserRoles.ADMIN
+        else
+            UserRoles.USER
+
+        val newUser = userService.createUser(username, hashedPassword, salt, role)
             ?: return AuthenticationResult.Failure(listOf("Failed to create user"))
 
         return AuthenticationResult.Success(newUser)
