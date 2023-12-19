@@ -318,4 +318,24 @@ class UserService : KoinComponent {
         }
         return emptyList()
     }
+
+    /**
+     * Deletes all sessions from the database.
+     *
+     * @throws Exception if any error occurs during the deletion process
+     */
+    fun deleteAllSessions() {
+        val sql = """
+            DELETE FROM jettysessions;
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .execute()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+    }
 }

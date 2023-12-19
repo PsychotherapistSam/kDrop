@@ -1,6 +1,7 @@
 package de.sam.base
 
 import com.fasterxml.jackson.datatype.joda.JodaModule
+import de.sam.base.components.ActionsComponent
 import de.sam.base.config.Configuration
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.FileController
@@ -146,6 +147,12 @@ class WebServer : KoinComponent {
             }
             path("/admin") {
                 get("/", { AdminIndexPage().handle(it) }, UserRoles.ADMIN)
+                path("/actions") {
+                    get("/", { ActionsComponent().list(it) }, UserRoles.ADMIN)
+                    path("/{action}") {
+                        post("/run", { ActionsComponent().runSingle(it) }, UserRoles.ADMIN)
+                    }
+                }
                 path("/users") {
                     get("/", { AdminUsersPage().handle(it) }, UserRoles.ADMIN)
                     //TODO: change this

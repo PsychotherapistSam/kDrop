@@ -10,7 +10,6 @@ import java.io.File
 class FileCleanupAction : KoinComponent {
     private val tusFileUploadSerivce: TusFileUploadService by inject()
     private val config: Configuration by inject()
-
     fun cleanup() {
         Logger.info("Starting file cleanup")
 
