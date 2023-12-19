@@ -63,6 +63,25 @@ class LoginLogService {
         }
     }
 
+    fun getLimitedLoginHistoryByUserId(userId: UUID, days: Int): List<LoginLogDTO> {
+        val sql = """
+            SELECT * FROM t_login_log
+            WHERE "user" = CAST(:userId AS uuid)
+            AND date > NOW() - INTERVAL '$days days';
+        """.trimIndent()
+
+        try {
+            return jdbi.withHandle<List<LoginLogDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("userId", userId.toString())
+                    .mapTo(LoginLogDTO::class.java)
+                    .list()
+            }
+        } catch (e: Exception) {
+            throw Exception("Could not get login logs for user $userId", e)
+        }
+    }
+
     /**
      * Deletes all login logs for a given user.
      *

@@ -15,6 +15,11 @@ page = page,
 content = @`
     <h1>Settings</h1>
     @template.layout.user.settingsNavbar(page=page)
+    <div class="ui message">
+        <div class="header">
+            Only the last 30 days are displayed.
+        </div>
+    </div>
     <div class="ui basic fitted segment"
          _="${displayLoader}">
         <table class="ui compact celled striped table" id="loginLogTable">
@@ -30,7 +35,7 @@ content = @`
             @for(loginLog in page.loginLogList)
                 <tr>
                     !{val marking = if(loginLog.sessionId == page.ctx.req().session.id) "left green marked" else null}
-                    <td class="${marking}">${loginLog.date.toReadableTimeString()}</td>
+                    <td class="${marking}" style="white-space: nowrap;">${loginLog.date.toReadableTimeString()}</td>
                     <td>
                         <a href="https://www.abuseipdb.com/check/${loginLog.ip}#ip"
                            target="_blank">

@@ -5,6 +5,7 @@ import de.sam.base.database.LoginLogDTO
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.session.Session
+import io.javalin.http.HttpStatus
 import org.koin.core.component.inject
 import java.util.*
 
@@ -15,6 +16,7 @@ class UserLoginLogSettingsPage : Page(
 ) {
     companion object {
         const val ROUTE: String = "/user/settings/loginHistory"
+        const val LOGIN_LOG_DAYS: Int = 30
     }
 
     private val session: Session by inject()
@@ -25,17 +27,13 @@ class UserLoginLogSettingsPage : Page(
     var errors = arrayListOf<String>()
 
     override fun get() {
-        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
-            .sortedBy { it.date }
-            .reversed()
+        loginLogList = loadLoginList()
     }
 
     override fun post() {
         val logId = UUID.fromString(ctx.formParam("logId"))
 
-        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
-            .sortedBy { it.date }
-            .reversed()
+        loginLogList = loadLoginList()
 
         if (logId == null) {
             errors.add("Log not found.")
@@ -56,10 +54,14 @@ class UserLoginLogSettingsPage : Page(
         session.sessionHandler.invalidate(log.sessionId)
         loginLogService.updateLoginLogEntry(log.copy(revoked = true))
 
-        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
+        loginLogList = loadLoginList()
+
+        ctx.status(HttpStatus.OK)
+    }
+
+    private fun loadLoginList(): List<LoginLogDTO> {
+        return loginLogService.getLimitedLoginHistoryByUserId(ctx.currentUserDTO!!.id, LOGIN_LOG_DAYS)
             .sortedBy { it.date }
             .reversed()
-
-        ctx.status(200)
     }
 }
