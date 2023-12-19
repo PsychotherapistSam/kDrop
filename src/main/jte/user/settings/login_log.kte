@@ -47,13 +47,13 @@ content = @`
                             Logged out
                         </td>
                     @else
-                        <td class="center aligned selectable negative">
-                            <a hx-post="/user/sessions/revoke"
-                               hx-include="next #logId"
-                               hx-swap="outerHTML"
-                               hx-target="#loginLogTable"
-                               hx-select="#loginLogTable"
-                            >Revoke</a>
+                        <td class="center aligned selectable negative"
+                            hx-post="/user/sessions/revoke"
+                            hx-include="next #logId"
+                            hx-swap="outerHTML"
+                            hx-target="#loginLogTable"
+                            hx-select="#loginLogTable">
+                            <p>Revoke</p>
                         </td>
                         <input type="hidden"
                                id="logId"
