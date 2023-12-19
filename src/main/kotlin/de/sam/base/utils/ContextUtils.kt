@@ -1,7 +1,6 @@
 package de.sam.base.utils
 
 import de.sam.base.database.FileDTO
-import de.sam.base.database.ShareDAO
 import de.sam.base.database.ShareDTO
 import de.sam.base.database.UserDTO
 import io.javalin.http.Context
@@ -34,8 +33,8 @@ var Context.fileDTOFromId: FileDTO?
 val Context.requestStartTime: Long
     get() = this.attribute("javalin-request-log-start-time") as Long? ?: 0L
 
-var Context.share: Pair<ShareDAO, ShareDTO>?
-    get() = this.attribute<Pair<ShareDAO, ShareDTO>>("requestShareParameter")
+var Context.share: ShareDTO?
+    get() = this.attribute<ShareDTO>("requestShareParameter")
     set(value) = this.attribute("requestShareParameter", value)
 
 //TODO: fix actual redirecting, this doesnt seem to work.

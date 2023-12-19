@@ -46,7 +46,7 @@ val prettyTime = PrettyTime().apply {
     locale = Locale.ENGLISH
 }
 
-val patternFormatter: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-M-d H:m:s (z)")
+val patternFormatter: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-M-d HH:mm:ss (z)")
 
 fun DateTime.toRecentTimeString(): String? {
     return prettyTime.format(this.toDate())

@@ -39,7 +39,6 @@ dependencies {
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
     // Database and ORM
-    implementation("org.jetbrains.exposed:exposed:0.17.14")
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.postgresql:postgresql:42.5.4")
     val jdbi = "3.39.1"
@@ -109,9 +108,6 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
 
         // Exclude the postgres driver, hikari doesn't find it otherwise
         exclude(dependency("org.postgresql:postgresql"))
-
-        // Exclude Jetbrains Exposed
-        exclude(dependency("org.jetbrains.exposed:exposed"))
 
         // Exclude Javalin
         exclude(dependency("io.javalin:javalin"))

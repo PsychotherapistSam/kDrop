@@ -25,14 +25,19 @@ class UserLoginLogSettingsPage : Page(
     var errors = arrayListOf<String>()
 
     override fun get() {
-        loginLogList = loginLogService.getLoginHistory(ctx.currentUserDTO!!)
+        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
+            .sortedBy { it.date }
+            .reversed()
     }
 
     override fun post() {
         val logId = UUID.fromString(ctx.formParam("logId"))
 
+        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
+            .sortedBy { it.date }
+            .reversed()
+
         if (logId == null) {
-            loginLogList = loginLogService.getLoginHistory(ctx.currentUserDTO!!)
             errors.add("Log not found.")
             return
         }
@@ -40,20 +45,20 @@ class UserLoginLogSettingsPage : Page(
         val log = loginLogService.getLogById(logId)
 
         if (log == null || log.user != ctx.currentUserDTO!!.id) {
-            loginLogList = loginLogService.getLoginHistory(ctx.currentUserDTO!!)
             errors.add("Log not found.")
             return
         }
 
         if (log.sessionId == null) {
-            loginLogList = loginLogService.getLoginHistory(ctx.currentUserDTO!!)
             return
         }
 
         session.sessionHandler.invalidate(log.sessionId)
         loginLogService.updateLoginLogEntry(log.copy(revoked = true))
 
-        loginLogList = loginLogService.getLoginHistory(ctx.currentUserDTO!!)
+        loginLogList = loginLogService.getLoginHistoryByUserId(ctx.currentUserDTO!!.id)
+            .sortedBy { it.date }
+            .reversed()
 
         ctx.status(200)
     }

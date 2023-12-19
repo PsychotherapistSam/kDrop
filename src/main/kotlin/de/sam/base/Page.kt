@@ -23,6 +23,7 @@ abstract class Page(
 
     var pageDiff: Long = 0
     private var templateStartTime: Long? = null
+
     var currentUserDTO: UserDTO? = null
 
     lateinit var ctx: Context

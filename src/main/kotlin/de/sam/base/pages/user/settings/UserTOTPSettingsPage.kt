@@ -1,9 +1,7 @@
 package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
-import de.sam.base.database.UserDAO
-import de.sam.base.database.fetchDAO
-import de.sam.base.database.toDTO
+import de.sam.base.authentication.UserService
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.getFirstError
 import de.sam.base.utils.totpSecret
@@ -15,7 +13,7 @@ import dev.samstevens.totp.secret.DefaultSecretGenerator
 import dev.samstevens.totp.secret.SecretGenerator
 import dev.samstevens.totp.util.Utils.getDataUriForImage
 import io.javalin.http.formParamAsClass
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.inject
 
 
 class UserTOTPSettingsPage : Page(
@@ -26,25 +24,16 @@ class UserTOTPSettingsPage : Page(
         const val ROUTE: String = "/user/settings/totp"
     }
 
+    val userService: UserService by inject()
+
     var qrCodeDaraUri: String = ""
     var error: String = ""
 
     var userHasTOTP: Boolean = false
     var creationSuccess: Boolean = false
 
-    lateinit var user: UserDAO
     override fun before() {
-        qrCodeDaraUri = ""
-        error = ""
-        creationSuccess = false
-        transaction {
-            user = ctx.currentUserDTO!!.fetchDAO()!!
-        }
-        userHasTOTP = user.totpSecret != null
-    }
-
-    override fun get() {
-
+        userHasTOTP = ctx.currentUserDTO!!.totpSecret != null
     }
 
     override fun post() {
@@ -57,10 +46,11 @@ class UserTOTPSettingsPage : Page(
             if (totp.second != null) {
                 error = totp.second!!
             } else {
-                transaction {
-                    user.totpSecret = ctx.totpSecret
-                }
-                ctx.currentUserDTO = user.toDTO()
+                ctx.currentUserDTO = userService.updateUser(
+                    ctx.currentUserDTO!!.copy(
+                        totpSecret = ctx.totpSecret
+                    )
+                )
                 ctx.totpSecret = null
                 creationSuccess = true
                 userHasTOTP = true
@@ -70,40 +60,38 @@ class UserTOTPSettingsPage : Page(
 
     override fun delete() {
         if (userHasTOTP) {
-            transaction {
-                user.totpSecret = null
-            }
-
-            ctx.currentUserDTO = user.toDTO()
+            ctx.currentUserDTO = userService.updateUser(
+                ctx.currentUserDTO!!.copy(
+                    totpSecret = null
+                )
+            )
             ctx.totpSecret = null
             userHasTOTP = false
         }
     }
 
     override fun after() {
-        transaction {
-            // user doesn't yet have saved a secret
-            if (!userHasTOTP) {
-                val secretGenerator: SecretGenerator = DefaultSecretGenerator()
-                ctx.totpSecret = secretGenerator.generate()
+        // user doesn't yet have saved a secret
+        if (!userHasTOTP) {
+            val secretGenerator: SecretGenerator = DefaultSecretGenerator()
+            ctx.totpSecret = secretGenerator.generate()
 
-                // generate a QR code
-                val data = QrData.Builder()
-                    .label(ctx.currentUserDTO!!.name)
-                    .secret(ctx.totpSecret)
-                    .issuer(config.name)
-                    .algorithm(HashingAlgorithm.SHA1)
-                    .digits(6)
-                    .period(30)
-                    .build()
+            // generate a QR code
+            val data = QrData.Builder()
+                .label(ctx.currentUserDTO!!.name)
+                .secret(ctx.totpSecret)
+                .issuer(config.name)
+                .algorithm(HashingAlgorithm.SHA1)
+                .digits(6)
+                .period(30)
+                .build()
 
-                val generator = ZxingPngQrGenerator();
-                val imageData = generator.generate(data)
+            val generator = ZxingPngQrGenerator();
+            val imageData = generator.generate(data)
 
-                val mimeType: String = generator.imageMimeType
+            val mimeType: String = generator.imageMimeType
 
-                qrCodeDaraUri = getDataUriForImage(imageData, mimeType)
-            }
+            qrCodeDaraUri = getDataUriForImage(imageData, mimeType)
         }
     }
 }

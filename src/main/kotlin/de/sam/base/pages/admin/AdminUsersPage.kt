@@ -1,14 +1,10 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.database.UserDAO
+import de.sam.base.authentication.UserService
 import de.sam.base.database.UserDTO
-import de.sam.base.database.UsersTable
-import de.sam.base.database.toDTO
 import de.sam.base.utils.logging.logTimeSpent
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.lowerCase
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.core.component.inject
 import kotlin.system.measureNanoTime
 
 class AdminUsersPage : Page(
@@ -20,6 +16,8 @@ class AdminUsersPage : Page(
         const val ROUTE: String = "/admin/users"
     }
 
+    private val userService: UserService by inject()
+
     var userDTOs = listOf<UserDTO>()
     var currenTablePage = 0
     val maxTablePageSize = 10
@@ -30,19 +28,12 @@ class AdminUsersPage : Page(
         currenTablePage = ctx.queryParam("page")?.toInt() ?: 0
 
         pageDiff = measureNanoTime {
-            transaction {
-                logTimeSpent("Getting user list") {
-                    val userData = if (searchQuery != null) {
-                        UserDAO.find { UsersTable.name.lowerCase().like("%$searchQuery%".lowercase()) }
-                    } else {
-                        UserDAO.all()
-                    }
-
-                    userDTOs = userData
-                        .orderBy(UsersTable.registrationDate to SortOrder.ASC)
-                        .limit(maxTablePageSize, maxTablePageSize * currenTablePage)
-                        .map { it.toDTO() }
-                }
+            logTimeSpent("Getting user list") {
+                userDTOs =
+                    if (searchQuery.isNotBlank())
+                        userService.searchUsers(searchQuery, maxTablePageSize, maxTablePageSize * currenTablePage)
+                    else
+                        userService.getAllUsers(maxTablePageSize, maxTablePageSize * currenTablePage)
             }
         }
 

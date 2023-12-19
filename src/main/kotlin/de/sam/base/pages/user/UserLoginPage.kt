@@ -58,10 +58,9 @@ class UserLoginPage : Page(
             val result = authenticationService.login(username = username!!, password = password!!)
 
             when (result) {
-                is AuthenticationResult.Success
-                -> {
+                is AuthenticationResult.Success -> {
                     ctx.currentUserDTO = result.userDTO
-                    loginLogService.logLogin(ctx, result.userDTO)
+                    loginLogService.logLoginForUserId(ctx, result.userDTO.id)
 
                     if (result.requireTOTPValidation) {
                         ctx.needsToVerifyTOTP = true
@@ -75,7 +74,6 @@ class UserLoginPage : Page(
                     lastTryUsername = username
                     errors.addAll(result.errors)
                 }
-
             }
 
             return@prolongAtLeast

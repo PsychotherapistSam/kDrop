@@ -1,14 +1,12 @@
 package de.sam.base.utils
 
+import de.sam.base.authentication.UserService
 import de.sam.base.config.Configuration
-import de.sam.base.database.UserDAO
-import de.sam.base.database.toDTO
 import de.sam.base.requirements.Requirement
 import de.sam.base.users.UserRoles
 import io.javalin.http.*
 import io.javalin.security.AccessManager
 import io.javalin.security.RouteRole
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
@@ -20,6 +18,7 @@ import kotlin.time.measureTimedValue
 
 class CustomAccessManager : AccessManager, KoinComponent {
     private val config: Configuration by inject()
+    private val userService: UserService by inject()
 
     override fun manage(handler: Handler, ctx: Context, routeRoles: Set<RouteRole>) {
         if (ctx.path().startsWith("/api/v1/payments")) {
@@ -61,18 +60,15 @@ class CustomAccessManager : AccessManager, KoinComponent {
             val currentToken = CacheInvalidation.userTokens[userId] ?: -1
 
             if (sessionToken < currentToken) {
-                transaction {
-                    val dao = UserDAO.findById(userId)
-                    if (dao == null) {
-                        ctx.currentUserDTO = null
-                        ctx.req().session.invalidate()
-
-                        return@transaction
-                    }
-                    val user = dao.toDTO()
-                    ctx.currentUserDTO = user
-                    ctx.tokenTime = currentToken
+                val user = userService.getUserById(userId)
+                if (user == null) {
+                    ctx.currentUserDTO = null
+                    ctx.req().session.invalidate()
+                    return
                 }
+
+                ctx.currentUserDTO = user
+                ctx.tokenTime = currentToken
             }
         }
 

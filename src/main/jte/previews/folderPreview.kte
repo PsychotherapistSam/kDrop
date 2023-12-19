@@ -15,7 +15,7 @@
 @param sortByName: String
 @param sortBy: String
 
-@template.components.files.fileListComp(parent = parent, fileDTOs = files, sortByName = sortByName, sortBy = sortBy, ctx = ctx, share = ctx.share?.second ?: null)
+@template.components.files.fileListComp(parent = parent, fileDTOs = files, sortByName = sortByName, sortBy = sortBy, ctx = ctx, share = ctx.share ?: null)
 
 @if(!share)
     @template.components.files.modals()

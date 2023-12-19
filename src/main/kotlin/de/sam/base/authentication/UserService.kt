@@ -192,4 +192,130 @@ class UserService : KoinComponent {
             0
         }
     }
+
+    /**
+     * Updates the user with the given data.
+     *
+     * @param copy the UserDTO object containing the updated data
+     * @return the updated UserDTO object
+     */
+    fun updateUser(copy: UserDTO): UserDTO {
+        val sql = """
+            UPDATE t_users
+            SET name = :name,
+                password = :password,
+                roles = :roles,
+                preferences = :preferences,
+                registration_date = :registration_date,
+                totp_secret = :totp_secret,
+                root_folder_id = :root_folder_id,
+                salt = :salt
+            WHERE id = :id;
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("name", copy.name)
+                    .bind("password", copy.password)
+                    .bind("roles", copy.roles.joinToString(","))
+                    .bind("preferences", copy.preferences)
+                    .bind("registration_date", copy.registrationDate.toDate())
+                    .bind("totp_secret", copy.totpSecret)
+                    .bind("root_folder_id", copy.rootFolderId)
+                    .bind("salt", copy.salt)
+                    .bind("id", copy.id)
+                    .execute()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+        return copy
+    }
+
+    /**
+     * Retrieves a user from the database based on the user ID.
+     *
+     * @param it the user ID
+     * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
+     */
+    fun getUserById(it: UUID): UserDTO? {
+        val sql = """
+            SELECT * FROM t_users
+            WHERE id = CAST(:id AS uuid);
+        """.trimIndent()
+
+        try {
+            return jdbi.withHandle<UserDTO?, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("id", it.toString())
+                    .mapTo<UserDTO>()
+                    .findOne()
+                    .getOrNull()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+        return null
+    }
+
+    /**
+     * Searches for users with the given search query.
+     *
+     * @param searchQuery the search query
+     * @return a list of UserDTO objects representing the users
+     * @throws Exception if any error occurs during the search process
+     */
+    fun searchUsers(searchQuery: String, limit: Int = 25, offset: Int = 0): List<UserDTO> {
+        val sql = """
+            SELECT * FROM t_users
+            WHERE name ILIKE :name
+            ORDER BY registration_date
+            LIMIT :limit
+            OFFSET :offset;
+        """.trimIndent()
+
+        try {
+            return jdbi.withHandle<List<UserDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("name", "%$searchQuery%")
+                    .bind("limit", limit)
+                    .bind("offset", offset)
+                    .mapTo<UserDTO>()
+                    .list()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+        return emptyList()
+    }
+
+    /**
+     * Retrieves a list of all users from the database.
+     *
+     * @param limit the maximum number of users to retrieve
+     * @param offset the offset
+     *
+     */
+    fun getAllUsers(limit: Int = 25, offset: Int = 0): List<UserDTO> {
+        val sql = """
+            SELECT * FROM t_users
+            ORDER BY registration_date
+            LIMIT :limit
+            OFFSET :offset;
+        """.trimIndent()
+
+        try {
+            return jdbi.withHandle<List<UserDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("limit", limit)
+                    .bind("offset", offset)
+                    .mapTo<UserDTO>()
+                    .list()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+        return emptyList()
+    }
 }

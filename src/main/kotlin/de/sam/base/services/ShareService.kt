@@ -8,6 +8,13 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 class ShareService {
+    /**
+     * Retrieves the list of shares for a given user.
+     *
+     * @param userId The unique identifier of the user.
+     * @return The list of shares associated with the user.
+     * @throws FileServiceException if an error occurs while fetching the shares.
+     */
     fun getAllSharesForUser(userId: UUID): List<ShareDTO> {
         val sql = """
             SELECT * FROM t_shares
@@ -26,6 +33,12 @@ class ShareService {
         }
     }
 
+    /**
+     * Deletes all shares for a given user.
+     *
+     * @param userId The unique identifier of the user.
+     * @throws FileServiceException if an error occurs while deleting the shares.
+     */
     fun deleteAllSharesForUser(userId: UUID) {
         val sql = """
             DELETE FROM t_shares
@@ -126,6 +139,31 @@ class ShareService {
             }
         } catch (e: Exception) {
             throw FileServiceException("Could not fetch share for name $name", e)
+        }
+    }
+
+    /**
+     * Retrieves a share by its ID.
+     * @param id the ID of the share
+     * @return the ShareDTO object representing the share with the given ID, or null if not found
+     * @throws FileServiceException if there is an error while fetching the share
+     */
+    fun getShareById(id: UUID): ShareDTO? {
+        val sql = """
+            SELECT * FROM t_shares
+            WHERE id = CAST(:id AS uuid);
+        """.trimIndent()
+
+        return try {
+            jdbi.withHandle<ShareDTO, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("id", id.toString())
+                    .mapTo<ShareDTO>()
+                    .findOne()
+                    .getOrNull()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not fetch share for id $id", e)
         }
     }
 

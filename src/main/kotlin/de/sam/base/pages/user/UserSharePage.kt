@@ -43,7 +43,7 @@ class UserSharePage : Page(
 
     override fun get() {
 
-        share = ctx.share?.second ?: throw NotFoundResponse("Share not found")
+        share = ctx.share ?: throw NotFoundResponse("Share not found")
         file = fileService.getFileById(share.file) ?: throw NotFoundResponse("File not found")
 
         passwordRequired = share.password != null

@@ -80,7 +80,7 @@ class ShareController : KoinComponent {
     }
 
     fun delete(ctx: Context) {
-        shareService.deleteShare(ctx.share!!.second.id)
+        shareService.deleteShare(ctx.share!!.id)
     }
 
     fun getOne(ctx: Context) {

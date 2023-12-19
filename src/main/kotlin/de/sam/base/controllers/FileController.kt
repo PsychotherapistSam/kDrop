@@ -134,25 +134,24 @@ class FileController : KoinComponent {
 
     // from a share or from a file id
     fun getSingleFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: fileService.getFileById(ctx.share!!.second.file)
+        val file = ctx.fileDTOFromId ?: fileService.getFileById(ctx.share!!.file)
         ?: throw NotFoundResponse("File not found") // if not throw an error
             .also { Logger.error(it.message) }
 
 
-        val isShareRequest = ctx.share?.second != null
-        if (isShareRequest && ctx.share!!.second.password != null) {
+        val isShareRequest = ctx.share != null
+        if (isShareRequest && ctx.share!!.password != null) {
             // verify password
             val providedPassword = ctx.queryParam("password") ?: throw BadRequestResponse("No password provided")
             val passwordCorrect =
                 passwordHasher.verifyPassword(
-                    providedPassword!!, ctx.share!!.second.password!!, file.id.toString()
+                    providedPassword!!, ctx.share!!.password!!, file.id.toString()
                 )
 
             if (!passwordCorrect) {
                 throw BadRequestResponse("Wrong password")
             }
         }
-
 
         val systemFile = File("${config.fileDirectory}/${file.id}")
         if (!systemFile.exists()) {

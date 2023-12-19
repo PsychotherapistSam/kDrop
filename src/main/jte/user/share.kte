@@ -64,7 +64,7 @@ content = @`
                         </div>
                     </div>
                     <form class="ui form" _="${displayLoader}"
-                          hx-get="/s/${page.ctx.share!!.second.id.toString()}"
+                          hx-get="/s/${page.ctx.share!!.id.toString()}"
                           hx-target="body"
                           hx-push-url="true">
                         <div class="field">
@@ -92,7 +92,7 @@ content = @`
                 </div>
             </div>
         @else
-            @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, config = page.config, share = true, shareId = page.ctx.share!!.second.id.toString(), providedPassword = page.providedPassword)
+            @template.previews.genericFilePreview(file = page.file!!, ctx = page.ctx, config = page.config, share = true, shareId = page.ctx.share!!.id.toString(), providedPassword = page.providedPassword)
         @endif
     @endif
 `)

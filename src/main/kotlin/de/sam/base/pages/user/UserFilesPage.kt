@@ -9,7 +9,6 @@ import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.NotFoundResponse
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 
@@ -46,21 +45,19 @@ class UserFilesPage : Page(
             title = breadcrumbs.last().name + " - My Files"
         }
         logTimeSpent("getting the files list") {
-            transaction {
-                if (parent.isFolder!!) {
-                    if (!ctx.isLoggedIn) {
-                        Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
-                        throw NotFoundResponse("File not found")
-                    }
-                    logTimeSpent("getting the file list") {
-                        fileDTOs =
-                            fileService.getFolderContentForUser(parent.id, ctx.currentUserDTO!!.id).sortedWith { a, b ->
-                                sortingDirection.compare(a, b)
-                                //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
-                                // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
-                                //  IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
-                            }
-                    }
+            if (parent.isFolder!!) {
+                if (!ctx.isLoggedIn) {
+                    Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
+                    throw NotFoundResponse("File not found")
+                }
+                logTimeSpent("getting the file list") {
+                    fileDTOs =
+                        fileService.getFolderContentForUser(parent.id, ctx.currentUserDTO!!.id).sortedWith { a, b ->
+                            sortingDirection.compare(a, b)
+                            //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
+                            // NameFileComparator uses this for comparison, as I don't have files I cannot use it.
+                            //  IOCase.INSENSITIVE.checkCompareTo(a.name, b.name)
+                        }
                 }
             }
         }

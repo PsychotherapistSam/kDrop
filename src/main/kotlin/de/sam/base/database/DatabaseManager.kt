@@ -10,7 +10,6 @@ import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.config.ConfigRegistry
 import org.jdbi.v3.core.statement.StatementContext
 import org.jdbi.v3.postgres.PostgresPlugin
-import org.jetbrains.exposed.sql.Database
 import org.postgresql.jdbc.PgArray
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
@@ -40,9 +39,6 @@ class DatabaseManager(private val config: Configuration) {
 
         val flyway = Flyway.configure().dataSource(hikariDataSource).load()
         flyway.migrate()
-
-        Database.connect(hikariDataSource)
-
     }
 }
 

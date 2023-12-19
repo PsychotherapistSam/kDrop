@@ -1,9 +1,7 @@
 package de.sam.base.requirements
 
-import de.sam.base.database.ShareDAO
-import de.sam.base.database.SharesTable
-import de.sam.base.database.toDTO
 import de.sam.base.services.FileService
+import de.sam.base.services.ShareService
 import de.sam.base.utils.FileCache
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
@@ -15,7 +13,6 @@ import io.javalin.http.HandlerType
 import io.javalin.http.HttpStatus
 import io.javalin.http.pathParamAsClass
 import io.javalin.security.RouteRole
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
@@ -56,16 +53,14 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                     fileCache.remove(fileId)
                 }
 
-                transaction {
-                    logTimeSpent("Getting file by id") {
-                        val fileService: FileService by inject()
-                        val fileDTO = fileService.getFileById(fileId)
+                logTimeSpent("Getting file by id") {
+                    val fileService: FileService by inject()
+                    val fileDTO = fileService.getFileById(fileId)
 
-                        if (fileDTO != null) {
-                            Logger.trace("Setting fileDTO and DAO to request attribute")
-                            ctx.fileDTOFromId = fileDTO
-                            fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO)
-                        }
+                    if (fileDTO != null) {
+                        Logger.trace("Setting fileDTO and DAO to request attribute")
+                        ctx.fileDTOFromId = fileDTO
+                        fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO)
                     }
                 }
             }
@@ -85,35 +80,28 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
     HAS_ACCESS_TO_SHARE("This share does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
         override fun isMet(ctx: Context): Boolean {
             val shareId = ctx.pathParamAsClass<String>("shareId").get()
+            val shareService: ShareService by inject()
 
-            return transaction {
-                logTimeSpent("Getting share by id") {
-                    val shareDAO = if (shareId.isUUID) {
-                        ShareDAO.find { SharesTable.id eq UUID.fromString(shareId) }
-                            .limit(1)
-                            .firstOrNull()
-                    } else {
-                        ShareDAO.find { SharesTable.vanityName eq shareId }
-                            .limit(1)
-                            .firstOrNull()
-                    }
+            logTimeSpent("Getting share by id") {
+                val share =
+                    if (shareId.isUUID)
+                        shareService.getShareById(UUID.fromString(shareId))
+                    else
+                        shareService.getShareByName(shareId) ?: return false
 
-                    if (shareDAO == null) {
-                        Logger.info("Share not found: access manager (actually not found)")
-                        return@transaction false
-                    }
-
-                    if (ctx.method() == HandlerType.DELETE && ctx.currentUserDTO?.id != shareDAO.user.id.value) {
-                        Logger.info("Share not found: access manager (user not owner)")
-                        return@transaction false
-                    }
-
-                    val shareDTO = shareDAO.toDTO()
-                    Logger.trace("Setting shareDTO and DAO to request attribute")
-                    ctx.share = shareDAO to shareDTO
-
-                    return@transaction true
+                if (share == null) {
+                    Logger.info("Share not found: access manager (actually not found)")
+                    return false
                 }
+
+                if (ctx.method() == HandlerType.DELETE && ctx.currentUserDTO?.id != share.user) {
+                    Logger.info("Share not found: access manager (user not owner)")
+                    return false
+                }
+
+                Logger.trace("Setting shareDTO and DAO to request attribute")
+                ctx.share = share
+                return true
             }
         }
     },
