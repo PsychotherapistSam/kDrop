@@ -43,13 +43,12 @@
                 <%--                    <span class="ui small red horizontal label">Dangerous</span>--%>
             </h4>
         </td>
-        <td class="center aligned selectable negative collapsing">
-            <a hx-post="/admin/actions/remove-all-sessions/run"
-               hx-swap="outerHTML"
-               hx-target="#actionsList"
-               hx-select="#actionsList"
-               _="${displayLoader}"
-            >Start</a>
+        <td class="center aligned selectable negative collapsing"
+            hx-post="/admin/actions/remove-all-sessions/run"
+            hx-swap="outerHTML"
+            hx-target="#actionsList"
+            hx-select="#actionsList">
+            <p>Start</p>
         </td>
     </tr>
 </table>
