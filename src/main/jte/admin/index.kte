@@ -65,6 +65,23 @@ content = @`
         </div>
     </div>
 
-    @template.components.actionsList()
+    <h4 class="ui horizontal divider header">
+        <i class="tag icon"></i>
+        Actions
+    </h4>
+    @template.components.taskList()
+
+    <div class="ui basic fitted segment">
+        <div hx-ext="sse" sse-connect="/admin/task/active" sse-swap="activeTasks">
+            <div>
+                <div class="ui active inverted dimmer">
+                    <div class="ui text loader">Loading</div>
+                </div>
+                <br>
+                <br>
+                <br>
+            </div>
+        </div>
+    </div>
 `
 )

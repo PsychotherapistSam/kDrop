@@ -1,0 +1,26 @@
+@import de.sam.base.tasks.queue.TaskWithStatus
+
+@param tasks: List<TaskWithStatus>
+@param total: Int
+
+<h2 class="ui header">Tasks (${total})</h2>
+@if(tasks.isNotEmpty())
+    <table class="ui celled very compact striped table">
+        <tbody>
+        @for(task in tasks)
+            <tr>
+                <td class="collapsing">${ task.task.id }</td>
+                <td class="center aligned collapsing">
+                    <div class="ui ${ task.status.color } label">${ task.status.name }</div>
+                </td>
+                <td class="collapsing">${ task.task.name }</td>
+                <td>${ task.task.description }</td>
+            </tr>
+        @endfor
+        </tbody>
+    </table>
+@endif
+
+@if(tasks.isEmpty())
+    <p>No active tasks</p>
+@endif

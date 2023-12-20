@@ -1,19 +1,22 @@
-package de.sam.base.actions
+package de.sam.base.tasks.types.files
 
 import de.sam.base.config.Configuration
 import de.sam.base.controllers.isValidUUID
 import de.sam.base.services.FileService
+import de.sam.base.tasks.types.Task
+import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.tinylog.kotlin.Logger
 import java.io.File
 import java.util.*
 
-class FileParityCheck : KoinComponent {
+
+class FileParityCheckTask : Task(name = "Parity check"), KoinComponent {
     private val fileService: FileService by inject()
     private val config: Configuration by inject()
+    override suspend fun execute() {
+        pushDescription("Checking if local files exist in database")
 
-    fun checkIfLocalFilesExistInDatabase() {
         val localFilesList = File(config.fileDirectory)
             .walk()
             .toList()
@@ -22,7 +25,7 @@ class FileParityCheck : KoinComponent {
             .map { UUID.fromString(it) }
 
         if (localFilesList.isEmpty()) {
-            Logger.info("No files found in the file directory, skipping parity check")
+            pushDescription("No files found in the file directory, skipping parity check", true, 0)
             return
         }
 
@@ -32,8 +35,10 @@ class FileParityCheck : KoinComponent {
         val filesNotInDB = localFilesList.filter { !existingFiles.contains(it) }
 
         filesNotInDB.forEach {
-            Logger.info("File $it is not in the database, deleting it")
+            pushDescription("File $it is not in the database, deleting it", true, 0)
             File("${config.fileDirectory}/$it").delete()
         }
+
+        delay(2000)
     }
 }

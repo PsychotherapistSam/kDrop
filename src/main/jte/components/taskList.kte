@@ -1,0 +1,51 @@
+<table class="ui compact striped celled table" id="taskList">
+    <tr>
+        <td>
+            <h4>Delete dangling files</h4>
+        </td>
+        <td class="center aligned selectable positive collapsing"
+            hx-post="/admin/task/delete-dangling-files/run"
+            hx-swap="outerHTML"
+            hx-target="#taskList"
+            hx-select="#taskList">
+            <p>Start</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h4>Calculate missing file hashes</h4>
+        </td>
+        <td class="center aligned selectable positive collapsing"
+            hx-post="/admin/task/calculate-missing-hashes/run"
+            hx-swap="outerHTML"
+            hx-target="#taskList"
+            hx-select="#taskList">
+            <p>Start</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <h4>Remove files not in database</h4>
+        </td>
+        <td class="center aligned selectable positive collapsing"
+            hx-post="/admin/task/file-parity-check/run"
+            hx-swap="outerHTML"
+            hx-target="#taskList"
+            hx-select="#taskList">
+            <p>Start</p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <%--                    <span class="ui small red horizontal label">Dangerous</span>--%>
+            <h4 class="ui red header">Delete all sessions</h4>
+        </td>
+        <td class="center aligned selectable negative collapsing"
+            hx-post="/admin/task/remove-all-sessions/run"
+            hx-swap="outerHTML"
+            hx-target="#taskList"
+            hx-select="#taskList">
+            <p>Start</p>
+        </td>
+    </tr>
+</table>

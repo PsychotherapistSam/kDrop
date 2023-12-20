@@ -1,7 +1,5 @@
 package de.sam.base
 
-import de.sam.base.actions.FileCleanupAction
-import de.sam.base.actions.FileParityCheck
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.authentication.UserService
@@ -12,10 +10,13 @@ import de.sam.base.database.DatabaseManager
 import de.sam.base.services.FileService
 import de.sam.base.services.LoginLogService
 import de.sam.base.services.ShareService
+import de.sam.base.tasks.TaskController
+import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.utils.FileCache
 import de.sam.base.utils.RateLimiter
-import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.session.Session
+import gg.jte.ContentType
+import gg.jte.TemplateEngine
 import me.desair.tus.server.TusFileUploadService
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -23,7 +24,6 @@ import org.tinylog.kotlin.Logger
 import java.io.File
 
 fun main() {
-
     val configFile = File("./config.yml")
     if (!configFile.exists()) {
         Logger.warn("Config file not found, creating new one with defaults")
@@ -52,6 +52,19 @@ fun main() {
             single { AuthenticationService() }
             single { Session() }
             single { Captcha() }
+            single { TaskQueue().withStartupTasks() }
+            single { TaskController() }
+            single {
+                // https://github.com/casid/jte-javalin-tutorial/blob/d75d550cd6cd1dd33fcf461047851409e18a0525/src/main/java/app/App.java#L51
+                // if dev mode
+//                val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
+//                return TemplateEngine.create(codeResolver, ContentType.Html)
+
+
+                val templateEngine = TemplateEngine.createPrecompiled(ContentType.Html)
+                templateEngine.setTrimControlStructures(true)
+                templateEngine
+            }
             single {
                 TusFileUploadService()
                     .withStoragePath(config.tusTempDirectory)
@@ -65,11 +78,4 @@ fun main() {
     Logger.debug("Starting webserver")
     WebServer().start()
     Logger.info("Started Successfully")
-
-    logTimeSpent("Checking for files that do not exist in the database") {
-        FileParityCheck().checkIfLocalFilesExistInDatabase()
-    }
-    logTimeSpent("Cleaning up temporary files") {
-        FileCleanupAction().cleanup()
-    }
 }

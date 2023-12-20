@@ -1,7 +1,6 @@
 package de.sam.base
 
 import com.fasterxml.jackson.datatype.joda.JodaModule
-import de.sam.base.components.ActionsComponent
 import de.sam.base.config.Configuration
 import de.sam.base.controllers.AuthenticationController
 import de.sam.base.controllers.FileController
@@ -20,14 +19,14 @@ import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
 import de.sam.base.services.FileService
+import de.sam.base.tasks.TaskController
+import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.users.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.session.Session
-import gg.jte.ContentType
 import gg.jte.TemplateEngine
-import gg.jte.resolve.DirectoryCodeResolver
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.http.Header
@@ -40,7 +39,6 @@ import io.javalin.validation.JavalinValidation
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
-import java.nio.file.Path
 import java.util.*
 
 
@@ -48,11 +46,14 @@ class WebServer : KoinComponent {
     private val fileService: FileService by inject()
     private val config: Configuration by inject()
     private val session: Session by inject()
+    private val templateEngine: TemplateEngine by inject()
+    private val taskQueue: TaskQueue by inject()
+    private val taskController: TaskController by inject()
 
     fun start() {
         Logger.debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->
-            JavalinJte.init(createTemplateEngine())
+            JavalinJte.init(templateEngine)
             JavalinValidation.register(UUID::class.java) { UUID.fromString(it) }
 
             javalinConfig.jetty.sessionHandler { session.sessionHandler }
@@ -77,9 +78,15 @@ class WebServer : KoinComponent {
             javalinConfig.jsonMapper(JavalinJackson(jackson))
         }.start(config.port)
 
+        Logger.debug("Registering Task Queue Handler")
+        taskQueue.onTaskStatusChange = taskController.onTaskStatusChange
 
         Logger.debug("Registering Javalin exception handlers")
-        app.exception(HttpResponseException::class.java) { e, ctx ->
+        app.exception(
+            HttpResponseException::
+            class.java
+        )
+        { e, ctx ->
             if (ctx.header(Header.ACCEPT)?.contains("application/json") == true || ctx.header("x-client")
                     ?.equals("web/api") == true
             ) {
@@ -147,10 +154,11 @@ class WebServer : KoinComponent {
             }
             path("/admin") {
                 get("/", { AdminIndexPage().handle(it) }, UserRoles.ADMIN)
-                path("/actions") {
-                    get("/", { ActionsComponent().list(it) }, UserRoles.ADMIN)
+                path("/task") {
+                    get("/", taskController::list, UserRoles.ADMIN)
+                    sse("/active", taskController::handleSSE, UserRoles.ADMIN)
                     path("/{action}") {
-                        post("/run", { ActionsComponent().runSingle(it) }, UserRoles.ADMIN)
+                        post("/run", taskController::runSingle, UserRoles.ADMIN)
                     }
                 }
                 path("/users") {
@@ -236,20 +244,6 @@ class WebServer : KoinComponent {
                     }
                 }
             }
-        }
-    }
-
-
-    // https://github.com/casid/jte-javalin-tutorial/blob/d75d550cd6cd1dd33fcf461047851409e18a0525/src/main/java/app/App.java#L51
-    private fun createTemplateEngine(): TemplateEngine {
-        if (false) {
-            val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
-            return TemplateEngine.create(codeResolver, ContentType.Html)
-
-        } else {
-            val templateEngine = TemplateEngine.createPrecompiled(ContentType.Html)
-            templateEngine.setTrimControlStructures(true)
-            return templateEngine
         }
     }
 }

@@ -515,4 +515,27 @@ class FileService {
             throw FileServiceException("Could not count total files", e)
         }
     }
+
+
+    /**
+     * Fetches a list of files from the database that do not have a hash value.
+     *
+     * @return A list of FileDTO objects representing the files without hashes.
+     * @throws FileServiceException If there is an error fetching the files from the database.
+     */
+    fun getFilesWithoutHashes(): List<FileDTO> {
+        val sql = """
+            SELECT * FROM t_files WHERE is_folder = FALSE AND is_root = FALSE and hash IS NULL;
+        """.trimIndent()
+
+        return try {
+            jdbi.withHandle<List<FileDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .mapTo<FileDTO>()
+                    .list()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not fetch files without hashes", e)
+        }
+    }
 }

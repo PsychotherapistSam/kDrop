@@ -1,4 +1,5 @@
 @import de.sam.base.Page
+@import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.user.UserRegistrationPage
 @import de.sam.base.pages.user.UserLoginPage
 @import de.sam.base.utils.isLoggedIn
@@ -42,6 +43,10 @@
     <script async src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.9/dist/htmx.min.js"></script>
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
+
+    @if(page is AdminIndexPage)
+        <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+    @endif
 
     @if(page.config.captcha != null)
         @if (page.config.captcha!!.service == "recaptcha")

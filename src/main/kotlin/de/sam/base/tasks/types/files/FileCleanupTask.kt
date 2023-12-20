@@ -1,25 +1,28 @@
-package de.sam.base.actions
+package de.sam.base.tasks.types.files
 
 import de.sam.base.config.Configuration
+import de.sam.base.tasks.types.Task
+import kotlinx.coroutines.delay
 import me.desair.tus.server.TusFileUploadService
-import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.File
 
-class FileCleanupAction : KoinComponent {
+class FileCleanupTask : Task(name = "File Cleanup") {
+
     private val tusFileUploadSerivce: TusFileUploadService by inject()
     private val config: Configuration by inject()
-    fun cleanup() {
-        Logger.info("Starting file cleanup")
+    override suspend fun execute() {
+        pushDescription("Starting file cleanup", true, 0)
 
         try {
-            Logger.info("Starting tusFileUploadSerivce cleanup")
+            pushDescription("Starting tusFileUploadSerivce cleanup", true, 0)
             tusFileUploadSerivce.cleanup()
-            Logger.info("Finished tusFileUploadSerivce cleanup successfully")
+            pushDescription("Finished tusFileUploadSerivce cleanup successfully", true, 0)
         } catch (e: Exception) {
             Logger.error("Error while cleaning up tus uploads", e)
         }
+
 
         File(config.fileTempDirectory)
             .walk()
@@ -27,11 +30,12 @@ class FileCleanupAction : KoinComponent {
                 if (it.isFile) {
                     val oneHourAgo = System.currentTimeMillis() - 60 * 60 * 1000
                     if (it.lastModified() < oneHourAgo) {
-                        Logger.debug("Deleting file ${it.name}")
+                        pushDescription("Deleting file ${it.name}", true, 0)
                         it.delete()
                     }
                 }
             }
-        Logger.info("Finished file cleanup")
+        pushDescription("Finished file cleanup", true, 0)
+        delay(2000)
     }
 }

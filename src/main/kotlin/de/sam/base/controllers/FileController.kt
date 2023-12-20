@@ -9,6 +9,8 @@ import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
 import de.sam.base.services.FileService
 import de.sam.base.services.ShareService
+import de.sam.base.tasks.queue.TaskQueue
+import de.sam.base.tasks.types.files.HashFileTask
 import de.sam.base.utils.*
 import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
@@ -34,6 +36,7 @@ class FileController : KoinComponent {
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()
     private val tusFileUploadSerivce: TusFileUploadService by inject()
+    private val taskQueue: TaskQueue by inject()
 
     fun handleTUSUpload(ctx: Context) {
         val servletRequest = ctx.req()
@@ -82,17 +85,6 @@ class FileController : KoinComponent {
                     Logger.debug("Target file ${targetFile.path} written")
                 }
 
-                val hash: String?
-                if (config.hashing.enabled && config.hashing.onUpload) {
-                    hash = logTimeSpent("hashing file") {
-                        targetFile.sha512()
-                    }
-                } else {
-                    hash = null
-                    Logger.debug("Skipping hashing since it is disabled")
-                }
-
-
                 val createdFile = fileService.createFile(
                     handle, FileDTO(
                         id = uploadId,
@@ -107,9 +99,16 @@ class FileController : KoinComponent {
                         created = DateTime.now(),
                         isFolder = false,
                         isRoot = false,
-                        hash = hash
+                        hash = null
                     )
                 )
+
+                if (config.hashing.enabled && config.hashing.onUpload) {
+                    Logger.debug("Hashing file ${targetFile.path} since it was uploaded")
+                    taskQueue.enqueueTask(HashFileTask(createdFile))
+                } else {
+                    Logger.debug("Skipping hashing since it is disabled")
+                }
 
                 Logger.debug("Target file ${targetFile.path} moved")
                 tusFileUploadSerivce.deleteUpload(uploadURI)
@@ -415,26 +414,17 @@ class FileController : KoinComponent {
             return
         }
 
+        val hashFileTask = HashFileTask(file)
+        taskQueue.enqueueTask(hashFileTask)
 
-        val hash =
-            logTimeSpent("hashing file ${file.id}") {
-                systemFile.sha512()
-            }
-
-        val fileCache by inject<FileCache>()
-        fileCache.remove(file.id)
-
-        try {
-            jdbi.useTransaction<Exception> { handle ->
-                fileService.updateFile(
-                    handle, file.copy(hash = hash)
-                )
-            }
-        } catch (e: Exception) {
-            Logger.error(e)
-            ctx.html("Error while updating file hash")
+        ctx.future {
+            hashFileTask.hasFinished.thenAccept {
+                ctx.html(hashFileTask.file.hash!!)
+            }?.exceptionally {
+                ctx.status(500).result("Hashing failed")
+                null
+            }!!
         }
-        ctx.html(hash)
     }
 
 
