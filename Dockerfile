@@ -1,6 +1,11 @@
 # Use a base image that has the Java Runtime Environment
 FROM eclipse-temurin:21_35-jre-alpine
 
+# Install PostgreSQL to get pg_dump and pg_restore
+RUN apk update \
+    && apk add postgresql-client \
+    && rm -rf /var/cache/apk/*
+
 # Set the working directory inside the container
 WORKDIR /app
 
