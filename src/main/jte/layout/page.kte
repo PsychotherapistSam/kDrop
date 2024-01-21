@@ -44,9 +44,7 @@
     <script async src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.12/dist/_hyperscript.min.js"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/loading-states.js"></script>
 
-    @if(page is AdminIndexPage)
-        <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
-    @endif
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
 
     @if(page.config.captcha != null)
         @if (page.config.captcha!!.service == "recaptcha")
