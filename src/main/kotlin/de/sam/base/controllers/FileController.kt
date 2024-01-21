@@ -5,14 +5,13 @@ import com.google.common.io.Files
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
-import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
 import de.sam.base.services.FileService
 import de.sam.base.services.ShareService
 import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.tasks.types.files.HashFileTask
+import de.sam.base.tasks.types.files.ZipFilesTask
 import de.sam.base.utils.*
-import de.sam.base.utils.file.zipFiles
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.*
 import io.javalin.util.FileUtil
@@ -27,7 +26,6 @@ import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.util.*
 import kotlin.concurrent.thread
-import kotlin.system.measureNanoTime
 
 class FileController : KoinComponent {
 
@@ -187,15 +185,7 @@ class FileController : KoinComponent {
         fileService.updateFile(updatedFile) ?: throw NotFoundResponse("File not found")
     }
 
-    private val usersCurrentlyZipping = mutableSetOf<UUID>()
-
     fun getFiles(ctx: Context) {
-        val userId = ctx.currentUserDTO!!.id
-
-        if (usersCurrentlyZipping.contains(userId)) {
-            throw BadRequestResponse("You cannot download two zip files at once")
-        }
-
         val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
             files.split(",").all { file ->
                 file.isValidUUID()
@@ -203,80 +193,40 @@ class FileController : KoinComponent {
         }, "Invalid UUID").get()
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
 
-        val fileList = arrayListOf<Pair<File, String>>()
+        val hashFileTask = ZipFilesTask(ctx.currentUserDTO!!, fileIDs)
 
-        for (file in fileService.getFilesByIds(fileIDs)) {
-            if (!file.isOwnedByUserId(userId)) {
-                continue
-            }
+        taskQueue.enqueueTask(hashFileTask)
 
-            if (file.isFolder) {
-                // add all files and subfolders recursively
-                fileList.addAll(getChildren(file, ctx.currentUserDTO!!, file.name + "/"))
-            } else {
-                val systemFile = File("${config.fileDirectory}/${file.id}")
-                if (systemFile.exists()) {
-                    fileList.add(Pair(systemFile, file.name))
+        ctx.future {
+            hashFileTask.hasFinished.thenAccept {
+                if (!hashFileTask.tempZipFile.exists()) {
+                    throw NotFoundResponse("File not found")
                 }
-            }
-        }
-
-        val tempZipFile = File("${config.fileTempDirectory}/${UUID.randomUUID()}.zip")
-
-        Logger.debug("Zipping ${fileList.size} files to ${tempZipFile.absolutePath}")
-
-        // only let users create one zip at a time, reducing the possibility of a dos
-        usersCurrentlyZipping.add(userId)
-
-        val nanoTime = measureNanoTime {
-            try {
-                zipFiles(fileList, tempZipFile)
-            } finally {
-                usersCurrentlyZipping.remove(userId)
-            }
-        }
-
-        val milliTime = nanoTime / 1000000.0
-        Logger.debug("Zipping took $milliTime ms")
-        Logger.debug("Zipping done")
-
-        if (tempZipFile.exists()) {
-            ctx.resultFile(
-                tempZipFile, "download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip", "application/zip"
-            )
-        } else {
-            throw NotFoundResponse("File not found")
-        }
-
-        thread {
-            var counter = 0
-            while (tempZipFile.exists()) {
-                tempZipFile.delete()
-                counter++
-                sleep(1000)
-                // if file can not be deleted at runtime, it will be deleted on the next stop
-                if (counter > 60) {
-                    tempZipFile.deleteOnExit()
-                    return@thread
+                ctx.resultFile(
+                    hashFileTask.tempZipFile,
+                    "download_${DateTime.now().toString("yyyy-MM-dd_HH-mm-ss")}.zip",
+                    "application/zip"
+                )
+                thread {
+                    var counter = 0
+                    while (hashFileTask.tempZipFile.exists()) {
+                        hashFileTask.tempZipFile.delete()
+                        counter++
+                        sleep(1000)
+                        // if file can not be deleted at runtime, it will be deleted on the next stop
+                        if (counter > 60) {
+                            hashFileTask.tempZipFile.deleteOnExit()
+                            return@thread
+                        }
+                    }
+                    Logger.debug("deleted zip file")
                 }
-            }
-            Logger.debug("deleted zip file")
+            }?.exceptionally {
+                throw InternalServerErrorResponse("Zipping failed failed")
+            }!!
         }
     }
 
-    private fun getChildren(file: FileDTO, user: UserDTO, namePrefix: String): Collection<Pair<File, String>> {
-        val children = arrayListOf<Pair<File, String>>()
-        fileService.getFolderContentForUser(file.id, user.id).forEach { child ->
-            if (child.isFolder) {
-                children.addAll(getChildren(child, user, namePrefix + child.name + "/"))
-            }
-            val systemFile = File("${config.fileDirectory}/${child.id}")
-            if (systemFile.exists()) {
-                children.add(Pair(systemFile, namePrefix + child.name))
-            }
-        }
-        return children
-    }
 
     fun deleteSingleFile(ctx: Context) {
         val file = ctx.attribute<FileDTO>("requestFileParameter")

@@ -14,7 +14,7 @@ import java.io.File
 import kotlin.system.measureTimeMillis
 
 class HashFileTask(var file: FileDTO) : Task(name = "File hashing"), KoinComponent {
-    val config: Configuration by inject()
+    private val config: Configuration by inject()
     private val fileService: FileService by inject()
 
     override suspend fun execute() {

@@ -17,7 +17,7 @@ abstract class Task(var id: Int = -1, val name: String, var description: String 
 
     var hasFinished: CompletableFuture<Boolean> = CompletableFuture()
 
-    fun pushUpdate() {
+    private fun pushUpdate() {
         if (lastUpdate + DEBOUNCE_TIME > System.currentTimeMillis()) {
             return
         }
