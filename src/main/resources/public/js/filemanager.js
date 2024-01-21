@@ -10,7 +10,7 @@ $.fn.serializeArray = function (options) {
     }, options || {});
 
     const rselectTextarea = /select|textarea/i;
-    const rinput = /text|hidden|password|search/i;
+    const rinput = /text|hidden|password|search|number/i;
 
     return this.map(function () {
         return this.elements ? $.makeArray(this.elements) : this;

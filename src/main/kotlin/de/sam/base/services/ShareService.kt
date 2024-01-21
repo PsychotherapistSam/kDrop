@@ -214,4 +214,57 @@ class ShareService {
             throw FileServiceException("Could not fetch shares for user $userId", e)
         }
     }
+
+    /**
+     * Updates a share in the database.
+     *
+     * @param share The share to be updated.
+     * @throws FileServiceException if the share could not be updated.
+     */
+    fun updateShare(share: ShareDTO) {
+        val sql = """
+            UPDATE t_shares
+            SET max_downloads = :maxDownloads, download_count = :downloadCount, vanity_name = :vanityName, password = :password
+            WHERE id = CAST(:id AS uuid);
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("id", share.id.toString())
+                    .bind("maxDownloads", share.maxDownloads)
+                    .bind("downloadCount", share.downloadCount)
+                    .bind("vanityName", share.vanityName)
+                    .bind("password", share.password)
+                    .execute()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not update share ${share.id}", e)
+        }
+    }
+
+    /**
+     * Updates the download count of a share in the database.
+     *
+     * @param share The share to be updated.
+     * @throws FileServiceException if the share could not be updated.
+     */
+    fun updateShareDownloadCount(share: ShareDTO) {
+        val sql = """
+            UPDATE t_shares
+            SET download_count = :downloadCount
+            WHERE id = CAST(:id AS uuid);
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("id", share.id.toString())
+                    .bind("downloadCount", share.downloadCount)
+                    .execute()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Could not update share ${share.id}", e)
+        }
+    }
 }

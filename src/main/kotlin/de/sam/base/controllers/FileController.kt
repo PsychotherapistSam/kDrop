@@ -161,6 +161,15 @@ class FileController : KoinComponent {
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
         ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType)
+
+        if (isShareRequest) {
+            ctx.share!!.downloadCount++
+            shareService.updateShareDownloadCount(ctx.share!!)
+
+            if (ctx.share!!.maxDownloads != null && ctx.share!!.maxDownloads!! > 0 && ctx.share!!.downloadCount >= ctx.share!!.maxDownloads!!) {
+                shareService.deleteShare(ctx.share!!.id)
+            }
+        }
     }
 
     fun updateFile(ctx: Context) {

@@ -317,8 +317,9 @@
                 <input type="password" name="password" id="password" placeholder="Leave blank to disable" tabindex="2">
             </div>
             <div class="field">
-                <label for="maxDownloads">Downloads (optional)</label>
-                <input type="number" name="maxDownloads" id="maxDownloads" placeholder="Leave blank to disable"
+                <label for="maxDownloads">Downloads (optional, 0 means unlimited/disabled limit)</label>
+                <input type="number" name="maxDownloads" id="maxDownloads" placeholder="0 is unlimited/disabled"
+                       value="0"
                        tabindex="3">
             </div>
             <input type="submit" hidden/>

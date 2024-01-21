@@ -74,7 +74,8 @@ class UserSharePage : Page(
 
         ctx.render(
             "components/files/sharesList.kte", mapOf(
-                "shares" to shares
+                "shares" to shares,
+                "modal" to true
             )
         )
     }

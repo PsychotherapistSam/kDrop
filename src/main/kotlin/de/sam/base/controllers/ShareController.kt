@@ -24,6 +24,9 @@ class ShareController : KoinComponent {
     fun create(ctx: Context) {
         val fileId = ctx.formParamAsClass<UUID>("fileId")
         val maxDownloads = ctx.formParamAsClass<Long>("maxDownloads").allowNullable()
+            .check({ it == null || it >= 0 }, "Max downloads must be positive")
+            .check({ it == null || it <= 1000 }, "Max downloads must be less than 1000")
+
         val vanityName = ctx.formParamAsClass<String>("vanityName").allowNullable()
             .check({ it == null || it.length <= 32 }, "Vanity is too long")
             .check({ it == null || !it.isUUID }, "Vanity can not be a UUID")
@@ -62,7 +65,6 @@ class ShareController : KoinComponent {
             } else {
                 passwordHasher.hashPassword(unhashedPassword, file.id.toString())
             }
-
 
         val newShare = shareService.createShare(
             ShareDTO(
