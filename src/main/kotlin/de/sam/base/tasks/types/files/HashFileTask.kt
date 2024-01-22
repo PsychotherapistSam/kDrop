@@ -13,7 +13,7 @@ import org.tinylog.kotlin.Logger
 import java.io.File
 import kotlin.system.measureTimeMillis
 
-class HashFileTask(var file: FileDTO) : Task(name = "File hashing"), KoinComponent {
+class HashFileTask(var file: FileDTO) : Task(name = "File hashing", concurrency = 5), KoinComponent {
     private val config: Configuration by inject()
     private val fileService: FileService by inject()
 

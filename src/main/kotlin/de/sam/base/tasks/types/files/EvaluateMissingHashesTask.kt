@@ -6,7 +6,7 @@ import de.sam.base.tasks.types.Task
 import kotlinx.coroutines.delay
 import org.koin.core.component.inject
 
-class EvaluateMissingHashesTask : Task(name = "Evaluate missing hashes") {
+class EvaluateMissingHashesTask : Task(name = "Evaluate missing hashes", concurrency = 1) {
     private val fileService: FileService by inject()
     private val taskQueue: TaskQueue by inject()
 

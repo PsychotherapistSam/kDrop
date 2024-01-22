@@ -6,8 +6,12 @@ import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.util.concurrent.CompletableFuture
 
-abstract class Task(var id: Int = -1, val name: String, var description: String = "Not yet started") : RunnableTask,
-    KoinComponent {
+abstract class Task(
+    var id: Int = -1,
+    val name: String,
+    var description: String = "Not yet started",
+    val concurrency: Int = 1,
+) : RunnableTask, KoinComponent {
     companion object {
         const val DEBOUNCE_TIME = 150 // 100 ms until next update
     }

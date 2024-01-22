@@ -11,7 +11,7 @@ import java.io.File
 import java.util.*
 
 
-class FileParityCheckTask : Task(name = "Parity check"), KoinComponent {
+class FileParityCheckTask : Task(name = "Parity check", concurrency = 1), KoinComponent {
     private val fileService: FileService by inject()
     private val config: Configuration by inject()
     override suspend fun execute() {

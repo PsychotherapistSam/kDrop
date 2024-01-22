@@ -1,24 +1,25 @@
+@file:OptIn(DelicateCoroutinesApi::class)
+
 package de.sam.base.tasks.queue
 
 import de.sam.base.tasks.TaskStatus
 import de.sam.base.tasks.types.Task
 import de.sam.base.tasks.types.files.FileCleanupTask
 import de.sam.base.tasks.types.files.FileParityCheckTask
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.GlobalScope.coroutineContext
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
 import org.tinylog.kotlin.Logger
 
-@OptIn(ExperimentalCoroutinesApi::class, DelicateCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class TaskQueue {
     private val taskQueue = Channel<TaskWithStatus>(Channel.UNLIMITED)
     private val allTasks = mutableListOf<TaskWithStatus>()
-    private lateinit var taskProcessor: ReceiveChannel<TaskWithStatus>
+    private val taskSemaphores = mutableMapOf<String, Semaphore>()
+
+    // total number of tasks that can run at the same time
+    private val globalSemaphore = Semaphore(10)
     private var idCounter = 0
 
     var onTaskStatusChange: (() -> Unit)? = null
@@ -27,24 +28,37 @@ class TaskQueue {
         startTaskProcessor()
     }
 
+    private var isActive = false
+
     private fun startTaskProcessor() {
-        taskProcessor = CoroutineScope(coroutineContext).produce {
-            while (true) {
+        isActive = true
+        CoroutineScope(coroutineContext).launch {
+            while (isActive) {
                 val taskWithStatus = taskQueue.receive()
-                try {
-                    taskWithStatus.status = TaskStatus.PROCESSING
-                    notifyTaskStatusChange()
-                    taskWithStatus.task.execute()
-//                    delay(2000)
-                    notifyTaskStatusChange()
-                    taskWithStatus.status = TaskStatus.COMPLETED
-                    taskWithStatus.task.hasFinished.complete(true)
-                    notifyTaskStatusChange()
-                } catch (e: Exception) {
-                    taskWithStatus.status = TaskStatus.FAILED
-                    taskWithStatus.task.hasFinished.complete(true)
-                    notifyTaskStatusChange()
-                    Logger.error(e, "Task ${taskWithStatus.task.id} failed")
+                val semaphore =
+                    taskSemaphores.getOrPut(taskWithStatus.task::class.simpleName!!) {
+                        Semaphore(taskWithStatus.task.concurrency)
+                    }
+                globalSemaphore.acquire()
+                semaphore.acquire()
+                launch {
+                    try {
+                        taskWithStatus.status = TaskStatus.PROCESSING
+                        notifyTaskStatusChange()
+                        taskWithStatus.task.execute()
+                        notifyTaskStatusChange()
+                        taskWithStatus.status = TaskStatus.COMPLETED
+                        taskWithStatus.task.hasFinished.complete(true)
+                        notifyTaskStatusChange()
+                    } catch (e: Exception) {
+                        taskWithStatus.status = TaskStatus.FAILED
+                        taskWithStatus.task.hasFinished.complete(true)
+                        notifyTaskStatusChange()
+                        Logger.error(e, "Task ${taskWithStatus.task.id} failed")
+                    } finally {
+                        semaphore.release()
+                        globalSemaphore.release()
+                    }
                 }
                 delay(1)
             }
@@ -61,7 +75,9 @@ class TaskQueue {
         val taskWithStatus = TaskWithStatus(task, TaskStatus.QUEUED, priority)
         synchronized(allTasks) {
             allTasks.add(taskWithStatus)
-            allTasks.sortByDescending { it.priority }
+            allTasks.sortWith(
+                compareByDescending<TaskWithStatus> { it.priority }.thenBy { it.task.id }
+            )
         }
         if (taskQueue.trySend(taskWithStatus).isFailure) {
             Logger.warn("Task queue is full. Task ${taskWithStatus.task.id} was not added.")

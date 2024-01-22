@@ -8,8 +8,7 @@ import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.File
 
-class FileCleanupTask : Task(name = "File Cleanup") {
-
+class FileCleanupTask : Task(name = "File Cleanup", concurrency = 1) {
     private val tusFileUploadSerivce: TusFileUploadService by inject()
     private val config: Configuration by inject()
     override suspend fun execute() {

@@ -12,8 +12,8 @@ import java.io.File
 import java.util.*
 import kotlin.system.measureNanoTime
 
-class ZipFilesTask(private val user: UserDTO, private val fileIDs: List<UUID>) : Task(name = "Zip files"),
-    KoinComponent {
+class ZipFilesTask(private val user: UserDTO, private val fileIDs: List<UUID>) :
+    Task(name = "Zip files", concurrency = 1), KoinComponent {
 
     private val config: Configuration by inject()
     private val fileService: FileService by inject()
