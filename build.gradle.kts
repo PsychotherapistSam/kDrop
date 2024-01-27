@@ -9,8 +9,9 @@ tasks.wrapper {
 plugins {
     kotlin("jvm") version "1.9.21"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("gg.jte.gradle") version "3.1.5"
+    id("gg.jte.gradle") version "3.1.9"
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
+    id("com.github.ben-manes.versions") version "0.51.0"
     application
 }
 
@@ -33,41 +34,43 @@ dependencies {
     implementation("io.javalin:javalin-rendering:5.6.2")
 
     // Logging
-    implementation("org.slf4j:slf4j-simple:2.0.5")
+    implementation("org.slf4j:slf4j-simple:2.0.11")
     val tinylog = "2.6.2"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
     // Database and ORM
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.postgresql:postgresql:42.5.4")
-    val jdbi = "3.39.1"
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.postgresql:postgresql:42.7.1")
+    val jdbi = "3.43.0"
     implementation("org.jdbi:jdbi3-core:$jdbi")
     implementation("org.jdbi:jdbi3-kotlin:$jdbi")
     implementation("org.jdbi:jdbi3-postgres:$jdbi")
-    implementation("org.flywaydb:flyway-core:10.2.0")
-    runtimeOnly("org.flywaydb:flyway-database-postgresql:10.2.0")
+
+    val flyway = "10.6.0"
+    implementation("org.flywaydb:flyway-core:$flyway")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql:$flyway")
 
     // Jackson
-    val jackson = "2.15.1"
+    val jackson = "2.16.1"
     implementation("com.fasterxml.jackson.core:jackson-databind:$jackson")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:$jackson")
 
     // JTE
-    val jte = "3.1.5"
+    val jte = "3.1.9" // also update the plugin!!!
     implementation("gg.jte:jte:$jte")
     implementation("gg.jte:jte-kotlin:$jte")
 
     // Misc
-    implementation("com.password4j:password4j:1.7.0")
-    implementation("org.ocpsoft.prettytime:prettytime:5.0.6.Final")
+    implementation("com.password4j:password4j:1.7.3")
+    implementation("org.ocpsoft.prettytime:prettytime:5.0.7.Final")
     implementation("commons-io:commons-io:2.11.0")
-    implementation("com.google.guava:guava:31.1-jre")
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
+    implementation("com.google.guava:guava:33.0.0-jre")
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
     implementation("dev.samstevens.totp:totp:1.7.1")
-    implementation("org.jetbrains:markdown:0.4.0")
-    implementation("io.insert-koin:koin-core:3.5.2-RC1")
+    implementation("org.jetbrains:markdown:0.6.1")
+    implementation("io.insert-koin:koin-core:3.5.3")
 
     // TUS
     implementation("me.desair.tus:tus-java-server:1.0.0-3.0")
