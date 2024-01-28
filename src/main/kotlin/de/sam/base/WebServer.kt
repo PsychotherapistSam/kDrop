@@ -87,14 +87,24 @@ class WebServer : KoinComponent {
             class.java
         )
         { e, ctx ->
-            if (ctx.header(Header.ACCEPT)?.contains("application/json") == true || ctx.header("x-client")
-                    ?.equals("web/api") == true
+            Logger.error(e)
+            Logger.error(e.message)
+
+            if (ctx.header(Header.ACCEPT)?.contains("application/json") == true
+                || ctx.header("x-client")?.equals("web/api") == true
             ) {
                 ctx.status(e.status)
                 ctx.json(arrayOf(e.message))
             } else {
                 ErrorPage(e).handle(ctx)
             }
+        }
+        // register general error handler
+        app.exception(Exception::class.java) { e, ctx ->
+            Logger.error(e)
+            Logger.error(e.message)
+            ctx.status(500)
+            ctx.json(arrayOf(e.message))
         }
 
         Logger.debug("Registering Javalin routes")
