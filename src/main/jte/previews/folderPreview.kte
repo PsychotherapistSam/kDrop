@@ -6,6 +6,7 @@
 @import de.sam.base.utils.preferencesString
 @import de.sam.base.utils.toReadableTimeString
 @import de.sam.base.utils.toRecentTimeString
+@import de.sam.base.config.Configuration
 
 @param files: List<FileDTO>
 @param parent: FileDTO
@@ -14,11 +15,12 @@
 @param shareId: String? = null
 @param sortByName: String
 @param sortBy: String
+@param config: Configuration
 
 @template.components.files.fileListComp(parent = parent, fileDTOs = files, sortByName = sortByName, sortBy = sortBy, ctx = ctx, share = ctx.share ?: null)
 
 @if(!share)
     @template.components.files.modals()
     @template.components.files.fileListContextMenuComp(parent = parent)
-    @template.components.files.fileUploadComp(parent = parent, ctx = ctx)
+    @template.components.files.fileUploadComp(parent = parent, ctx = ctx, config = config)
 @endif

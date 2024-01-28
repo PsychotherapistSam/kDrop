@@ -26,7 +26,7 @@ content = @`
     @endif
 
     @if(currentIsFolder)
-        @template.previews.folderPreview(files = page.fileDTOs,  parent = page.parent!!, ctx = page.ctx, sortByName = page.sortByName, sortBy = page.sortBy)
+        @template.previews.folderPreview(files = page.fileDTOs,  parent = page.parent!!, ctx = page.ctx, sortByName = page.sortByName, sortBy = page.sortBy, config = page.config)
     <%--        @template.components.files.fileListComp(fileDTOs = page.fileDTOs, sortByName = page.sortByName, sortBy = page.sortBy, ctx = page.ctx, parent = page.parent)--%>
     <%--        @template.components.files.fileUploadComp(parent = page.parent, page = page)--%>
     @else

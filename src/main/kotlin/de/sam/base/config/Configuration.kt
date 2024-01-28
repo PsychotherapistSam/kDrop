@@ -28,6 +28,7 @@ class Configuration {
     var tusTempDirectory = File("./upload_tus").canonicalPath
     var tracking = Tracking()
     var hashing = Hashing()
+    var maxUploadCount = 5
 
     class Hashing {
         var enabled = false
