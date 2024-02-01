@@ -1,7 +1,7 @@
 package de.sam.base.authentication
 
 import de.sam.base.users.UserRoles
-import io.javalin.validation.Validator
+import de.sam.base.utils.KValidator
 import org.koin.core.component.KoinComponent
 
 class UserValidator : KoinComponent {
@@ -18,40 +18,31 @@ class UserValidator : KoinComponent {
     }
 
     fun validateUsername(username: String?): Pair<Boolean, List<String>> {
-        val fieldName = "username"
-
-        val validator = Validator.create(String::class.java, username, fieldName)
+        val validator = KValidator(username)
             .check({ it.isNotBlank() }, "Username is required")
             .check({ it.length <= 20 }, "Username is too long")
             .check({ it.length >= 3 }, "Username is too short")
 
-        val errors = validator.errors()[fieldName]?.map { it.message }.orEmpty()
-        return Pair(errors.isEmpty(), errors)
+        return Pair(validator.isValid(), validator.errors())
     }
 
     fun validatePassword(password: String?): Pair<Boolean, List<String>> {
-        val fieldName = "password"
-
-        val validator = Validator.create(String::class.java, password, fieldName)
+        val validator = KValidator(password)
             .check({ it.isNotBlank() }, "Password is required")
             .check({ it.length <= 128 }, "Password is too long")
             .check({ it.length >= 3 }, "Password is too short")
 
-        val errors = validator.errors()[fieldName]?.map { it.message }.orEmpty()
-        return Pair(errors.isEmpty(), errors)
+        return Pair(validator.isValid(), validator.errors())
     }
 
     fun validateRoles(roles: String): Pair<Boolean, List<String>> {
-        val fieldName = "role"
-
-        val validator = Validator.create(String::class.java, roles, fieldName)
+        val validator = KValidator(roles)
             .check({ it.isNotBlank() }, "Roles must not be empty")
             .check({
                 it.split(",")
-                    .all { splitRole -> splitRole in UserRoles.values().map { role -> role.name } }
+                    .all { splitRole -> splitRole in UserRoles.entries.map { role -> role.name } }
             }, "Invalid roles")
-        val errors = validator.errors()[fieldName]?.map { it.message }.orEmpty()
-        return Pair(errors.isEmpty(), errors)
 
+        return Pair(validator.isValid(), validator.errors())
     }
 }

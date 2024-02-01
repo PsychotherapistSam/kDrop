@@ -5,8 +5,6 @@ import de.sam.base.config.Configuration
 import de.sam.base.requirements.Requirement
 import de.sam.base.users.UserRoles
 import io.javalin.http.*
-import io.javalin.security.AccessManager
-import io.javalin.security.RouteRole
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
@@ -16,11 +14,13 @@ import kotlin.time.DurationUnit
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
-class CustomAccessManager : AccessManager, KoinComponent {
+class CustomAccessManager : KoinComponent {
     private val config: Configuration by inject()
     private val userService: UserService by inject()
 
-    override fun manage(handler: Handler, ctx: Context, routeRoles: Set<RouteRole>) {
+    fun manage(ctx: Context) {
+        val routeRoles = ctx.routeRoles()
+
         if (ctx.path().startsWith("/api/v1/payments")) {
             //TODO: change this, without this an error get's thrown from stripejs
             ctx.header(Header.CONTENT_SECURITY_POLICY, "default-src *")
@@ -117,7 +117,5 @@ class CustomAccessManager : AccessManager, KoinComponent {
                 )
             }
         }
-
-        handler.handle(ctx)
     }
 }

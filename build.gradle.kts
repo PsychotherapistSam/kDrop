@@ -30,8 +30,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin")
 
     // Javalin
-    implementation("io.javalin:javalin:5.6.3")
-    implementation("io.javalin:javalin-rendering:5.6.2")
+    implementation("io.javalin:javalin:6.0.0")
+    implementation("io.javalin:javalin-rendering:6.0.0")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.11")
@@ -81,10 +81,6 @@ dependencies {
     // coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-
-    //TODO: implement maybe
-    // https://mvnrepository.com/artifact/io.konform/konform
-    //implementation("io.konform:konform:0.4.0")
 }
 
 tasks.test {
