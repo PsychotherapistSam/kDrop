@@ -54,7 +54,7 @@ class UserDTOMapper : RowMapper<UserDTO> {
             totpSecret = rs.getString("totp_secret"),
             rootFolderId = rs.getString("root_folder_id")?.let { UUID.fromString(it) },
             salt = rs.getString("salt"),
-            lastLogin = DateTime(rs.getTimestamp("last_login"))
+            lastLogin = rs.getTimestamp("last_login")?.let { DateTime(it) }
         )
     }
 }
