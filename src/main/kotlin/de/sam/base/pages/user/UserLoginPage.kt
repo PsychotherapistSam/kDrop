@@ -3,10 +3,12 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
+import de.sam.base.authentication.UserService
 import de.sam.base.captcha.Captcha
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
 import kotlinx.coroutines.runBlocking
+import org.joda.time.DateTime
 import org.koin.core.component.inject
 
 class UserLoginPage : Page(
@@ -21,6 +23,7 @@ class UserLoginPage : Page(
 
     private val loginLogService: LoginLogService by inject()
     private val authenticationService: AuthenticationService by inject()
+    private val userService: UserService by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
@@ -60,7 +63,11 @@ class UserLoginPage : Page(
             when (result) {
                 is AuthenticationResult.Success -> {
                     ctx.currentUserDTO = result.userDTO
-                    loginLogService.logLoginForUserId(ctx, result.userDTO.id)
+
+                    val date = DateTime.now()
+
+                    loginLogService.logLoginForUserId(ctx, result.userDTO.id, date)
+                    userService.updateLastLoginTime(result.userDTO.id, date)
 
                     if (result.requireTOTPValidation) {
                         ctx.needsToVerifyTOTP = true

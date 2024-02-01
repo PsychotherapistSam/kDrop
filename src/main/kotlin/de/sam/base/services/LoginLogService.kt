@@ -16,7 +16,7 @@ class LoginLogService {
      * @param userId The unique identifier of the user.
      * @throws Exception if an error occurs while logging the login.
      */
-    fun logLoginForUserId(ctx: Context, userId: UUID) {
+    fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
         val sql = """
             INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id)
             VALUES (CAST(:id AS uuid), CAST(:user AS uuid), :ip, :userAgent, :date, :sessionId);
@@ -29,7 +29,7 @@ class LoginLogService {
                     .bind("user", userId)
                     .bind("ip", ctx.realIp)
                     .bind("userAgent", ctx.userAgent()!!)
-                    .bind("date", DateTime.now().toDate())
+                    .bind("date", date.toDate())
                     .bind("sessionId", ctx.req().session.id)
                     .execute()
             }

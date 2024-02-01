@@ -53,8 +53,8 @@
                 <tr>
                     <th>Name</th>
                     <th>Registration Date</th>
-                    <th>E-mail address</th>
                     <th>Premium Plan</th>
+                    <th>Last login</th>
                     <th>Edit</th>
                 </tr>
                 </thead>
@@ -70,11 +70,18 @@
                         </td>
                         <td data-tooltip="${user.registrationDate.toReadableTimeString()}"
                             data-inverted="">${user.registrationDate.toRecentTimeString()}</td>
-                        <td>N/A</td>
                         <td>@if(user.roles.contains(UserRoles.PREMIUM))
                                 Yes
                             @else
                                 No
+                            @endif
+                        </td>
+                        <td>
+                            @if(user.lastLogin != null)
+                                <p data-tooltip="${user.lastLogin!!.toReadableTimeString()}"
+                                   data-inverted="">${user.lastLogin!!.toRecentTimeString()}</p>
+                            @else
+                                Never
                             @endif
                         </td>
                         <td class="right aligned collapsing">

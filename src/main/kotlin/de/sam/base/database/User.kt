@@ -18,7 +18,8 @@ data class UserDTO(
     var registrationDate: DateTime,
     var totpSecret: String?,
     var rootFolderId: UUID?,
-    var salt: String?
+    var salt: String?,
+    var lastLogin: DateTime? = null
 ) : Serializable {
 
     fun getHighestRolePowerLevel(): Int = roles.maxOf { it.powerLevel }
@@ -52,7 +53,8 @@ class UserDTOMapper : RowMapper<UserDTO> {
             registrationDate = DateTime(rs.getTimestamp("registration_date")),
             totpSecret = rs.getString("totp_secret"),
             rootFolderId = rs.getString("root_folder_id")?.let { UUID.fromString(it) },
-            salt = rs.getString("salt")
+            salt = rs.getString("salt"),
+            lastLogin = DateTime(rs.getTimestamp("last_login"))
         )
     }
 }

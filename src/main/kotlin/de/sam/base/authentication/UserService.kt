@@ -338,4 +338,29 @@ class UserService : KoinComponent {
             Logger.error(e)
         }
     }
+
+    /**
+     * Updates the last login time for a user in the database.
+     *
+     * @param userId The ID of the user.
+     * @param dateTime The last login time as a DateTime object.
+     */
+    fun updateLastLoginTime(userId: UUID, dateTime: DateTime) {
+        val sql = """
+            UPDATE t_users
+            SET last_login = :last_login
+            WHERE id = CAST(:id AS uuid);
+        """.trimIndent()
+
+        try {
+            jdbi.withHandle<Unit, Exception> { handle ->
+                handle.createUpdate(sql)
+                    .bind("last_login", dateTime.toDate())
+                    .bind("id", userId.toString())
+                    .execute()
+            }
+        } catch (e: Exception) {
+            Logger.error(e)
+        }
+    }
 }
