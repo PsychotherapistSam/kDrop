@@ -8,13 +8,17 @@ import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.argument.Argument
 import org.jdbi.v3.core.argument.ArgumentFactory
 import org.jdbi.v3.core.config.ConfigRegistry
+import org.jdbi.v3.core.statement.SqlLogger
 import org.jdbi.v3.core.statement.StatementContext
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.jdbc.PgArray
+import org.tinylog.kotlin.Logger
 import java.lang.reflect.Type
 import java.sql.PreparedStatement
 import java.sql.SQLException
+import java.time.temporal.ChronoUnit
 import java.util.*
+
 
 lateinit var hikariDataSource: HikariDataSource
 lateinit var jdbi: Jdbi
@@ -36,6 +40,16 @@ class DatabaseManager(private val config: Configuration) {
         jdbi.registerRowMapper(LoginLogDTOMapper())
         jdbi.registerArrayType(UUID::class.java, "uuid")
         jdbi.registerArgument(PgArrayFactory())
+
+        val sqlLogger: SqlLogger = object : SqlLogger {
+            override fun logAfterExecution(context: StatementContext) {
+                Logger.tag("database-query").info(
+                    "sql {}, parameters {}, timeTaken {} ms", context.renderedSql,
+                    context.binding.toString(), context.getElapsedTime(ChronoUnit.MILLIS)
+                )
+            }
+        }
+        jdbi.setSqlLogger(sqlLogger)
 
         val flyway = Flyway.configure().dataSource(hikariDataSource).load()
         flyway.migrate()

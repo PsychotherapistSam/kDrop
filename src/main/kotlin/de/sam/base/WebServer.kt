@@ -31,6 +31,7 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.http.Header
 import io.javalin.http.HttpResponseException
+import io.javalin.http.InternalServerErrorResponse
 import io.javalin.http.staticfiles.Location
 import io.javalin.json.JavalinJackson
 import io.javalin.plugin.bundled.RouteOverviewPlugin
@@ -87,8 +88,11 @@ class WebServer : KoinComponent {
             class.java
         )
         { e, ctx ->
-            Logger.error(e)
-            Logger.error(e.message)
+
+            if (e is InternalServerErrorResponse) {
+                Logger.error(e.message)
+                Logger.error(e)
+            }
 
             if (ctx.header(Header.ACCEPT)?.contains("application/json") == true
                 || ctx.header("x-client")?.equals("web/api") == true
