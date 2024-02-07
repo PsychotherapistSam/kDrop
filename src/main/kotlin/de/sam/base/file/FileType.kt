@@ -1,4 +1,4 @@
-package de.sam.base.utils.file
+package de.sam.base.file
 
 enum class FileType {
     PDF,

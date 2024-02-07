@@ -1,10 +1,8 @@
-package de.sam.base.controllers
+package de.sam.base.user
 
 import de.sam.base.authentication.PasswordHasher
-import de.sam.base.authentication.UserService
-import de.sam.base.authentication.UserValidator
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.UserDTO
-import de.sam.base.users.UserRoles
 import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
@@ -21,7 +19,7 @@ import kotlin.system.measureNanoTime
 
 class UserController : KoinComponent {
     private val userValidatorNew: UserValidator by inject()
-    private val userService: UserService by inject()
+    private val userRepository: UserRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
     fun updateUser(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
@@ -40,7 +38,7 @@ class UserController : KoinComponent {
                         if (!isValid)
                             throw BadRequestResponse(errors.first())
 
-                        if (userService.getUserByUsername(newName) != null)
+                        if (userRepository.getUserByUsername(newName) != null)
                             throw BadRequestResponse("Username already taken")
 
                         newUser.name = newName
@@ -92,7 +90,7 @@ class UserController : KoinComponent {
                 }
             }
 
-            userService.updateUser(newUser)
+            userRepository.updateUser(newUser)
 
             // updates the user in the current session (e.g. updating username etc), but only when it is not done by an admin
             if (isSelf) {
@@ -109,7 +107,7 @@ class UserController : KoinComponent {
             throw UnauthorizedResponse("You are not allowed to delete this user")
         }
 
-        userService.deleteUser(selectedUserDTO.id)
+        userRepository.deleteUser(selectedUserDTO.id)
         CacheInvalidation.userTokens[selectedUserDTO.id] = System.currentTimeMillis()
     }
 
@@ -117,9 +115,9 @@ class UserController : KoinComponent {
         val userQueryTime = measureNanoTime {
             ctx.pathParamAsClass<UUID>("userId")
                 .check({
-                    userService.getUserById(it)
+                    userRepository.getUserById(it)
                     logTimeSpent("Getting user by id") {
-                        val user = userService.getUserById(it)
+                        val user = userRepository.getUserById(it)
                         if (user != null) {
                             ctx.attribute("requestUserParameter", user)
                             true

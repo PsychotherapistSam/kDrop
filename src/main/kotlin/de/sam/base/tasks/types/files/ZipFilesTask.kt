@@ -3,7 +3,7 @@ package de.sam.base.tasks.types.files
 import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.tasks.types.Task
 import de.sam.base.utils.file.zipFiles
 import org.koin.core.component.KoinComponent
@@ -16,7 +16,7 @@ class ZipFilesTask(private val user: UserDTO, private val fileIDs: List<UUID>) :
     Task(name = "Zip files", concurrency = 1), KoinComponent {
 
     private val config: Configuration by inject()
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
 
     lateinit var tempZipFile: File
 
@@ -28,7 +28,7 @@ class ZipFilesTask(private val user: UserDTO, private val fileIDs: List<UUID>) :
         // file, name / path inside zip
         val fileList = arrayListOf<Pair<File, String>>()
 
-        for (file in fileService.getFilesByIds(fileIDs)) {
+        for (file in fileRepository.getFilesByIds(fileIDs)) {
             if (!file.isOwnedByUserId(userId)) {
                 continue
             }
@@ -65,7 +65,7 @@ class ZipFilesTask(private val user: UserDTO, private val fileIDs: List<UUID>) :
 
     private fun getChildren(file: FileDTO, user: UserDTO, namePrefix: String): Collection<Pair<File, String>> {
         val children = arrayListOf<Pair<File, String>>()
-        fileService.getFolderContentForUser(file.id, user.id).forEach { child ->
+        fileRepository.getFolderContentForUser(file.id, user.id).forEach { child ->
             if (child.isFolder) {
                 children.addAll(getChildren(child, user, namePrefix + child.name + "/"))
             }

@@ -2,7 +2,7 @@ package de.sam.base.controllers
 
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.database.ShareDTO
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.ShareService
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.share
@@ -18,7 +18,7 @@ import java.util.*
 class ShareController : KoinComponent {
 
     private val shareService: ShareService by inject()
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
 
     fun create(ctx: Context) {
@@ -52,7 +52,7 @@ class ShareController : KoinComponent {
             throw BadRequestResponse("Could not create share (name already exists or is forbidden)")
         }
 
-        val file = fileService.getFileById(fileId.get())
+        val file = fileRepository.getFileById(fileId.get())
 
         if (file == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
             throw BadRequestResponse("File not found or not owned by you")

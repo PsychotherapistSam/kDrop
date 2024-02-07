@@ -1,9 +1,9 @@
 package de.sam.base.utils
 
-import de.sam.base.authentication.UserService
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.config.Configuration
 import de.sam.base.requirements.Requirement
-import de.sam.base.users.UserRoles
+import de.sam.base.user.UserRoles
 import io.javalin.http.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -16,7 +16,7 @@ import kotlin.time.measureTimedValue
 
 class CustomAccessManager : KoinComponent {
     private val config: Configuration by inject()
-    private val userService: UserService by inject()
+    private val userRepository: UserRepository by inject()
 
     fun manage(ctx: Context) {
         val routeRoles = ctx.routeRoles()
@@ -60,7 +60,7 @@ class CustomAccessManager : KoinComponent {
             val currentToken = CacheInvalidation.userTokens[userId] ?: -1
 
             if (sessionToken < currentToken) {
-                val user = userService.getUserById(userId)
+                val user = userRepository.getUserById(userId)
                 if (user == null) {
                     ctx.currentUserDTO = null
                     ctx.req().session.invalidate()

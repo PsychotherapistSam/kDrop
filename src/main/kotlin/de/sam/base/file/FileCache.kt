@@ -1,4 +1,4 @@
-package de.sam.base.utils
+package de.sam.base.file
 
 import de.sam.base.database.FileDTO
 import java.util.*

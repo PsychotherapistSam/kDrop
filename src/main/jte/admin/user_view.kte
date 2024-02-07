@@ -1,6 +1,6 @@
 @import de.sam.base.pages.admin.AdminUserViewPage
 @import de.sam.base.pages.admin.AdminUsersPage
-@import de.sam.base.users.UserRoles
+@import de.sam.base.user.UserRoles
 
 @param page: AdminUserViewPage
 

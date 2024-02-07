@@ -4,7 +4,7 @@ import com.google.common.hash.Hashing
 import com.google.common.io.Files
 import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.tasks.types.Task
 import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
@@ -15,7 +15,7 @@ import kotlin.system.measureTimeMillis
 
 class HashFileTask(var file: FileDTO) : Task(name = "File hashing", concurrency = 5), KoinComponent {
     private val config: Configuration by inject()
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
 
     override suspend fun execute() {
         pushDescription("Starting to hash file ${file.id}")
@@ -27,7 +27,7 @@ class HashFileTask(var file: FileDTO) : Task(name = "File hashing", concurrency 
 
             file = file.copy(hash = hash)
 
-            fileService.updateFile(file)
+            fileRepository.updateFile(file)
         }
         if (time < 100) {
             delay(200 - time)

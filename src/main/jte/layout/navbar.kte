@@ -5,7 +5,7 @@
 @import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.admin.AdminUsersPage
-@import de.sam.base.users.UserRoles
+@import de.sam.base.user.UserRoles
 @import de.sam.base.pages.user.*
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.pages.user.UserSharesPage

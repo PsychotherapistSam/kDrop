@@ -1,6 +1,5 @@
-package de.sam.base.authentication
+package de.sam.base.user
 
-import de.sam.base.users.UserRoles
 import de.sam.base.utils.KValidator
 import org.koin.core.component.KoinComponent
 

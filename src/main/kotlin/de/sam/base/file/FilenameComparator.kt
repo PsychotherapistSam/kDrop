@@ -1,4 +1,4 @@
-package de.sam.base.utils.file
+package de.sam.base.file
 
 import org.tinylog.kotlin.Logger
 import java.math.BigInteger
@@ -24,7 +24,7 @@ class FilenameComparator : Comparator<String?> {
             if (c1.code >= '0'.code && c1.code <= '9'.code && c2.code >= '0'.code && c2.code <= '9'.code) {
                 try {
                     cmp = BigInteger(split1[i]).compareTo(BigInteger(split2[i]))
-                } catch (e: NumberFormatException ) {
+                } catch (e: NumberFormatException) {
                     Logger.error("Error comparing $o1 and $o2")
                 }
             }

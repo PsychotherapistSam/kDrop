@@ -1,5 +1,5 @@
 @import de.sam.base.pages.user.UserFilesPage
-@import de.sam.base.users.UserRoles
+@import de.sam.base.user.UserRoles
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.*
 @import de.sam.base.utils.isLoggedIn

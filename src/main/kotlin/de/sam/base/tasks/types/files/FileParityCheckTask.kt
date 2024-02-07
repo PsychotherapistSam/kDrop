@@ -1,9 +1,9 @@
 package de.sam.base.tasks.types.files
 
 import de.sam.base.config.Configuration
-import de.sam.base.controllers.isValidUUID
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.tasks.types.Task
+import de.sam.base.utils.string.isUUID
 import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -12,7 +12,7 @@ import java.util.*
 
 
 class FileParityCheckTask : Task(name = "Parity check", concurrency = 1), KoinComponent {
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
     private val config: Configuration by inject()
     override suspend fun execute() {
         pushDescription("Checking if local files exist in database")
@@ -21,7 +21,7 @@ class FileParityCheckTask : Task(name = "Parity check", concurrency = 1), KoinCo
             .walk()
             .toList()
             .map { it.name }
-            .filter { it.isValidUUID() }
+            .filter { it.isUUID }
             .map { UUID.fromString(it) }
 
         if (localFilesList.isEmpty()) {
@@ -29,7 +29,7 @@ class FileParityCheckTask : Task(name = "Parity check", concurrency = 1), KoinCo
             return
         }
 
-        val existingFiles = fileService.getFilesByIds(localFilesList)
+        val existingFiles = fileRepository.getFilesByIds(localFilesList)
             .map { it.id }
 
         val filesNotInDB = localFilesList.filter { !existingFiles.contains(it) }

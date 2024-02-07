@@ -1,13 +1,15 @@
 package de.sam.base.authentication
 
-import de.sam.base.users.UserRoles
+import de.sam.base.user.repository.UserRepository
+import de.sam.base.user.UserRoles
+import de.sam.base.user.UserValidator
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.*
 
 
 class AuthenticationService : KoinComponent {
-    private val userService: UserService by inject()
+    private val userRepository: UserRepository by inject()
 
     private val userValidator: UserValidator by inject()
     private val passwordHasher: PasswordHasher by inject()
@@ -18,7 +20,7 @@ class AuthenticationService : KoinComponent {
             return AuthenticationResult.Failure(errors)
         }
 
-        val userDTO = userService.getUserByUsername(username)
+        val userDTO = userRepository.getUserByUsername(username)
             ?: return AuthenticationResult.Failure(listOf("Invalid username or password"))
 
         var salt = userDTO.salt
@@ -39,19 +41,19 @@ class AuthenticationService : KoinComponent {
     }
 
     fun register(username: String, password: String): AuthenticationResult {
-        if (userService.getUserByUsername(username) != null) {
+        if (userRepository.getUserByUsername(username) != null) {
             return AuthenticationResult.Failure(listOf("Username already taken"))
         }
 
         val salt = UUID.randomUUID().toString()
         val hashedPassword = passwordHasher.hashPassword(password, salt)
 
-        val role = if (userService.countTotalUsers() == 0)
+        val role = if (userRepository.countTotalUsers() == 0)
             UserRoles.ADMIN
         else
             UserRoles.USER
 
-        val newUser = userService.createUser(username, hashedPassword, salt, role)
+        val newUser = userRepository.createUser(username, hashedPassword, salt, role)
             ?: return AuthenticationResult.Failure(listOf("Failed to create user"))
 
         return AuthenticationResult.Success(newUser)

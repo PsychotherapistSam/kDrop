@@ -1,7 +1,7 @@
 package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
-import de.sam.base.authentication.UserService
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.getFirstError
 import de.sam.base.utils.totpSecret
@@ -24,7 +24,7 @@ class UserTOTPSettingsPage : Page(
         const val ROUTE: String = "/user/settings/totp"
     }
 
-    val userService: UserService by inject()
+    val userRepository: UserRepository by inject()
 
     var qrCodeDaraUri: String = ""
     var error: String = ""
@@ -46,7 +46,7 @@ class UserTOTPSettingsPage : Page(
             if (totp.second != null) {
                 error = totp.second!!
             } else {
-                ctx.currentUserDTO = userService.updateUser(
+                ctx.currentUserDTO = userRepository.updateUser(
                     ctx.currentUserDTO!!.copy(
                         totpSecret = ctx.totpSecret
                     )
@@ -60,7 +60,7 @@ class UserTOTPSettingsPage : Page(
 
     override fun delete() {
         if (userHasTOTP) {
-            ctx.currentUserDTO = userService.updateUser(
+            ctx.currentUserDTO = userRepository.updateUser(
                 ctx.currentUserDTO!!.copy(
                     totpSecret = null
                 )

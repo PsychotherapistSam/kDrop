@@ -4,6 +4,9 @@ import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.database.UserDTO
 import io.javalin.http.Context
+import io.javalin.http.Header
+import java.io.File
+import java.io.FileInputStream
 
 // https://github.com/tipsy/javalinstagram/blob/7d03477b89a21addc8cf734b52b292828d48eefe/src/main/kotlin/javalinstagram/Extensions.kt#L7
 var Context.currentUserDTO: UserDTO?
@@ -71,3 +74,12 @@ var Context.tokenTime: Long?
 var Context.realIp: String
     get() = this.header("X-Forwarded-For")?.split(",")?.get(0) ?: this.ip()
     set(value) = throw UnsupportedOperationException("Cannot set ip")
+
+
+fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
+    // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
+    this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
+    this.header(Header.CACHE_CONTROL, "max-age=31536000, immutable")
+
+    CustomSeekableWriter.write(this, FileInputStream(file), mimeType, file.length())
+}

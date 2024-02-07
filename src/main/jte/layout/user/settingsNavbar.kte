@@ -2,7 +2,7 @@
 @import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 @import de.sam.base.pages.user.settings.UserTOTPSettingsPage
-@import de.sam.base.users.UserRoles
+@import de.sam.base.user.UserRoles
 
 @param page: Page
 

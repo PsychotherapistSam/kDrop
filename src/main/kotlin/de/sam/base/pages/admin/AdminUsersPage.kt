@@ -1,7 +1,7 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.authentication.UserService
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.logging.logTimeSpent
 import org.koin.core.component.inject
@@ -16,7 +16,7 @@ class AdminUsersPage : Page(
         const val ROUTE: String = "/admin/users"
     }
 
-    private val userService: UserService by inject()
+    private val userRepository: UserRepository by inject()
 
     var userDTOs = listOf<UserDTO>()
     var currenTablePage = 0
@@ -31,9 +31,9 @@ class AdminUsersPage : Page(
             logTimeSpent("Getting user list") {
                 userDTOs =
                     if (searchQuery.isNotBlank())
-                        userService.searchUsers(searchQuery, maxTablePageSize, maxTablePageSize * currenTablePage)
+                        userRepository.searchUsers(searchQuery, maxTablePageSize, maxTablePageSize * currenTablePage)
                     else
-                        userService.getAllUsers(maxTablePageSize, maxTablePageSize * currenTablePage)
+                        userRepository.getAllUsers(maxTablePageSize, maxTablePageSize * currenTablePage)
             }
         }
 

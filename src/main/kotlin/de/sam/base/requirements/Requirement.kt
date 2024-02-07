@@ -1,8 +1,8 @@
 package de.sam.base.requirements
 
-import de.sam.base.services.FileService
+import de.sam.base.file.FileCache
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.ShareService
-import de.sam.base.utils.FileCache
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
@@ -54,8 +54,8 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                 }
 
                 logTimeSpent("Getting file by id") {
-                    val fileService: FileService by inject()
-                    val fileDTO = fileService.getFileById(fileId)
+                    val fileRepository: FileRepository by inject()
+                    val fileDTO = fileRepository.getFileById(fileId)
 
                     if (fileDTO != null) {
                         Logger.trace("Setting fileDTO and DAO to request attribute")

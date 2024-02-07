@@ -2,9 +2,9 @@ package de.sam.base.pages.user
 
 import de.sam.base.Page
 import de.sam.base.database.FileDTO
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
+import de.sam.base.file.sorting.FileSortingDirection
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.file.sorting.FileSortingDirection
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
@@ -20,7 +20,7 @@ class UserFilesPage : Page(
         const val ROUTE: String = "/user/files/"
     }
 
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
 
 
     lateinit var parent: FileDTO
@@ -41,7 +41,7 @@ class UserFilesPage : Page(
         parent = ctx.fileDTOFromId!!
 
         logTimeSpent("the breadcrumb traversal") {
-            breadcrumbs = fileService.getFileBreadcrumb(parent.id)
+            breadcrumbs = fileRepository.getFileBreadcrumb(parent.id)
             title = breadcrumbs.last().name + " - My Files"
         }
         logTimeSpent("getting the files list") {
@@ -52,7 +52,7 @@ class UserFilesPage : Page(
                 }
                 logTimeSpent("getting the file list") {
                     fileDTOs =
-                        fileService.getFolderContentForUser(parent.id, ctx.currentUserDTO!!.id).sortedWith { a, b ->
+                        fileRepository.getFolderContentForUser(parent.id, ctx.currentUserDTO!!.id).sortedWith { a, b ->
                             sortingDirection.compare(a, b)
                             //    CASEINSENSITIVE_NUMERICAL_ORDER.compare(a.name, b.name)
                             // NameFileComparator uses this for comparison, as I don't have files I cannot use it.

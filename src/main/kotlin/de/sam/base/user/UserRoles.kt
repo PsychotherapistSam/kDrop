@@ -1,4 +1,4 @@
-package de.sam.base.users
+package de.sam.base.user
 
 import io.javalin.security.RouteRole
 

@@ -1,6 +1,6 @@
 package de.sam.base.database
 
-import de.sam.base.users.UserRoles
+import de.sam.base.user.UserRoles
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
 import org.joda.time.DateTime

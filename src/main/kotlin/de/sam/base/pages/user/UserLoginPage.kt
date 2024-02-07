@@ -3,7 +3,7 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
-import de.sam.base.authentication.UserService
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.captcha.Captcha
 import de.sam.base.services.LoginLogService
 import de.sam.base.utils.*
@@ -23,7 +23,7 @@ class UserLoginPage : Page(
 
     private val loginLogService: LoginLogService by inject()
     private val authenticationService: AuthenticationService by inject()
-    private val userService: UserService by inject()
+    private val userRepository: UserRepository by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
@@ -67,7 +67,7 @@ class UserLoginPage : Page(
                     val date = DateTime.now()
 
                     loginLogService.logLoginForUserId(ctx, result.userDTO.id, date)
-                    userService.updateLastLoginTime(result.userDTO.id, date)
+                    userRepository.updateLastLoginTime(result.userDTO.id, date)
 
                     if (result.requireTOTPValidation) {
                         ctx.needsToVerifyTOTP = true

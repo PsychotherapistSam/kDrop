@@ -4,7 +4,7 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.captcha.Captcha
-import de.sam.base.users.UserRoles
+import de.sam.base.user.UserRoles
 import de.sam.base.utils.*
 import io.javalin.http.ForbiddenResponse
 import kotlinx.coroutines.runBlocking

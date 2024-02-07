@@ -1,12 +1,14 @@
-package de.sam.base.services
+package de.sam.base.file
 
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.utils.file.humanReadableByteCountBin
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
+import org.koin.core.component.KoinComponent
 import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -14,7 +16,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-class FileService {
+class FileRepositoryImpl : FileRepository, KoinComponent {
 
     /**
      * Fetches a file from the database by its ID.
@@ -23,7 +25,7 @@ class FileService {
      * @return the file or null if it does not exist.
      * @throws FileServiceException if the file could not be fetched.
      */
-    fun getFileById(fileID: UUID): FileDTO? {
+    override fun getFileById(fileID: UUID): FileDTO? {
         val sql = """
             SELECT * FROM t_files 
             WHERE id = CAST(:id AS uuid);
@@ -50,7 +52,7 @@ class FileService {
      * @return the list of files that represent the breadcrumb.
      * @throws FileServiceException if the breadcrumb could not be generated.
      */
-    fun getFileBreadcrumb(fileID: UUID): List<FileDTO> {
+    override fun getFileBreadcrumb(fileID: UUID): List<FileDTO> {
         val sql = """
         WITH RECURSIVE breadcrumb AS (
             SELECT *, 1 as depth
@@ -86,7 +88,7 @@ class FileService {
      * @return A list of FileDTO objects representing the contents of the folder.
      * @throws FileServiceException If there is an error fetching the folder contents.
      */
-    fun getFolderContentForUser(folderId: UUID, userId: UUID): List<FileDTO> {
+    override fun getFolderContentForUser(folderId: UUID, userId: UUID): List<FileDTO> {
         val sql = """
             SELECT * FROM t_files WHERE owner = CAST(:userId AS uuid) 
             AND parent = CAST(:folderId AS uuid);
@@ -115,7 +117,7 @@ class FileService {
      * @return A FileDTO object representing the root folder, or null if no root folder was found.
      * @throws FileServiceException If there is an error fetching the root folder.
      */
-    fun getRootFolderForUser(userId: UUID): FileDTO? {
+    override fun getRootFolderForUser(userId: UUID): FileDTO? {
         val sql = """
             SELECT * FROM t_files
             WHERE owner = CAST(:owner AS uuid) AND is_root = TRUE;
@@ -141,7 +143,7 @@ class FileService {
      * @throws FileServiceException If there is an error recalculating the folder size.
      */
     @OptIn(ExperimentalTime::class)
-    fun recalculateFolderSize(folderId: UUID, userId: UUID) {
+    override fun recalculateFolderSize(folderId: UUID, userId: UUID) {
         try {
             measureTime {
                 var folder: FileDTO? = getFileById(folderId)
@@ -202,7 +204,7 @@ class FileService {
         }
     }
 
-    fun createFile(handle: Handle, file: FileDTO): FileDTO {
+    override fun createFile(handle: Handle, file: FileDTO): FileDTO {
         val sql = """
         INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, created, is_folder, hash, is_root)
         VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :created, :is_folder, :hash, :is_root)
@@ -239,7 +241,7 @@ class FileService {
      * @return the updated file or null if it does not exist.
      * @throws FileServiceException if the file could not be updated.
      */
-    fun updateFile(file: FileDTO): FileDTO? {
+    override fun updateFile(file: FileDTO): FileDTO? {
         return try {
             jdbi.withHandle<FileDTO?, Exception> { handle ->
                 updateFile(handle, file)
@@ -257,7 +259,7 @@ class FileService {
      * @return the updated file or null if it does not exist.
      * @throws FileServiceException if the file could not be updated.
      */
-    fun updateFile(handle: Handle, file: FileDTO): FileDTO? {
+    override fun updateFile(handle: Handle, file: FileDTO): FileDTO? {
         val sql = """
             UPDATE t_files
             SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
@@ -291,7 +293,7 @@ class FileService {
         }
     }
 
-    fun updateFilesBatch(files: List<FileDTO>) {
+    override fun updateFilesBatch(files: List<FileDTO>) {
         val sql = """
             UPDATE t_files
             SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
@@ -336,8 +338,8 @@ class FileService {
      * @return a list of files or an empty list if no files match the provided IDs.
      * @throws FileServiceException if the files could not be fetched.
      */
-    fun getFilesByIds(fileIDs: List<UUID>): List<FileDTO> {
-        val placeholders = fileIDs.mapIndexed { index, _ -> ":id$index" }
+    override fun getFilesByIds(fileIDs: List<UUID>): List<FileDTO> {
+        val placeholders = List(fileIDs.size) { index -> ":id$index" }
         val sql = """
             SELECT * FROM t_files 
             WHERE id IN (${placeholders.joinToString()})
@@ -367,7 +369,7 @@ class FileService {
      * @return a list of files or an empty list.
      * @throws FileServiceException if the files could not be fetched.
      */
-    fun getAllFilesFromFolderListRecursively(fileIDs: List<UUID>): List<FileDTO> {
+    override fun getAllFilesFromFolderListRecursively(fileIDs: List<UUID>): List<FileDTO> {
         val sql = """
             WITH RECURSIVE file_tree AS (
                 SELECT *
@@ -400,7 +402,7 @@ class FileService {
      * @return a list of files that were deleted.
      * @throws FileServiceException if the files and shares could not be deleted.
      */
-    fun deleteFilesAndShares(fileIDs: List<UUID>): List<FileDTO> {
+    override fun deleteFilesAndShares(fileIDs: List<UUID>): List<FileDTO> {
         val fileSql = """
             DELETE FROM t_files
             WHERE id = ANY(CAST(:ids AS uuid[]))
@@ -446,7 +448,7 @@ class FileService {
      * @return A list of FileDTO objects that match the given query.
      * @throws FileServiceException If an error occurs while searching for files.
      */
-    fun searchFiles(userId: UUID, query: String, limit: Int = 25): List<FileDTO> {
+    override fun searchFiles(userId: UUID, query: String, limit: Int): List<FileDTO> {
         val sql = """
             SELECT * FROM t_files
             WHERE owner = CAST(:owner AS uuid)
@@ -476,20 +478,10 @@ class FileService {
      * @param userId The unique identifier of the user whose files need to be deleted.
      * @throws FileServiceException if an error occurs while deleting the files.
      */
-    fun deleteAllFilesFromUser(userId: UUID) {
-        val sql = """
-            DELETE FROM t_files
-            WHERE owner = CAST(:owner AS uuid);
-        """.trimIndent()
-
-        try {
-            jdbi.withHandle<Unit, Exception> { handle ->
-                handle.createUpdate(sql)
-                    .bind("owner", userId)
-                    .execute()
-            }
-        } catch (e: Exception) {
-            throw FileServiceException("Could not delete all files for user", e)
+    override fun deleteAllFilesFromUser(userId: UUID) {
+        getRootFolderForUser(userId)?.let { root ->
+            val files = getAllFilesFromFolderListRecursively(listOf(root.id))
+            deleteFilesAndShares(files.map { it.id })
         }
     }
 
@@ -500,7 +492,7 @@ class FileService {
      * @return The total number of files.
      * @throws FileServiceException If there was an error counting the total files.
      */
-    fun countTotalFiles(): Int {
+    override fun countTotalFiles(): Int {
         val sql = """
             SELECT COUNT(*) FROM t_files;
         """.trimIndent()
@@ -523,7 +515,7 @@ class FileService {
      * @return A list of FileDTO objects representing the files without hashes.
      * @throws FileServiceException If there is an error fetching the files from the database.
      */
-    fun getFilesWithoutHashes(): List<FileDTO> {
+    override fun getFilesWithoutHashes(): List<FileDTO> {
         val sql = """
             SELECT * FROM t_files WHERE is_folder = FALSE AND is_root = FALSE and hash IS NULL;
         """.trimIndent()

@@ -1,4 +1,4 @@
-package de.sam.base.utils.file.sorting
+package de.sam.base.file.sorting
 
 import de.sam.base.database.FileDTO
 

@@ -1,12 +1,12 @@
-package de.sam.base.authentication
+package de.sam.base.user
 
-import de.sam.base.controllers.FileController
+import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
-import de.sam.base.services.FileService
+import de.sam.base.file.FileController
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.LoginLogService
-import de.sam.base.users.UserRoles
 import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
@@ -15,9 +15,9 @@ import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-class UserService : KoinComponent {
+class UserRepositoryImpl : UserRepository, KoinComponent {
     private val loginLogService: LoginLogService by inject()
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
 
     /**
      * Retrieves a user from the database based on the username.
@@ -25,7 +25,7 @@ class UserService : KoinComponent {
      * @param username the username of the user to retrieve
      * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
      */
-    fun getUserByUsername(username: String?): UserDTO? {
+    override fun getUserByUsername(username: String?): UserDTO? {
         val sql = """
             SELECT * FROM t_users
             WHERE name ILIKE :name;
@@ -57,12 +57,7 @@ class UserService : KoinComponent {
     * CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
     * ALTER TABLE public.t_users ALTER COLUMN id SET default uuid_generate_v4();
     */
-    fun createUser(
-        username: String,
-        passwordHash: String,
-        passwordSalt: String,
-        role: UserRoles = UserRoles.USER
-    ): UserDTO? {
+    override fun createUser(username: String, passwordHash: String, passwordSalt: String, role: UserRoles): UserDTO? {
         var userDTO: UserDTO? = null
 
         val roleId = role.name
@@ -111,7 +106,7 @@ class UserService : KoinComponent {
                 )
 
                 // create root folder
-                fileService.createFile(
+                fileRepository.createFile(
                     handle,
                     rootFolder,
                 )
@@ -137,7 +132,7 @@ class UserService : KoinComponent {
      * @param userId The ID of the user to delete.
      * @throws Exception if any error occurs during the deletion process.
      */
-    fun deleteUser(userId: UUID) {
+    override fun deleteUser(userId: UUID): Boolean {
 //        shareService.deleteAllSharesForUser(userId)
         Logger.debug("Deleting user data for $userId")
 
@@ -145,13 +140,13 @@ class UserService : KoinComponent {
         loginLogService.deleteAllLoginLogsForUser(userId)
 
         Logger.debug("Deleting root folder and all files for user $userId")
-        val rootFolder = fileService.getRootFolderForUser(userId)
+        val rootFolder = fileRepository.getRootFolderForUser(userId)
             ?: throw Exception("Failed to get root folder for user $userId")
 
         FileController().deleteFileList(listOf(rootFolder.id), userId)
 
         Logger.debug("Deleting orphaned files for user $userId")
-        fileService.deleteAllFilesFromUser(userId)
+        fileRepository.deleteAllFilesFromUser(userId)
 
         val sql = """
             DELETE FROM t_users
@@ -165,10 +160,10 @@ class UserService : KoinComponent {
                     .bind("id", userId.toString())
                     .execute()
             }
+            return true
         } catch (e: Exception) {
             throw Exception("Could not delete user $userId", e)
         }
-
     }
 
     /**
@@ -176,7 +171,7 @@ class UserService : KoinComponent {
      *
      * @return the total number of users
      */
-    fun countTotalUsers(): Int {
+    override fun countTotalUsers(): Int {
         val sql = """
             SELECT COUNT(*) FROM t_users;
         """.trimIndent()
@@ -199,7 +194,7 @@ class UserService : KoinComponent {
      * @param copy the UserDTO object containing the updated data
      * @return the updated UserDTO object
      */
-    fun updateUser(copy: UserDTO): UserDTO {
+    override fun updateUser(copy: UserDTO): UserDTO {
         val sql = """
             UPDATE t_users
             SET name = :name,
@@ -239,7 +234,7 @@ class UserService : KoinComponent {
      * @param it the user ID
      * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
      */
-    fun getUserById(it: UUID): UserDTO? {
+    override fun getUserById(it: UUID): UserDTO? {
         val sql = """
             SELECT * FROM t_users
             WHERE id = CAST(:id AS uuid);
@@ -266,7 +261,7 @@ class UserService : KoinComponent {
      * @return a list of UserDTO objects representing the users
      * @throws Exception if any error occurs during the search process
      */
-    fun searchUsers(searchQuery: String, limit: Int = 25, offset: Int = 0): List<UserDTO> {
+    override fun searchUsers(searchQuery: String, limit: Int, offset: Int): List<UserDTO> {
         val sql = """
             SELECT * FROM t_users
             WHERE name ILIKE :name
@@ -297,7 +292,7 @@ class UserService : KoinComponent {
      * @param offset the offset
      *
      */
-    fun getAllUsers(limit: Int = 25, offset: Int = 0): List<UserDTO> {
+    override fun getAllUsers(limit: Int, offset: Int): List<UserDTO> {
         val sql = """
             SELECT * FROM t_users
             ORDER BY registration_date
@@ -324,7 +319,7 @@ class UserService : KoinComponent {
      *
      * @throws Exception if any error occurs during the deletion process
      */
-    fun deleteAllSessions() {
+    override fun deleteAllSessions() {
         val sql = """
             DELETE FROM jettysessions;
         """.trimIndent()
@@ -345,7 +340,7 @@ class UserService : KoinComponent {
      * @param userId The ID of the user.
      * @param dateTime The last login time as a DateTime object.
      */
-    fun updateLastLoginTime(userId: UUID, dateTime: DateTime) {
+    override fun updateLastLoginTime(userId: UUID, dateTime: DateTime) {
         val sql = """
             UPDATE t_users
             SET last_login = :last_login

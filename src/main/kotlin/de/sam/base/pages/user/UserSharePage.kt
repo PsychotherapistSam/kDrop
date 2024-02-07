@@ -4,7 +4,7 @@ import de.sam.base.Page
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.ShareService
 import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.fileDTOFromId
@@ -25,7 +25,7 @@ class UserSharePage : Page(
         const val ROUTE: String = "/s/"
     }
 
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()
 
@@ -44,7 +44,7 @@ class UserSharePage : Page(
     override fun get() {
 
         share = ctx.share ?: throw NotFoundResponse("Share not found")
-        file = fileService.getFileById(share.file) ?: throw NotFoundResponse("File not found")
+        file = fileRepository.getFileById(share.file) ?: throw NotFoundResponse("File not found")
 
         passwordRequired = share.password != null
 

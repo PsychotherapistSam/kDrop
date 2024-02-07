@@ -6,7 +6,7 @@
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.*
 @import org.joda.time.format.DateTimeFormat
-@import de.sam.base.utils.file.sorting.FileSortingDirection
+@import de.sam.base.file.sorting.FileSortingDirection
 @import de.sam.base.utils.isMobileUser
 @import de.sam.base.utils.toReadableTimeString
 @import io.javalin.http.Context

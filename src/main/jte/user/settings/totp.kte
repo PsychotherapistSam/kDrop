@@ -1,7 +1,7 @@
 @import de.sam.base.Page
 @import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.admin.AdminUserEditPage
-@import de.sam.base.users.UserRoles
+@import de.sam.base.user.UserRoles
 @import de.sam.base.database.UserDTO
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.pages.user.settings.UserTOTPSettingsPage

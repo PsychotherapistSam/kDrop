@@ -1,22 +1,21 @@
-package de.sam.base.controllers
+package de.sam.base.file
 
-import com.google.common.hash.Hashing
-import com.google.common.io.Files
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
-import de.sam.base.services.FileService
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.ShareService
 import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.tasks.types.files.HashFileTask
 import de.sam.base.tasks.types.files.ZipFilesTask
-import de.sam.base.utils.CustomSeekableWriter
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.file.humanReadableByteCountBin
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
+import de.sam.base.utils.resultFile
 import de.sam.base.utils.share
+import de.sam.base.utils.string.isUUID
 import io.javalin.http.*
 import io.javalin.util.FileUtil
 import me.desair.tus.server.TusFileUploadService
@@ -26,7 +25,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
 import java.io.File
-import java.io.FileInputStream
 import java.lang.Thread.sleep
 import java.util.*
 import kotlin.concurrent.thread
@@ -34,7 +32,7 @@ import kotlin.concurrent.thread
 class FileController : KoinComponent {
 
     private val config: Configuration by inject()
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
     private val shareService: ShareService by inject()
     private val passwordHasher: PasswordHasher by inject()
     private val tusFileUploadSerivce: TusFileUploadService by inject()
@@ -55,7 +53,7 @@ class FileController : KoinComponent {
             val userId = ctx.currentUserDTO!!.id
             val parentFileId = UUID.fromString(ctx.header("X-File-Parent-Id"))
 
-            val parentFile = fileService.getFileById(parentFileId)
+            val parentFile = fileRepository.getFileById(parentFileId)
             if (parentFile != null && !parentFile.isOwnedByUserId(userId)) {
                 tusFileUploadSerivce.deleteUpload(uploadURI)
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
@@ -87,7 +85,7 @@ class FileController : KoinComponent {
                     Logger.debug("Target file ${targetFile.path} written")
                 }
 
-                val createdFile = fileService.createFile(
+                val createdFile = fileRepository.createFile(
                     handle, FileDTO(
                         id = uploadId,
                         name = uploadInfo.fileName,
@@ -123,11 +121,11 @@ class FileController : KoinComponent {
                 // do the calculation once when half of the files have been uploaded and once when the upload is finished
                 if (batchSize / 2 == currentIndex + 1 || batchSize == currentIndex + 1) {
                     Logger.debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
-                    fileService.recalculateFolderSize(parentFileId, userId)
+                    fileRepository.recalculateFolderSize(parentFileId, userId)
                 }
             } else {
                 Logger.debug("updating folder size during upload a singular file")
-                fileService.recalculateFolderSize(parentFileId, userId)
+                fileRepository.recalculateFolderSize(parentFileId, userId)
             }
         }
         ctx.status(servletResponse.status)
@@ -135,7 +133,7 @@ class FileController : KoinComponent {
 
     // from a share or from a file id
     fun getSingleFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: fileService.getFileById(ctx.share!!.file)
+        val file = ctx.fileDTOFromId ?: fileRepository.getFileById(ctx.share!!.file)
         ?: throw NotFoundResponse("File not found") // if not throw an error
             .also { Logger.error(it.message) }
 
@@ -195,13 +193,13 @@ class FileController : KoinComponent {
         }
 
         // use the file service to update the file
-        fileService.updateFile(updatedFile) ?: throw NotFoundResponse("File not found")
+        fileRepository.updateFile(updatedFile) ?: throw NotFoundResponse("File not found")
     }
 
     fun getFiles(ctx: Context) {
         val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
             files.split(",").all { file ->
-                file.isValidUUID()
+                file.isUUID
             }
         }, "Invalid UUID").get()
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
@@ -262,7 +260,7 @@ class FileController : KoinComponent {
     fun deleteFiles(ctx: Context) {
         val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
             files.split(",").all { file ->
-                file.isValidUUID()
+                file.isUUID
             }
         }, "Invalid UUID").get()
 
@@ -283,7 +281,7 @@ class FileController : KoinComponent {
             return emptyList()
         }
 
-        val fileList = fileService.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(userId) }
+        val fileList = fileRepository.getFilesByIds(fileIDs).filter { it.isOwnedByUserId(userId) }
 
         val filesToDelete = fileList.toMutableList()
 
@@ -291,12 +289,12 @@ class FileController : KoinComponent {
 
         // only do recursive step on folders
         if (folders.isNotEmpty()) {
-            val recursiveFiles = fileService.getAllFilesFromFolderListRecursively(folders)
+            val recursiveFiles = fileRepository.getAllFilesFromFolderListRecursively(folders)
 
             filesToDelete.addAll(recursiveFiles)
         }
 
-        val deletedFiles = fileService.deleteFilesAndShares(filesToDelete.map { it.id })
+        val deletedFiles = fileRepository.deleteFilesAndShares(filesToDelete.map { it.id })
 
         deletedFiles.forEach { file ->
             val systemFile = File("${config.fileDirectory}/${file.id}")
@@ -308,10 +306,10 @@ class FileController : KoinComponent {
 
         fileList.groupBy { it.parent }.forEach { (parent) ->
             if (parent != null) {
-                val parentFile = fileService.getFileById(parent)
+                val parentFile = fileRepository.getFileById(parent)
                 if (parentFile != null && parentFile.isFolder) {
                     Logger.debug("Recalculating folder size for ${parentFile.id}")
-                    fileService.recalculateFolderSize(parentFile.id, userId)
+                    fileRepository.recalculateFolderSize(parentFile.id, userId)
                 }
             }
         }
@@ -321,7 +319,7 @@ class FileController : KoinComponent {
     fun moveFiles(ctx: Context) {
         val fileListString = ctx.formParamAsClass<String>("files").check({ files ->
             files.split(",").all { file ->
-                file.isValidUUID()
+                file.isUUID
             }
         }, "Invalid file UUID").get()
 
@@ -331,7 +329,7 @@ class FileController : KoinComponent {
 
         val user = ctx.currentUserDTO!!
 
-        val allFiles = fileService.getFilesByIds(fileIDs)
+        val allFiles = fileRepository.getFilesByIds(fileIDs)
             .filter { it.isOwnedByUserId(user.id) }
 
         if (targetFile == null || !targetFile.isOwnedByUserId(user.id)) {
@@ -345,17 +343,17 @@ class FileController : KoinComponent {
         }
 
         logTimeSpent("updating ${updatedFiles.size} moved files parents") {
-            fileService.updateFilesBatch(updatedFiles)
+            fileRepository.updateFilesBatch(updatedFiles)
         }
 
         logTimeSpent("refreshing all moved files parents size") {
             oldParents.forEach { parent ->
                 if (parent != null) {
                     Logger.debug("refreshing size of $parent")
-                    fileService.recalculateFolderSize(parent, user.id)
+                    fileRepository.recalculateFolderSize(parent, user.id)
                 }
             }
-            fileService.recalculateFolderSize(targetFile.id, user.id)
+            fileRepository.recalculateFolderSize(targetFile.id, user.id)
         }
         ctx.json(mapOf("status" to "ok"))
     }
@@ -396,7 +394,7 @@ class FileController : KoinComponent {
 
         val parentId = UUID.fromString(ctx.queryParam("parent"))
 
-        val parent = fileService.getFileById(parentId)
+        val parent = fileRepository.getFileById(parentId)
 
         if (parent == null || !parent.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
             throw BadRequestResponse("Parent folder does not exist or is not owned by you")
@@ -405,7 +403,7 @@ class FileController : KoinComponent {
         val newFileId = UUID.randomUUID()
         jdbi.useTransaction<Exception> { handle ->
             val file =
-                fileService.createFile(
+                fileRepository.createFile(
                     handle,
                     FileDTO(
                         id = newFileId,
@@ -432,7 +430,7 @@ class FileController : KoinComponent {
                 ctx.fileDTOFromId!!
             } else {
                 val fileId = ctx.queryParamAsClass<UUID>("file").get()
-                fileService.getFileById(fileId) ?: throw NotFoundResponse("File not found")
+                fileRepository.getFileById(fileId) ?: throw NotFoundResponse("File not found")
             }
 
         val shares = shareService.getSharesForFile(file.id)
@@ -446,7 +444,7 @@ class FileController : KoinComponent {
 
     fun getRootDirectory(ctx: Context) {
         ctx.json(
-            fileService.getRootFolderForUser(ctx.currentUserDTO!!.id)
+            fileRepository.getRootFolderForUser(ctx.currentUserDTO!!.id)
                 ?: throw NotFoundResponse("Root directory not found")
         )
     }
@@ -459,7 +457,7 @@ class FileController : KoinComponent {
             return
         }
 
-        val files = fileService.searchFiles(ctx.currentUserDTO!!.id, query.trim())
+        val files = fileRepository.searchFiles(ctx.currentUserDTO!!.id, query.trim())
 
         if (files.isEmpty()) {
             ctx.render("components/search/failed.kte")
@@ -468,43 +466,4 @@ class FileController : KoinComponent {
 
         ctx.render("components/search/results.kte", Collections.singletonMap("files", files))
     }
-}
-
-val speedLimit = 1024.0 * 1024.0 * 10.0 // 10 MB/s
-
-fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
-    // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
-    this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
-    this.header(Header.CACHE_CONTROL, "max-age=31536000, immutable")
-
-//    CustomSeekableWriter.write(this, ThrottledInputStream(FileInputStream(file), speedLimit), mimeType, file.length())
-    CustomSeekableWriter.write(this, FileInputStream(file), mimeType, file.length())
-}
-
-private fun File.sha512(): String {
-
-    // This is very memory intensive (loading the whole file into memory)
-    /*
-    val digest = MessageDigest.getInstance("SHA-512")
-    val hash = digest.digest(this.readBytes())
-    // convert byte array to Hex string
-    val hexString = StringBuffer()
-    for (i in hash.indices) {
-        val hex = Integer.toHexString(0xff and hash[i].toInt())
-        if (hex.length == 1) hexString.append('0')
-        hexString.append(hex)
-    }
-    return hexString.toString()*/
-
-    // https://stackoverflow.com/a/31732451/11324248 with the note from https://stackoverflow.com/a/31732333/11324248
-    return Files.asByteSource(this).hash(Hashing.sha512()).toString()
-}
-
-fun String.isValidUUID(): Boolean {
-    try {
-        UUID.fromString(this)
-    } catch (exception: IllegalArgumentException) {
-        return false
-    }
-    return true
 }

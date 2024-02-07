@@ -3,9 +3,9 @@ package de.sam.base
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import de.sam.base.config.Configuration
 import de.sam.base.controllers.AuthenticationController
-import de.sam.base.controllers.FileController
 import de.sam.base.controllers.ShareController
-import de.sam.base.controllers.UserController
+import de.sam.base.file.FileController
+import de.sam.base.file.repository.FileRepository
 import de.sam.base.pages.ChangelogPage
 import de.sam.base.pages.ErrorPage
 import de.sam.base.pages.SetupPage
@@ -18,10 +18,10 @@ import de.sam.base.pages.user.settings.UserEditPage
 import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 import de.sam.base.requirements.Requirement
-import de.sam.base.services.FileService
 import de.sam.base.tasks.TaskController
 import de.sam.base.tasks.queue.TaskQueue
-import de.sam.base.users.UserRoles
+import de.sam.base.user.UserController
+import de.sam.base.user.UserRoles
 import de.sam.base.utils.CustomAccessManager
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
@@ -42,7 +42,7 @@ import java.util.*
 
 
 class WebServer : KoinComponent {
-    private val fileService: FileService by inject()
+    private val fileRepository: FileRepository by inject()
     private val config: Configuration by inject()
     private val session: Session by inject()
     private val templateEngine: TemplateEngine by inject()
@@ -100,7 +100,7 @@ class WebServer : KoinComponent {
                 post("/registration") { UserRegistrationPage().handle(it) }
                 path("/user") {
                     get("/quota", { ctx ->
-                        val file = fileService.getRootFolderForUser(ctx.currentUserDTO!!.id)
+                        val file = fileRepository.getRootFolderForUser(ctx.currentUserDTO!!.id)
                         ctx.render("components/usageQuotaComponent.kte", Collections.singletonMap("file", file))
                     }, Requirement.IS_LOGGED_IN)
                     path("/settings") {

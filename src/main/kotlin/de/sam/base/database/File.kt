@@ -1,7 +1,7 @@
 package de.sam.base.database
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import de.sam.base.utils.file.FileType
+import de.sam.base.file.FileType
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
 import org.joda.time.DateTime
