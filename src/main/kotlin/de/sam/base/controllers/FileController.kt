@@ -11,8 +11,12 @@ import de.sam.base.services.ShareService
 import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.tasks.types.files.HashFileTask
 import de.sam.base.tasks.types.files.ZipFilesTask
-import de.sam.base.utils.*
+import de.sam.base.utils.CustomSeekableWriter
+import de.sam.base.utils.currentUserDTO
+import de.sam.base.utils.file.humanReadableByteCountBin
+import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
+import de.sam.base.utils.share
 import io.javalin.http.*
 import io.javalin.util.FileUtil
 import me.desair.tus.server.TusFileUploadService

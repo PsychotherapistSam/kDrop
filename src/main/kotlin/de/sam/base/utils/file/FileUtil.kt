@@ -1,7 +1,4 @@
-package de.sam.base.utils
-
-import java.text.CharacterIterator
-import java.text.StringCharacterIterator
+package de.sam.base.utils.file
 
 /*
 fun humanReadableByteCountSI(bytes: Long): String? {

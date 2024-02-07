@@ -2,7 +2,7 @@
 @import de.sam.base.database.ShareDTO
 @import de.sam.base.pages.user.UserFilesPage
 @import de.sam.base.utils.toRecentTimeString
-@import de.sam.base.utils.humanReadableByteCountBin
+@import de.sam.base.utils.file.humanReadableByteCountBin
 @import de.sam.base.pages.displayLoader
 @import de.sam.base.utils.*
 @import org.joda.time.format.DateTimeFormat

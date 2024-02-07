@@ -3,7 +3,7 @@ package de.sam.base.services
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
-import de.sam.base.utils.humanReadableByteCountBin
+import de.sam.base.utils.file.humanReadableByteCountBin
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime

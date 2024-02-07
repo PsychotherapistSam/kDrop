@@ -13,6 +13,7 @@ class KValidator<T>(private var obj: T?) {
     }
 
     fun isValid(): Boolean {
+        check({ true }, "") // to add "Null value not permitted" if obj is null
         return errors.isEmpty()
     }
 
