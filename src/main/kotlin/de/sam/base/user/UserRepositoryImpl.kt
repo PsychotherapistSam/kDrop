@@ -1,12 +1,12 @@
 package de.sam.base.user
 
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
 import de.sam.base.file.FileController
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.LoginLogService
+import de.sam.base.user.repository.UserRepository
 import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
@@ -184,7 +184,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             }
         } catch (e: Exception) {
             Logger.error(e)
-            0
+            -1 // -1 instead of 0, because admin users can be created if "no users exist"
         }
     }
 
