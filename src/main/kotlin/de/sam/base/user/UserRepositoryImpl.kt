@@ -8,10 +8,12 @@ import de.sam.base.file.repository.FileRepository
 import de.sam.base.services.LoginLogService
 import de.sam.base.user.repository.UserRepository
 import org.jdbi.v3.core.kotlin.mapTo
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.tinylog.kotlin.Logger
+import java.sql.SQLException
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -31,18 +33,15 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE name ILIKE :name;
         """.trimIndent()
 
-        try {
-            return jdbi.withHandle<UserDTO?, Exception> { handle ->
+        return executeWithExceptionHandling {
+            jdbi.withHandle<UserDTO?, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("name", username)
                     .mapTo<UserDTO>()
                     .findOne()
                     .getOrNull()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
         }
-        return null
     }
 
     /**
@@ -77,14 +76,19 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
 
         try {
             jdbi.useTransaction<Exception> { handle ->
-                handle.createUpdate(sqlInsert)
-                    .bind("name", username)
-                    .bind("password", passwordHash)
-                    .bind("roles", roleId)
-                    .bind("preferences", preferences)
-                    .bind("registration_date", registrationDate)
-                    .bind("salt", passwordSalt)
-                    .execute()
+                try {
+                    handle.createUpdate(sqlInsert)
+                        .bind("name", username)
+                        .bind("password", passwordHash)
+                        .bind("roles", roleId)
+                        .bind("preferences", preferences)
+                        .bind("registration_date", registrationDate)
+                        .bind("salt", passwordSalt)
+                        .execute()
+                } catch (e: Exception) {
+                    Logger.error("Unable to execute insert query: $sqlInsert", e)
+                    throw e
+                }
 
                 userDTO = getUserByUsername(username) // handle,
                     ?: throw Exception("Failed to create user")
@@ -111,18 +115,28 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
                     rootFolder,
                 )
 
-                handle.createUpdate(sqlUpdateRootFolderId)
-                    .bind("root_folder_id", rootFolder.id)
-                    .bind("id", userDTO!!.id)
-                    .execute()
+                try {
+                    handle.createUpdate(sqlUpdateRootFolderId)
+                        .bind("root_folder_id", rootFolder.id)
+                        .bind("id", userDTO!!.id)
+                        .execute()
+                } catch (e: Exception) {
+                    Logger.error("Unable to execute update query: $sqlUpdateRootFolderId", e)
+                    throw e
+                }
 
+                // updating the returned userDTO with the root folder ID for consistency
                 userDTO!!.rootFolderId = rootFolder.id
             }
-
+            return userDTO
+        } catch (e: UnableToExecuteStatementException) {
+            Logger.error("Unable to execute statement", e)
+        } catch (e: SQLException) {
+            Logger.error("Database error", e)
         } catch (e: Exception) {
-            Logger.error(e)
+            Logger.error("Unexpected error", e)
         }
-        return userDTO
+        return null
     }
 
 
@@ -154,16 +168,14 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         """.trimIndent()
 
         Logger.debug("Deleting user $userId")
-        try {
+        return executeWithExceptionHandling {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("id", userId.toString())
                     .execute()
             }
-            return true
-        } catch (e: Exception) {
-            throw Exception("Could not delete user $userId", e)
-        }
+            true
+        } != null
     }
 
     /**
@@ -171,20 +183,17 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
      *
      * @return the total number of users
      */
-    override fun countTotalUsers(): Int {
+    override fun countTotalUsers(): Int? {
         val sql = """
             SELECT COUNT(*) FROM t_users;
         """.trimIndent()
 
-        return try {
+        return executeWithExceptionHandling {
             jdbi.withHandle<Int, Exception> { handle ->
                 handle.createQuery(sql)
                     .mapTo<Int>()
                     .one()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-            -1 // -1 instead of 0, because admin users can be created if "no users exist"
         }
     }
 
@@ -208,7 +217,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE id = :id;
         """.trimIndent()
 
-        try {
+        return executeWithExceptionHandling {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("name", copy.name)
@@ -222,10 +231,8 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
                     .bind("id", copy.id)
                     .execute()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-        }
-        return copy
+            copy
+        }!!
     }
 
     /**
@@ -240,18 +247,15 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE id = CAST(:id AS uuid);
         """.trimIndent()
 
-        try {
-            return jdbi.withHandle<UserDTO?, Exception> { handle ->
+        return executeWithExceptionHandling {
+            jdbi.withHandle<UserDTO?, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("id", it.toString())
                     .mapTo<UserDTO>()
                     .findOne()
                     .getOrNull()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
         }
-        return null
     }
 
     /**
@@ -270,8 +274,8 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             OFFSET :offset;
         """.trimIndent()
 
-        try {
-            return jdbi.withHandle<List<UserDTO>, Exception> { handle ->
+        return executeWithExceptionHandling {
+            jdbi.withHandle<List<UserDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("name", "%$searchQuery%")
                     .bind("limit", limit)
@@ -279,10 +283,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
                     .mapTo<UserDTO>()
                     .list()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-        }
-        return emptyList()
+        } ?: emptyList()
     }
 
     /**
@@ -300,18 +301,15 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             OFFSET :offset;
         """.trimIndent()
 
-        try {
-            return jdbi.withHandle<List<UserDTO>, Exception> { handle ->
+        return executeWithExceptionHandling {
+            jdbi.withHandle<List<UserDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("limit", limit)
                     .bind("offset", offset)
                     .mapTo<UserDTO>()
                     .list()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-        }
-        return emptyList()
+        } ?: emptyList()
     }
 
     /**
@@ -319,19 +317,18 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
      *
      * @throws Exception if any error occurs during the deletion process
      */
-    override fun deleteAllSessions() {
+    override fun deleteAllSessions(): Boolean {
         val sql = """
             DELETE FROM jettysessions;
         """.trimIndent()
 
-        try {
+        return executeWithExceptionHandling {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .execute()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-        }
+            true
+        } != null
     }
 
     /**
@@ -340,22 +337,21 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
      * @param userId The ID of the user.
      * @param dateTime The last login time as a DateTime object.
      */
-    override fun updateLastLoginTime(userId: UUID, dateTime: DateTime) {
+    override fun updateLastLoginTime(userId: UUID, dateTime: DateTime): Boolean {
         val sql = """
             UPDATE t_users
             SET last_login = :last_login
             WHERE id = CAST(:id AS uuid);
         """.trimIndent()
 
-        try {
+        return executeWithExceptionHandling {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("last_login", dateTime.toDate())
                     .bind("id", userId.toString())
                     .execute()
             }
-        } catch (e: Exception) {
-            Logger.error(e)
-        }
+            true
+        } != null
     }
 }

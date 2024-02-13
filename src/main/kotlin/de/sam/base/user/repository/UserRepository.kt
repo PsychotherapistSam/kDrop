@@ -2,7 +2,10 @@ package de.sam.base.user.repository
 
 import de.sam.base.database.UserDTO
 import de.sam.base.user.UserRoles
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.joda.time.DateTime
+import org.tinylog.kotlin.Logger
+import java.sql.SQLException
 import java.util.*
 
 interface UserRepository {
@@ -20,8 +23,23 @@ interface UserRepository {
     fun getUserById(it: UUID): UserDTO?
     fun searchUsers(searchQuery: String, limit: Int = 25, offset: Int = 0): List<UserDTO>
     fun getAllUsers(limit: Int = 25, offset: Int = 0): List<UserDTO>
-    fun deleteAllSessions()
-    fun updateLastLoginTime(userId: UUID, dateTime: DateTime)
-    fun countTotalUsers(): Int
+    fun deleteAllSessions(): Boolean
+    fun updateLastLoginTime(userId: UUID, dateTime: DateTime): Boolean
+    fun countTotalUsers(): Int?
+
+    fun <T> executeWithExceptionHandling(messageType: String? = null, block: () -> T): T? {
+        return try {
+            block()
+        } catch (e: UnableToExecuteStatementException) {
+            Logger.error("Unable to execute statement", e)
+            null
+        } catch (e: SQLException) {
+            Logger.error("Database error ${messageType?.let { "with $it" }}", e)
+            null
+        } catch (e: Exception) {
+            Logger.error("Unexpected error ${messageType?.let { "with $it" }}", e)
+            null
+        }
+    }
 
 }
