@@ -1,8 +1,8 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.file.repository.FileRepository
+import de.sam.base.user.repository.UserRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.system.measureNanoTime
@@ -24,7 +24,7 @@ class AdminIndexPage : Page(
 
     override fun get() {
         pageDiff = measureNanoTime {
-            userCount = userRepository.countTotalUsers()
+            userCount = userRepository.countTotalUsers() ?: 0
             fileCount = fileRepository.countTotalFiles()
         }
     }
