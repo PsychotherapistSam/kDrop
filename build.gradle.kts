@@ -30,8 +30,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin")
 
     // Javalin
-    implementation("io.javalin:javalin:6.0.0")
-    implementation("io.javalin:javalin-rendering:6.0.0")
+    implementation("io.javalin:javalin:6.1.0")
+    implementation("io.javalin:javalin-rendering:6.1.0")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.11")
