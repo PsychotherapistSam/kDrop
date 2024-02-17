@@ -1,9 +1,10 @@
 package de.sam.base.file.share
 
 import de.sam.base.database.ShareDTO
+import de.sam.base.database.SqlRepository
 import java.util.*
 
-interface ShareRepository {
+interface ShareRepository : SqlRepository {
     /**
      * Retrieves the list of shares for a given user.
      *
@@ -11,7 +12,7 @@ interface ShareRepository {
      * @return The list of shares associated with the user.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getAllSharesForUser(userId: UUID): List<ShareDTO>
+    fun getAllSharesForUser(userId: UUID): List<ShareDTO>?
 
     /**
      * Deletes all shares for a given user.
@@ -28,7 +29,7 @@ interface ShareRepository {
      * @return The list of shares associated with the file.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getSharesForFile(id: UUID): List<ShareDTO>
+    fun getSharesForFile(id: UUID): List<ShareDTO>?
 
     /**
      * Creates a new share in the database.
@@ -37,7 +38,7 @@ interface ShareRepository {
      * @return the created share
      * @throws FileServiceException if the share creation fails
      */
-    fun createShare(share: ShareDTO): ShareDTO
+    fun createShare(share: ShareDTO): ShareDTO?
 
     /**
      * Retrieves a share by its name.
@@ -71,7 +72,7 @@ interface ShareRepository {
      * @return The list of ShareDTO objects representing the shares for the user.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getSharesForUser(userId: UUID): List<ShareDTO>
+    fun getSharesForUser(userId: UUID): List<ShareDTO>?
 
     /**
      * Updates a share in the database.

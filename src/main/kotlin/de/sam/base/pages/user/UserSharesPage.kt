@@ -6,7 +6,7 @@ import de.sam.base.file.share.ShareRepository
 import de.sam.base.utils.currentUserDTO
 import org.koin.core.component.inject
 
-class UserSharesPage() : Page(
+class UserSharesPage : Page(
     name = "Shared Files",
     templateName = "user/shares.kte",
 ) {
@@ -19,6 +19,6 @@ class UserSharesPage() : Page(
     var shares = listOf<ShareDTO>()
 
     override fun get() {
-        shares = shareRepository.getAllSharesForUser(ctx.currentUserDTO!!.id)
+        shares = shareRepository.getAllSharesForUser(ctx.currentUserDTO!!.id) ?: emptyList()
     }
 }

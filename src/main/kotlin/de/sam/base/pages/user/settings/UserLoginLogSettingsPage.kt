@@ -22,7 +22,7 @@ class UserLoginLogSettingsPage : Page(
     private val session: Session by inject()
     private val loginLogRepository: LoginLogRepository by inject()
 
-    var loginLogList = listOf<LoginLogDTO>()
+    var loginLogList = emptyList<LoginLogDTO>()
 
     var errors = arrayListOf<String>()
 
@@ -61,7 +61,7 @@ class UserLoginLogSettingsPage : Page(
 
     private fun loadLoginList(): List<LoginLogDTO> {
         return loginLogRepository.getLimitedLoginHistoryByUserId(ctx.currentUserDTO!!.id, LOGIN_LOG_DAYS)
-            .sortedBy { it.date }
-            .reversed()
+            ?.sortedBy { it.date }
+            ?.reversed() ?: emptyList()
     }
 }

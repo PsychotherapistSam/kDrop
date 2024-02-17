@@ -20,19 +20,13 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
     private val loginLogRepository: LoginLogRepository by inject()
     private val fileRepository: FileRepository by inject()
 
-    /**
-     * Retrieves a user from the database based on the username.
-     *
-     * @param username the username of the user to retrieve
-     * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
-     */
     override fun getUserByUsername(username: String?): UserDTO? {
         val sql = """
             SELECT * FROM t_users
             WHERE name ILIKE :name;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("fetching user") {
             jdbi.withHandle<UserDTO?, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("name", username)
@@ -44,17 +38,9 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
     }
 
     /**
-     * Creates a new user with the given parameters.
-     *
-     * @param username The username of the user.
-     * @param passwordHash The password hash of the user.
-     * @param passwordSalt The password salt of the user.
-     * @param role The role of the user (default is UserRoles.USER).
-     * @return The created UserDTO object if successful, null otherwise.
-     *//*
-    * CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-    * ALTER TABLE public.t_users ALTER COLUMN id SET default uuid_generate_v4();
-    */
+     * CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+     * ALTER TABLE public.t_users ALTER COLUMN id SET default uuid_generate_v4();
+     */
     override fun createUser(username: String, passwordHash: String, passwordSalt: String, role: UserRoles): UserDTO? {
         var userDTO: UserDTO? = null
 
@@ -138,13 +124,6 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         return null
     }
 
-
-    /**
-     * Deletes user data for the specified user.
-     *
-     * @param userId The ID of the user to delete.
-     * @throws Exception if any error occurs during the deletion process.
-     */
     override fun deleteUser(userId: UUID): Boolean {
 //        shareService.deleteAllSharesForUser(userId)
         Logger.debug("Deleting user data for $userId")
@@ -167,7 +146,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         """.trimIndent()
 
         Logger.debug("Deleting user $userId")
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("deleting user") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("id", userId.toString())
@@ -177,17 +156,12 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         } != null
     }
 
-    /**
-     * Returns the total number of users in the database.
-     *
-     * @return the total number of users
-     */
     override fun countTotalUsers(): Int? {
         val sql = """
             SELECT COUNT(*) FROM t_users;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("counting total users") {
             jdbi.withHandle<Int, Exception> { handle ->
                 handle.createQuery(sql)
                     .mapTo<Int>()
@@ -196,12 +170,6 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         }
     }
 
-    /**
-     * Updates the user with the given data.
-     *
-     * @param copy the UserDTO object containing the updated data
-     * @return the updated UserDTO object
-     */
     override fun updateUser(copy: UserDTO): UserDTO {
         val sql = """
             UPDATE t_users
@@ -216,7 +184,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE id = :id;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("updating user") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("name", copy.name)
@@ -234,19 +202,13 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         }!!
     }
 
-    /**
-     * Retrieves a user from the database based on the user ID.
-     *
-     * @param it the user ID
-     * @return the UserDTO object representing the user, or null if the user does not exist or an error occurred
-     */
     override fun getUserById(it: UUID): UserDTO? {
         val sql = """
             SELECT * FROM t_users
             WHERE id = CAST(:id AS uuid);
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("fetching user") {
             jdbi.withHandle<UserDTO?, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("id", it.toString())
@@ -257,13 +219,6 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         }
     }
 
-    /**
-     * Searches for users with the given search query.
-     *
-     * @param searchQuery the search query
-     * @return a list of UserDTO objects representing the users
-     * @throws Exception if any error occurs during the search process
-     */
     override fun searchUsers(searchQuery: String, limit: Int, offset: Int): List<UserDTO> {
         val sql = """
             SELECT * FROM t_users
@@ -273,7 +228,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             OFFSET :offset;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("searching users") {
             jdbi.withHandle<List<UserDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("name", "%$searchQuery%")
@@ -285,13 +240,6 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         } ?: emptyList()
     }
 
-    /**
-     * Retrieves a list of all users from the database.
-     *
-     * @param limit the maximum number of users to retrieve
-     * @param offset the offset
-     *
-     */
     override fun getAllUsers(limit: Int, offset: Int): List<UserDTO> {
         val sql = """
             SELECT * FROM t_users
@@ -300,7 +248,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             OFFSET :offset;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("fetching all users") {
             jdbi.withHandle<List<UserDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("limit", limit)
@@ -311,17 +259,12 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         } ?: emptyList()
     }
 
-    /**
-     * Deletes all sessions from the database.
-     *
-     * @throws Exception if any error occurs during the deletion process
-     */
     override fun deleteAllSessions(): Boolean {
         val sql = """
             DELETE FROM jettysessions;
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("deleting all sessions") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .execute()
@@ -330,12 +273,6 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         } != null
     }
 
-    /**
-     * Updates the last login time for a user in the database.
-     *
-     * @param userId The ID of the user.
-     * @param dateTime The last login time as a DateTime object.
-     */
     override fun updateLastLoginTime(userId: UUID, dateTime: DateTime): Boolean {
         val sql = """
             UPDATE t_users
@@ -343,7 +280,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE id = CAST(:id AS uuid);
         """.trimIndent()
 
-        return executeWithExceptionHandling {
+        return executeWithExceptionHandling("updating last login time") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("last_login", dateTime.toDate())

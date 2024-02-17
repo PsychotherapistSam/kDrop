@@ -10,6 +10,7 @@ import de.sam.base.database.DatabaseManager
 import de.sam.base.file.FileCache
 import de.sam.base.file.FileRepositoryImpl
 import de.sam.base.file.repository.FileRepository
+import de.sam.base.file.share.ShareRepository
 import de.sam.base.file.share.ShareRepositoryImpl
 import de.sam.base.tasks.TaskController
 import de.sam.base.tasks.queue.TaskQueue
@@ -48,7 +49,7 @@ fun main() {
             single { RateLimiter() }
             single<LoginLogRepository> { LoginLogRepositoryImpl() }
             single<FileRepository> { FileRepositoryImpl() }
-            single { ShareRepositoryImpl() }
+            single<ShareRepository> { ShareRepositoryImpl() }
             single<UserRepository> { UserRepositoryImpl() }
             single { UserValidator() }
             single { PasswordHasher() }

@@ -67,6 +67,12 @@ content = @`
                         />
                     @endif
                 </tr>
+            @else
+                <tr>
+                    <td colspan="4" class="center aligned">
+                        No login logs found.
+                    </td>
+                </tr>
             @endfor
             </tbody>
         </table>

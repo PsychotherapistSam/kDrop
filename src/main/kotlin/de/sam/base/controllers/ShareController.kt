@@ -78,7 +78,7 @@ class ShareController : KoinComponent {
                 hashedPassword
             )
         )
-        ctx.json(mapOf("id" to newShare.id))
+        ctx.json(mapOf("id" to newShare!!.id))
     }
 
     fun delete(ctx: Context) {
