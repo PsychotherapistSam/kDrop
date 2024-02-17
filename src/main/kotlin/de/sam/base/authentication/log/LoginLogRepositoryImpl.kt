@@ -1,4 +1,4 @@
-package de.sam.base.services
+package de.sam.base.authentication.log
 
 import de.sam.base.database.LoginLogDTO
 import de.sam.base.database.jdbi
@@ -7,7 +7,7 @@ import io.javalin.http.Context
 import org.joda.time.DateTime
 import java.util.*
 
-class LoginLogService {
+class LoginLogRepositoryImpl : LoginLogRepository {
 
     /**
      * Logs a login attempt.
@@ -16,7 +16,7 @@ class LoginLogService {
      * @param userId The unique identifier of the user.
      * @throws Exception if an error occurs while logging the login.
      */
-    fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
+    override fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
         val sql = """
             INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id)
             VALUES (CAST(:id AS uuid), CAST(:user AS uuid), :ip, :userAgent, :date, :sessionId);
@@ -45,7 +45,7 @@ class LoginLogService {
      * @return The list of login logs associated with the user.
      * @throws Exception if an error occurs while fetching the login logs.
      */
-    fun getLoginHistoryByUserId(userId: UUID): List<LoginLogDTO> {
+    override fun getLoginHistoryByUserId(userId: UUID): List<LoginLogDTO> {
         val sql = """
             SELECT * FROM t_login_log
             WHERE "user" = CAST(:userId AS uuid);
@@ -63,7 +63,7 @@ class LoginLogService {
         }
     }
 
-    fun getLimitedLoginHistoryByUserId(userId: UUID, days: Int): List<LoginLogDTO> {
+    override fun getLimitedLoginHistoryByUserId(userId: UUID, days: Int): List<LoginLogDTO> {
         val sql = """
             SELECT * FROM t_login_log
             WHERE "user" = CAST(:userId AS uuid)
@@ -88,7 +88,7 @@ class LoginLogService {
      * @param userId The unique identifier of the user.
      * @throws Exception if an error occurs while deleting the login logs.
      */
-    fun deleteAllLoginLogsForUser(userId: UUID) {
+    override fun deleteAllLoginLogsForUser(userId: UUID) {
         val sql = """
             DELETE FROM t_login_log
             WHERE "user" = CAST(:userId AS uuid);
@@ -112,7 +112,7 @@ class LoginLogService {
      * @return The login log associated with the session.
      * @throws Exception if an error occurs while fetching the login log.
      */
-    fun getLogBySessionId(sessionId: String): LoginLogDTO? {
+    override fun getLogBySessionId(sessionId: String): LoginLogDTO? {
         val sql = """
             SELECT * FROM t_login_log
             WHERE session_id = :sessionId;
@@ -138,7 +138,7 @@ class LoginLogService {
      * @return The login log associated with the id.
      * @throws Exception if an error occurs while fetching the login log.
      */
-    fun getLogById(id: UUID): LoginLogDTO? {
+    override fun getLogById(id: UUID): LoginLogDTO? {
         val sql = """
             SELECT * FROM t_login_log
             WHERE id = CAST(:id AS uuid);
@@ -163,7 +163,7 @@ class LoginLogService {
      * @param id The unique identifier of the login log.
      * @throws Exception if an error occurs while deleting the login log.
      */
-    fun removeLogEntry(id: UUID) {
+    override fun removeLogEntry(id: UUID) {
         val sql = """
             DELETE FROM t_login_log
             WHERE id = CAST(:id AS uuid);
@@ -186,7 +186,7 @@ class LoginLogService {
      * @param loginLog The login log to update.
      * @throws Exception if an error occurs while updating the login log.
      */
-    fun updateLoginLogEntry(loginLog: LoginLogDTO) {
+    override fun updateLoginLogEntry(loginLog: LoginLogDTO) {
         val sql = """
             UPDATE t_login_log
             SET "user" = CAST(:user AS uuid),

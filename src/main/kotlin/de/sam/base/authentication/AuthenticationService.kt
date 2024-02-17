@@ -1,6 +1,6 @@
 package de.sam.base.authentication
 
-import de.sam.base.user.repository.UserRepository
+import de.sam.base.user.UserRepository
 import de.sam.base.user.UserRoles
 import de.sam.base.user.UserValidator
 import org.koin.core.component.KoinComponent

@@ -5,7 +5,7 @@ import de.sam.base.authentication.PasswordHasher
 import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.ShareService
+import de.sam.base.file.share.ShareRepository
 import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.realIp
@@ -26,7 +26,7 @@ class UserSharePage : Page(
     }
 
     private val fileRepository: FileRepository by inject()
-    private val shareService: ShareService by inject()
+    private val shareRepository: ShareRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
 
     private val rateLimiter: RateLimiter by inject()
@@ -70,7 +70,7 @@ class UserSharePage : Page(
 
     fun shareList(ctx: Context) {
         val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
-        val shares = shareService.getSharesForFile(file.id)
+        val shares = shareRepository.getSharesForFile(file.id)
 
         ctx.render(
             "components/files/sharesList.kte", mapOf(

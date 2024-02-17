@@ -1,8 +1,8 @@
 package de.sam.base.pages.admin
 
 import de.sam.base.Page
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.UserDTO
+import de.sam.base.user.UserRepository
 import de.sam.base.utils.logging.logTimeSpent
 import org.koin.core.component.inject
 import kotlin.system.measureNanoTime

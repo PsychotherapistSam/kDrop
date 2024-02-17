@@ -1,8 +1,8 @@
 package de.sam.base.utils
 
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.config.Configuration
 import de.sam.base.requirements.Requirement
+import de.sam.base.user.UserRepository
 import de.sam.base.user.UserRoles
 import io.javalin.http.*
 import org.koin.core.component.KoinComponent

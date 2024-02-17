@@ -1,12 +1,11 @@
 package de.sam.base.user
 
+import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
 import de.sam.base.file.FileController
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.LoginLogService
-import de.sam.base.user.repository.UserRepository
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.joda.time.DateTime
@@ -18,7 +17,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 class UserRepositoryImpl : UserRepository, KoinComponent {
-    private val loginLogService: LoginLogService by inject()
+    private val loginLogRepository: LoginLogRepository by inject()
     private val fileRepository: FileRepository by inject()
 
     /**
@@ -151,7 +150,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         Logger.debug("Deleting user data for $userId")
 
         Logger.debug("Deleting shares for user $userId")
-        loginLogService.deleteAllLoginLogsForUser(userId)
+        loginLogRepository.deleteAllLoginLogsForUser(userId)
 
         Logger.debug("Deleting root folder and all files for user $userId")
         val rootFolder = fileRepository.getRootFolderForUser(userId)

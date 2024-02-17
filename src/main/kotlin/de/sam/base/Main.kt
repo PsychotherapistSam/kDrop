@@ -2,19 +2,20 @@ package de.sam.base
 
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.PasswordHasher
-import de.sam.base.user.UserValidator
+import de.sam.base.authentication.log.LoginLogRepository
+import de.sam.base.authentication.log.LoginLogRepositoryImpl
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
 import de.sam.base.database.DatabaseManager
 import de.sam.base.file.FileCache
 import de.sam.base.file.FileRepositoryImpl
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.LoginLogService
-import de.sam.base.services.ShareService
+import de.sam.base.file.share.ShareRepositoryImpl
 import de.sam.base.tasks.TaskController
 import de.sam.base.tasks.queue.TaskQueue
+import de.sam.base.user.UserRepository
 import de.sam.base.user.UserRepositoryImpl
-import de.sam.base.user.repository.UserRepository
+import de.sam.base.user.UserValidator
 import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
@@ -45,9 +46,9 @@ fun main() {
         modules(module {
             single { config }
             single { RateLimiter() }
-            single { LoginLogService() }
+            single<LoginLogRepository> { LoginLogRepositoryImpl() }
             single<FileRepository> { FileRepositoryImpl() }
-            single { ShareService() }
+            single { ShareRepositoryImpl() }
             single<UserRepository> { UserRepositoryImpl() }
             single { UserValidator() }
             single { PasswordHasher() }

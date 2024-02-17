@@ -5,7 +5,7 @@ import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.ShareService
+import de.sam.base.file.share.ShareRepository
 import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.tasks.types.files.HashFileTask
 import de.sam.base.tasks.types.files.ZipFilesTask
@@ -33,7 +33,7 @@ class FileController : KoinComponent {
 
     private val config: Configuration by inject()
     private val fileRepository: FileRepository by inject()
-    private val shareService: ShareService by inject()
+    private val shareRepository: ShareRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
     private val tusFileUploadSerivce: TusFileUploadService by inject()
     private val taskQueue: TaskQueue by inject()
@@ -166,10 +166,10 @@ class FileController : KoinComponent {
 
         if (isShareRequest) {
             ctx.share!!.downloadCount++
-            shareService.updateShareDownloadCount(ctx.share!!)
+            shareRepository.updateShareDownloadCount(ctx.share!!)
 
             if (ctx.share!!.maxDownloads != null && ctx.share!!.maxDownloads!! > 0 && ctx.share!!.downloadCount >= ctx.share!!.maxDownloads!!) {
-                shareService.deleteShare(ctx.share!!.id)
+                shareRepository.deleteShare(ctx.share!!.id)
             }
         }
     }
@@ -433,7 +433,7 @@ class FileController : KoinComponent {
                 fileRepository.getFileById(fileId) ?: throw NotFoundResponse("File not found")
             }
 
-        val shares = shareService.getSharesForFile(file.id)
+        val shares = shareRepository.getSharesForFile(file.id)
 
         ctx.json(
             mapOf(

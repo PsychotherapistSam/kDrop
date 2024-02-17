@@ -2,7 +2,7 @@ package de.sam.base.requirements
 
 import de.sam.base.file.FileCache
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.ShareService
+import de.sam.base.file.share.ShareRepository
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
@@ -80,14 +80,14 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
     HAS_ACCESS_TO_SHARE("This share does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
         override fun isMet(ctx: Context): Boolean {
             val shareId = ctx.pathParamAsClass<String>("shareId").get()
-            val shareService: ShareService by inject()
+            val shareRepository: ShareRepository by inject()
 
             logTimeSpent("Getting share by id") {
                 val share =
                     if (shareId.isUUID)
-                        shareService.getShareById(UUID.fromString(shareId))
+                        shareRepository.getShareById(UUID.fromString(shareId))
                     else
-                        shareService.getShareByName(shareId) ?: return false
+                        shareRepository.getShareByName(shareId) ?: return false
 
                 if (share == null) {
                     Logger.info("Share not found: access manager (actually not found)")

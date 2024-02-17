@@ -1,7 +1,6 @@
 package de.sam.base.user
 
 import de.sam.base.authentication.PasswordHasher
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO

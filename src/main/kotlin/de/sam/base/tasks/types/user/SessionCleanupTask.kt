@@ -1,7 +1,7 @@
 package de.sam.base.tasks.types.user
 
-import de.sam.base.user.repository.UserRepository
 import de.sam.base.tasks.types.Task
+import de.sam.base.user.UserRepository
 import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

@@ -1,8 +1,8 @@
 package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
+import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.database.LoginLogDTO
-import de.sam.base.services.LoginLogService
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.session.Session
 import io.javalin.http.HttpStatus
@@ -20,7 +20,7 @@ class UserLoginLogSettingsPage : Page(
     }
 
     private val session: Session by inject()
-    private val loginLogService: LoginLogService by inject()
+    private val loginLogRepository: LoginLogRepository by inject()
 
     var loginLogList = listOf<LoginLogDTO>()
 
@@ -40,7 +40,7 @@ class UserLoginLogSettingsPage : Page(
             return
         }
 
-        val log = loginLogService.getLogById(logId)
+        val log = loginLogRepository.getLogById(logId)
 
         if (log == null || log.user != ctx.currentUserDTO!!.id) {
             errors.add("Log not found.")
@@ -52,7 +52,7 @@ class UserLoginLogSettingsPage : Page(
         }
 
         session.sessionHandler.invalidate(log.sessionId)
-        loginLogService.updateLoginLogEntry(log.copy(revoked = true))
+        loginLogRepository.updateLoginLogEntry(log.copy(revoked = true))
 
         loginLogList = loadLoginList()
 
@@ -60,7 +60,7 @@ class UserLoginLogSettingsPage : Page(
     }
 
     private fun loadLoginList(): List<LoginLogDTO> {
-        return loginLogService.getLimitedLoginHistoryByUserId(ctx.currentUserDTO!!.id, LOGIN_LOG_DAYS)
+        return loginLogRepository.getLimitedLoginHistoryByUserId(ctx.currentUserDTO!!.id, LOGIN_LOG_DAYS)
             .sortedBy { it.date }
             .reversed()
     }

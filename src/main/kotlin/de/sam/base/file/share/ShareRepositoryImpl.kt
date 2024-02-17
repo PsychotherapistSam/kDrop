@@ -1,4 +1,4 @@
-package de.sam.base.services
+package de.sam.base.file.share
 
 import de.sam.base.database.ShareDTO
 import de.sam.base.database.jdbi
@@ -7,7 +7,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-class ShareService {
+class ShareRepositoryImpl : ShareRepository {
     /**
      * Retrieves the list of shares for a given user.
      *
@@ -15,7 +15,7 @@ class ShareService {
      * @return The list of shares associated with the user.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getAllSharesForUser(userId: UUID): List<ShareDTO> {
+    override fun getAllSharesForUser(userId: UUID): List<ShareDTO> {
         val sql = """
             SELECT * FROM t_shares
             WHERE "user" = CAST(:userId AS uuid);
@@ -39,7 +39,7 @@ class ShareService {
      * @param userId The unique identifier of the user.
      * @throws FileServiceException if an error occurs while deleting the shares.
      */
-    fun deleteAllSharesForUser(userId: UUID) {
+    override fun deleteAllSharesForUser(userId: UUID) {
         val sql = """
             DELETE FROM t_shares
             WHERE "user" = CAST(:userId AS uuid);
@@ -64,7 +64,7 @@ class ShareService {
      * @return The list of shares associated with the file.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getSharesForFile(id: UUID): List<ShareDTO> {
+    override fun getSharesForFile(id: UUID): List<ShareDTO> {
         val sql = """
             SELECT * FROM t_shares
             WHERE "file" = CAST(:id AS uuid);
@@ -89,7 +89,7 @@ class ShareService {
      * @return the created share
      * @throws FileServiceException if the share creation fails
      */
-    fun createShare(share: ShareDTO): ShareDTO {
+    override fun createShare(share: ShareDTO): ShareDTO {
         val sql = """
             INSERT INTO t_shares (id, file, "user", creation_date, max_downloads, download_count, vanity_name, password)
             VALUES (CAST(:id AS uuid), CAST(:file AS uuid), CAST(:user AS uuid), :creationDate, :maxDownloads, :downloadCount, :vanityName, :password)
@@ -123,7 +123,7 @@ class ShareService {
      * @return the ShareDTO object representing the share with the given name, or null if not found
      * @throws FileServiceException if there is an error while fetching the share
      */
-    fun getShareByName(name: String): ShareDTO? {
+    override fun getShareByName(name: String): ShareDTO? {
         val sql = """
             SELECT * FROM t_shares
             WHERE vanity_name = :name;
@@ -148,7 +148,7 @@ class ShareService {
      * @return the ShareDTO object representing the share with the given ID, or null if not found
      * @throws FileServiceException if there is an error while fetching the share
      */
-    fun getShareById(id: UUID): ShareDTO? {
+    override fun getShareById(id: UUID): ShareDTO? {
         val sql = """
             SELECT * FROM t_shares
             WHERE id = CAST(:id AS uuid);
@@ -173,7 +173,7 @@ class ShareService {
      * @param id The ID of the share to be deleted.
      * @throws FileServiceException if the share could not be deleted.
      */
-    fun deleteShare(id: UUID) {
+    override fun deleteShare(id: UUID) {
         val sql = """
             DELETE FROM t_shares
             WHERE id = CAST(:id AS uuid);
@@ -197,7 +197,7 @@ class ShareService {
      * @return The list of ShareDTO objects representing the shares for the user.
      * @throws FileServiceException if an error occurs while fetching the shares.
      */
-    fun getSharesForUser(userId: UUID): List<ShareDTO> {
+    override fun getSharesForUser(userId: UUID): List<ShareDTO> {
         val sql = """
             SELECT * FROM t_shares
             WHERE "user" = CAST(:userId AS uuid);
@@ -221,7 +221,7 @@ class ShareService {
      * @param share The share to be updated.
      * @throws FileServiceException if the share could not be updated.
      */
-    fun updateShare(share: ShareDTO) {
+    override fun updateShare(share: ShareDTO) {
         val sql = """
             UPDATE t_shares
             SET max_downloads = :maxDownloads, download_count = :downloadCount, vanity_name = :vanityName, password = :password
@@ -249,7 +249,7 @@ class ShareService {
      * @param share The share to be updated.
      * @throws FileServiceException if the share could not be updated.
      */
-    fun updateShareDownloadCount(share: ShareDTO) {
+    override fun updateShareDownloadCount(share: ShareDTO) {
         val sql = """
             UPDATE t_shares
             SET download_count = :downloadCount

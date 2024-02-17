@@ -3,7 +3,7 @@ package de.sam.base.controllers
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.database.ShareDTO
 import de.sam.base.file.repository.FileRepository
-import de.sam.base.services.ShareService
+import de.sam.base.file.share.ShareRepository
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.share
 import de.sam.base.utils.string.isUUID
@@ -17,7 +17,7 @@ import java.util.*
 
 class ShareController : KoinComponent {
 
-    private val shareService: ShareService by inject()
+    private val shareRepository: ShareRepository by inject()
     private val fileRepository: FileRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
 
@@ -48,7 +48,7 @@ class ShareController : KoinComponent {
             vanityName.get()
         }
 
-        if (cleanedName != null && shareService.getShareByName(cleanedName) != null) {
+        if (cleanedName != null && shareRepository.getShareByName(cleanedName) != null) {
             throw BadRequestResponse("Could not create share (name already exists or is forbidden)")
         }
 
@@ -66,7 +66,7 @@ class ShareController : KoinComponent {
                 passwordHasher.hashPassword(unhashedPassword, file.id.toString())
             }
 
-        val newShare = shareService.createShare(
+        val newShare = shareRepository.createShare(
             ShareDTO(
                 UUID.randomUUID(),
                 file.id,
@@ -82,7 +82,7 @@ class ShareController : KoinComponent {
     }
 
     fun delete(ctx: Context) {
-        shareService.deleteShare(ctx.share!!.id)
+        shareRepository.deleteShare(ctx.share!!.id)
     }
 
     fun getOne(ctx: Context) {

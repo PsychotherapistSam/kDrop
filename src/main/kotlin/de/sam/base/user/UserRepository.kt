@@ -1,7 +1,6 @@
-package de.sam.base.user.repository
+package de.sam.base.user
 
 import de.sam.base.database.UserDTO
-import de.sam.base.user.UserRoles
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.joda.time.DateTime
 import org.tinylog.kotlin.Logger

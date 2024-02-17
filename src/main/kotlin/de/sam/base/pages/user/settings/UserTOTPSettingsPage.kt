@@ -1,7 +1,7 @@
 package de.sam.base.pages.user.settings
 
 import de.sam.base.Page
-import de.sam.base.user.repository.UserRepository
+import de.sam.base.user.UserRepository
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.getFirstError
 import de.sam.base.utils.totpSecret

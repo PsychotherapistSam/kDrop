@@ -3,9 +3,9 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
-import de.sam.base.user.repository.UserRepository
+import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.captcha.Captcha
-import de.sam.base.services.LoginLogService
+import de.sam.base.user.UserRepository
 import de.sam.base.utils.*
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
@@ -21,7 +21,7 @@ class UserLoginPage : Page(
 
     private val captcha: Captcha by inject()
 
-    private val loginLogService: LoginLogService by inject()
+    private val loginLogRepository: LoginLogRepository by inject()
     private val authenticationService: AuthenticationService by inject()
     private val userRepository: UserRepository by inject()
 
@@ -66,7 +66,7 @@ class UserLoginPage : Page(
 
                     val date = DateTime.now()
 
-                    loginLogService.logLoginForUserId(ctx, result.userDTO.id, date)
+                    loginLogRepository.logLoginForUserId(ctx, result.userDTO.id, date)
                     userRepository.updateLastLoginTime(result.userDTO.id, date)
 
                     if (result.requireTOTPValidation) {
