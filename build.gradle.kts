@@ -25,13 +25,14 @@ repositories {
 
 dependencies {
     // Kotlin
-    val kotlin = "1.9.21"
+    val kotlin = "1.9.22"
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin")
 
     // Javalin
-    implementation("io.javalin:javalin:6.1.0")
-    implementation("io.javalin:javalin-rendering:6.1.0")
+    val javalin = "6.1.0"
+    implementation("io.javalin:javalin:$javalin")
+    implementation("io.javalin:javalin-rendering:$javalin")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:2.0.11")
@@ -39,7 +40,7 @@ dependencies {
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
-    // Database and ORM
+    // Database
     implementation("com.zaxxer:HikariCP:5.1.0")
     implementation("org.postgresql:postgresql:42.7.1")
     val jdbi = "3.43.0"
