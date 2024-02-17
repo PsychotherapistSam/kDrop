@@ -10,9 +10,36 @@ content = @`
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.7 - 12. December 2023
+            v0.0.8 - 17. February 2024
         </div>
         <div class="active content">
+            <h4 class="ui dividing header">New Features</h4>
+            <ul class="ui list">
+                <li>Allow users to view and revoke previous sessions.</li>
+                <li>Add rate limiting for login attempts. (This includes password protected shared links)</li>
+                <li>Added task scheduling for background tasks, allowing a <abbr title="10 by default">maximum
+                        number</abbr> of concurrent tasks to be executed.
+                    <ul>
+                        <li>File hashing is now done as a task and can be configured to not run automatically on each
+                            upload.
+                        </li>
+                        <li>Requests to zip files have been moved to a task.</li>
+                        <li>Added administrative tasks like cleaning dangling files and sessions.</li>
+                    </ul>
+                </li>
+                <li>Download counts are now tracked for shared links.</li>
+            </ul>
+            <h4 class="ui dividing header">Improvements</h4>
+            <ul class="ui list">
+                <li>Updated dependencies, including Javalin to Version 6</li>
+                <li>Major refactoring of database related code including using Flyway for migrations.</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.7 - 12. December 2023
+        </div>
+        <div class="content">
             <h4 class="ui dividing header">New Features</h4>
             <ul class="ui list">
                 <li>Introduced adjustable hashing settings for administrators, enabling the option to hash files on

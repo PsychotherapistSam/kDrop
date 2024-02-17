@@ -36,7 +36,7 @@ class Configuration {
     }
 
     @JsonIgnore
-    var version = "v0.0.7"
+    var version = "v0.0.8"
 
     class Database {
         var host: String = "localhost"
