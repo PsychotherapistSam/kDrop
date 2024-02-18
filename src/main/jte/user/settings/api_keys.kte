@@ -1,0 +1,77 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.user.settings.UserEditPage
+@import de.sam.base.pages.admin.AdminUserEditPage
+@import de.sam.base.user.UserRoles
+@import de.sam.base.database.UserDTO
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
+@import de.sam.base.utils.currentUserDTO
+@import de.sam.base.utils.toReadableTimeString
+
+@param page: UserApiKeysSettingsPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <h1>Settings</h1>
+    @template.layout.user.settingsNavbar(page=page)
+    <div class="ui warning message">
+        <div class="header">
+            API Keys allow everyone with the key to upload and download files from your account.
+            Be careful who you share your keys with.
+        </div>
+    </div>
+    <div class="ui basic fitted segment"
+         _="${displayLoader}">
+        <table class="ui compact celled striped table" id="apiKeyTable">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Key</th>
+                <th class="collapsing">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(apiKey in page.apiKeys)
+                <tr>
+                    <td>${apiKey.createdAt.toReadableTimeString()}</td>
+                    <td>${apiKey.apiKey}</td>
+                    <td class="center aligned selectable negative"
+                        hx-delete="${UserApiKeysSettingsPage.ROUTE}"
+                        hx-include="next #apiKeyId"
+                        hx-target="#apiKeyTable"
+                        hx-select="#apiKeyTable"
+                        hx-swap="outerHTML">
+                        <p>Revoke</p>
+                    </td>
+                    <input type="hidden"
+                           id="apiKeyId"
+                           name="apiKeyId"
+                           value="${apiKey.id.toString()}"
+                    />
+                </tr>
+            @else
+                <tr>
+                    <td colspan="4" class="center aligned">
+                        No api keys found.
+                    </td>
+                </tr>
+            @endfor
+            </tbody>
+            <tfoot class="full-width">
+            <tr>
+                <th colspan="5">
+                    <div class="ui right floated secondary labeled compact icon button"
+                         hx-post="${UserApiKeysSettingsPage.ROUTE}"
+                         hx-target="#apiKeyTable"
+                         hx-select="#apiKeyTable"
+                         hx-swap="outerHTML">
+                        <i class="plus icon"></i> New Api Key
+                    </div>
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+`
+)

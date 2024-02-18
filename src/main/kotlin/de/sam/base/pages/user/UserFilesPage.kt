@@ -22,7 +22,6 @@ class UserFilesPage : Page(
 
     private val fileRepository: FileRepository by inject()
 
-
     lateinit var parent: FileDTO
 
     var fileDTOs = listOf<FileDTO>()

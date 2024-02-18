@@ -29,4 +29,29 @@ interface ApiKeyRepository : SqlRepository {
      * @return The [UserDTO] object corresponding to the given API key, or null if no user is found.
      */
     fun getUserForApiKey(apiKey: String): UserDTO?
+
+    /**
+     * Retrieves all API keys associated with a user by their user ID.
+     *
+     * @param userId The ID of the user.
+     * @return A list of [ApiKeyDTO] objects representing the API keys associated with the user.
+     */
+    fun getApiKeysForUser(userId: UUID): List<ApiKeyDTO>
+
+    /**
+     * Creates a new API key based on the provided [ApiKeyDTO].
+     *
+     * @param apiKey The API key details, including ID, API key string, associated user, and creation timestamp.
+     * @return The generated UUID for the newly created API key.
+     */
+    fun createApiKey(apiKey: ApiKeyDTO): ApiKeyDTO?
+
+    /**
+     * Deletes an API key with the given ID.
+     *
+     * @param apiKeyId The ID of the API key to delete.
+     * @return True if the API key is successfully deleted, false otherwise.
+     */
+    fun deleteApiKey(apiKeyId: UUID?)
+
 }

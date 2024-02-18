@@ -2,6 +2,7 @@
 @import de.sam.base.pages.user.settings.UserEditPage
 @import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 @import de.sam.base.pages.user.settings.UserTOTPSettingsPage
+@import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
 @import de.sam.base.user.UserRoles
 
 @param page: Page
@@ -18,6 +19,10 @@
     <a class="@if(page is UserLoginLogSettingsPage) active @endif item"
        href="${UserLoginLogSettingsPage.ROUTE}" hx-get="${UserLoginLogSettingsPage.ROUTE}">
         Login History
+    </a>
+    <a class="@if(page is UserApiKeysSettingsPage) active @endif item"
+       href="${UserApiKeysSettingsPage.ROUTE}" hx-get="${UserApiKeysSettingsPage.ROUTE}">
+        API Keys
     </a>
     @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
         <a class="right item"

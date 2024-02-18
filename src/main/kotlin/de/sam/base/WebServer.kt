@@ -14,6 +14,7 @@ import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.*
+import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
 import de.sam.base.pages.user.settings.UserEditPage
 import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 import de.sam.base.pages.user.settings.UserTOTPSettingsPage
@@ -109,6 +110,9 @@ class WebServer : KoinComponent {
                         post("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
                         delete("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
                         get("/loginHistory", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
+                        get("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
+                        post("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
+                        delete("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
                     }
                     path("/sessions") {
                         post("/revoke", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
