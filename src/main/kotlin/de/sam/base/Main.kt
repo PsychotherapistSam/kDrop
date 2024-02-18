@@ -2,6 +2,8 @@ package de.sam.base
 
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.PasswordHasher
+import de.sam.base.authentication.apikey.ApiKeyRepository
+import de.sam.base.authentication.apikey.ApiKeyRepositoryImpl
 import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.authentication.log.LoginLogRepositoryImpl
 import de.sam.base.captcha.Captcha
@@ -51,6 +53,7 @@ fun main() {
             single<FileRepository> { FileRepositoryImpl() }
             single<ShareRepository> { ShareRepositoryImpl() }
             single<UserRepository> { UserRepositoryImpl() }
+            single<ApiKeyRepository> { ApiKeyRepositoryImpl() }
             single { UserValidator() }
             single { PasswordHasher() }
             single { AuthenticationService() }
