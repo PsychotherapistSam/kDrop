@@ -1,5 +1,6 @@
 package de.sam.base.utils
 
+import de.sam.base.database.ApiKeyDTO
 import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.database.UserDTO
@@ -75,6 +76,10 @@ var Context.realIp: String
     get() = this.header("X-Forwarded-For")?.split(",")?.get(0) ?: this.ip()
     set(value) = throw UnsupportedOperationException("Cannot set ip")
 
+
+var Context.apiKeyUsed: ApiKeyDTO?
+    get() = this.sessionAttribute("apiKeyUsed")
+    set(apiKeyUsed) = this.sessionAttribute("apiKeyUsed", apiKeyUsed)
 
 fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
     // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph

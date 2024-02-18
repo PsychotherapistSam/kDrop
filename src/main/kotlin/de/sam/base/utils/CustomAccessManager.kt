@@ -83,6 +83,7 @@ class CustomAccessManager : KoinComponent {
                 when (it.httpStatus) {
                     HttpStatus.NOT_FOUND -> throw NotFoundResponse(it.errorMessage)
                     HttpStatus.FORBIDDEN -> throw ForbiddenResponse(it.errorMessage)
+                    HttpStatus.UNAUTHORIZED -> throw UnauthorizedResponse(it.errorMessage)
                     else -> throw InternalServerErrorResponse(it.errorMessage)
                 }
             }

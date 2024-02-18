@@ -1,8 +1,10 @@
 package de.sam.base.requirements
 
+import de.sam.base.authentication.apikey.ApiKeyRepository
 import de.sam.base.file.FileCache
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
+import de.sam.base.utils.apiKeyUsed
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
@@ -103,6 +105,24 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                 ctx.share = share
                 return true
             }
+        }
+    },
+    IS_VALID_API_KEY("Invalid API key.", HttpStatus.UNAUTHORIZED) {
+        override fun isMet(ctx: Context): Boolean {
+            val header = ctx.header("Authorization")
+
+            if (header.isNullOrBlank() || !header.startsWith("Bearer "))
+                return false
+
+            val apiKey = header.split(" ")[1]
+
+            val apiKeyRepository: ApiKeyRepository by inject()
+
+            val apiKeyDto = apiKeyRepository.getApiKeyByApiKey(apiKey)
+                ?: return false
+
+            ctx.apiKeyUsed = apiKeyDto
+            return true
         }
     },
     IS_IN_SETUP_STAGE("This page can not be found", HttpStatus.NOT_FOUND) {
