@@ -2,9 +2,15 @@
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.user.UserRegistrationPage
 @import de.sam.base.pages.user.UserLoginPage
+@import de.sam.base.utils.fileDTOFromId
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
 @import gg.jte.Content
+@import de.sam.base.database.FileDTO
+@import de.sam.base.database.ShareDTO
+@import de.sam.base.pages.user.UserSharePage
+@import de.sam.base.utils.*
+@import de.sam.base.utils.toReadableTimeString
 
 @param page: Page
 @param content: Content
@@ -31,6 +37,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     @if(page.pageDescription != null)
         <meta name="description" content="${page.pageDescription}">
+    @endif
+
+    @if(page is UserSharePage && !page.passwordRequired && page.file != null)
+        <meta property="og:title" content="${page.file!!.name} | ${page.config.name}"/>
+        <meta property="og:type" content="website">
+        <meta property="og:description"
+              content="${page.file!!.sizeHR} - ${page.file!!.created!!.toReadableTimeString()}"/>
+        <meta property="og:url" content="${page.ctx.url()}"/>
+
+        <meta name="twitter:card" content="summary_large_image">
+        <meta property="twitter:domain" content="${page.config.host}">
+        <meta property="twitter:url" content="${page.ctx.url()}">
+        <meta name="twitter:title" content="${page.file!!.name} | ${page.config.name}">
+        <meta name="twitter:description"
+              content="${page.file!!.sizeHR} - ${page.file!!.created!!.toReadableTimeString()}">
     @endif
 
 
