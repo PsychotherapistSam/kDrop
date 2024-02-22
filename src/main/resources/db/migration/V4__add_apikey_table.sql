@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE t_api_keys
 (
     id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
