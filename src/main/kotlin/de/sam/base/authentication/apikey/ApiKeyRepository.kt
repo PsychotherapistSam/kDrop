@@ -39,6 +39,14 @@ interface ApiKeyRepository : SqlRepository {
     fun getApiKeysForUser(userId: UUID): List<ApiKeyDTO>
 
     /**
+     * Checks if a user has any API keys associated with their user ID.
+     *
+     * @param userId The ID of the user.
+     * @return True if the user has API keys, false otherwise.
+     */
+    fun userHasApiKeys(userId: UUID): Boolean
+
+    /**
      * Creates a new API key based on the provided [ApiKeyDTO].
      *
      * @param apiKey The API key details, including ID, API key string, associated user, and creation timestamp.

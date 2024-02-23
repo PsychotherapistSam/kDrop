@@ -28,7 +28,6 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
         }
     },
     HAS_ACCESS_TO_FILE("This file does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
-
         override fun isMet(ctx: Context): Boolean {
             val fileCache: FileCache by inject()
 

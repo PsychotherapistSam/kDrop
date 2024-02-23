@@ -3,6 +3,7 @@
 @import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
 @import de.sam.base.pages.user.settings.UserTOTPSettingsPage
 @import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
+@import de.sam.base.pages.user.settings.UserIntegrationsSettingsPage
 @import de.sam.base.user.UserRoles
 
 @param page: Page
@@ -23,6 +24,10 @@
     <a class="@if(page is UserApiKeysSettingsPage) active @endif item"
        href="${UserApiKeysSettingsPage.ROUTE}" hx-get="${UserApiKeysSettingsPage.ROUTE}">
         API Keys
+    </a>
+    <a class="@if(page is UserIntegrationsSettingsPage) active @endif item"
+       href="${UserIntegrationsSettingsPage.ROUTE}" hx-get="${UserIntegrationsSettingsPage.ROUTE}">
+        Integrations
     </a>
     @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
         <a class="right item"

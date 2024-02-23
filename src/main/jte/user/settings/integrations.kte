@@ -1,0 +1,165 @@
+@import de.sam.base.Page
+@import de.sam.base.pages.user.settings.UserEditPage
+@import de.sam.base.pages.admin.AdminUserEditPage
+@import de.sam.base.user.UserRoles
+@import de.sam.base.database.UserDTO
+@import de.sam.base.pages.displayLoader
+@import de.sam.base.pages.user.settings.UserIntegrationsSettingsPage
+@import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
+@import de.sam.base.utils.currentUserDTO
+@import de.sam.base.utils.toReadableTimeString
+
+@param page: UserIntegrationsSettingsPage
+
+@template.layout.page(
+page = page,
+content = @`
+    <h1>Settings</h1>
+    @template.layout.user.settingsNavbar(page=page)
+    <div class="ui message">
+        <div class="header">
+            Most integrations require <a href="${UserApiKeysSettingsPage.ROUTE}"
+                                         hx-get="${UserApiKeysSettingsPage.ROUTE}"
+                                         hx-target="body">API Keys</a> to
+            work. Make sure to set up one beforehand.
+        </div>
+    </div>
+    <div class="ui basic fitted segment">
+        <h2>ShareX Integration Setup</h2>
+        @template.components.modal.folderPickerModal()
+        <div class="ui form" hx-include="this">
+            <input type="text" name="integration" value="sharex" hidden>
+            <div class="${if(page.userHasApiKeys)  "" else "disabled"} field">
+                <label>Target Folder</label>
+                <div class="ui compact left action input">
+                    <button class="ui button" id="select-folder" _="on click call showFilePickerModal()">Select Folder
+                    </button>
+                    <input type="text" name="upload-folder" placeholder="Choose a folder" readonly
+                           value="${page.shareXFolder?.name}">
+                    <input type="text" name="upload-folder-id" hidden value="${page.shareXFolder?.id?.toString()}">
+                </div>
+            </div>
+
+            @if(page.userHasApiKeys)
+                <button class="ui compact button" type="submit"
+                        hx-post="${UserIntegrationsSettingsPage.ROUTE}"
+                        hx-target="body"
+                        hx-swap="outerHTML">
+                    Save
+                </button>
+
+                @if(page.shareXFolder != null)
+                    <button class="ui compact red button">Disable</button>
+                @else
+                    <button class="ui compact disabled red button">Disable</button>
+                @endif
+            @else
+                <div class="ui message negative">
+                    <div class="header">
+                        No API Key found
+                    </div>
+                    <p>You need to create an API Key before you can use this integration.</p>
+                </div>
+            @endif
+            <script>
+                function selectFolder(id, name) {
+                    let isActive = $('#filePickerModal').modal('is active');
+                    if (isActive && id !== undefined && name !== undefined) {
+                        hideFilePickerModal();
+
+                        $('input[name="upload-folder"]').val(name);
+                        $('input[name="upload-folder-id"]').val(id);
+                    }
+                }
+            </script>
+            <%--            <div class="field">--%>
+            <%--                <label>API Key</label>--%>
+            <%--                <div class="ui selection dropdown">--%>
+            <%--                    <input type="hidden" name="api-key">--%>
+            <%--                    <i class="dropdown icon"></i>--%>
+            <%--                    <div class="default text">Select API Key</div>--%>
+            <%--                    <div class="menu">--%>
+            <%--                        @for(apiKey in page.apiKeys)--%>
+            <%--                            <div class="item" data="${apiKey.id.toString()}">${apiKey.apiKey}</div>--%>
+            <%--                        @endfor--%>
+            <%--                        <div class="item" data="0">Generate New Key</div>--%>
+            <%--                    </div>--%>
+            <%--                </div>--%>
+            <%--            </div>--%>
+            <%--            <div class="ui compact buttons">--%>
+            <%--                <button class="ui button" type="submit">Save</button>--%>
+            <%--                <button class="ui red button">Disable</button>--%>
+            <%--            </div>--%>
+        </div>
+        @if(page.errors.isNotEmpty())
+            <div class="ui error message">
+                <div class="header">
+                    Error while saving integration settings
+                </div>
+                <ul class="list">
+                    @for(error in page.errors)
+                        <li>${error}</li>
+                    @endfor
+                </ul>
+            </div>
+        @endif
+    </div>
+
+    <script>
+        $('.ui.dropdown')
+            .dropdown();
+    </script>
+<%--    <div class="ui basic fitted segment"--%>
+<%--         _="${displayLoader}">--%>
+<%--        <table class="ui compact celled striped table" id="apiKeyTable">--%>
+<%--            <thead>--%>
+<%--            <tr>--%>
+<%--                <th>Date</th>--%>
+<%--                <th>Key</th>--%>
+<%--                <th class="collapsing">Actions</th>--%>
+<%--            </tr>--%>
+<%--            </thead>--%>
+<%--            <tbody>--%>
+<%--            @for(apiKey in page.apiKeys)--%>
+<%--                <tr>--%>
+<%--                    <td>${apiKey.createdAt.toReadableTimeString()}</td>--%>
+<%--                    <td>${apiKey.apiKey}</td>--%>
+<%--                    <td class="center aligned selectable negative"--%>
+<%--                        hx-delete="${UserApiKeysSettingsPage.ROUTE}"--%>
+<%--                        hx-include="next #apiKeyId"--%>
+<%--                        hx-target="#apiKeyTable"--%>
+<%--                        hx-select="#apiKeyTable"--%>
+<%--                        hx-swap="outerHTML">--%>
+<%--                        <p>Revoke</p>--%>
+<%--                    </td>--%>
+<%--                    <input type="hidden"--%>
+<%--                           id="apiKeyId"--%>
+<%--                           name="apiKeyId"--%>
+<%--                           value="${apiKey.id.toString()}"--%>
+<%--                    />--%>
+<%--                </tr>--%>
+<%--            @else--%>
+<%--                <tr>--%>
+<%--                    <td colspan="4" class="center aligned">--%>
+<%--                        No api keys found.--%>
+<%--                    </td>--%>
+<%--                </tr>--%>
+<%--            @endfor--%>
+<%--            </tbody>--%>
+<%--            <tfoot class="full-width">--%>
+<%--            <tr>--%>
+<%--                <th colspan="5">--%>
+<%--                    <div class="ui right floated secondary labeled compact icon button"--%>
+<%--                         hx-post="${UserApiKeysSettingsPage.ROUTE}"--%>
+<%--                         hx-target="#apiKeyTable"--%>
+<%--                         hx-select="#apiKeyTable"--%>
+<%--                         hx-swap="outerHTML">--%>
+<%--                        <i class="plus icon"></i> New Api Key--%>
+<%--                    </div>--%>
+<%--                </th>--%>
+<%--            </tr>--%>
+<%--            </tfoot>--%>
+<%--        </table>--%>
+<%--    </div>--%>
+`
+)

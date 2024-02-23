@@ -3,14 +3,15 @@
 @import de.sam.base.utils.toRecentTimeString
 
 @param files: List<FileDTO>
+@param isPicker: Boolean
 
-
-<table class="ui unstackable table">
+<table id="searchResultsTable" class="ui unstackable @if(isPicker) selectable @endif table">
     <tbody>
     @for(file in files)
-        <tr>
+        <tr data-id="${file.id.toString()}" data-name="${file.name}">
             <td style="word-break: break-all;">
-                <a href="/user/files/${file.id.toString()}" tabindex="${files.indexOf(file)+1}">
+                <a href="/user/files/${file.id.toString()}" target="${if (isPicker) "_blank" else ""}"
+                   tabindex="${files.indexOf(file)+1}">
                     @if(file.isFolder)
                         <i class="folder outline icon"></i>
                     @else
@@ -27,5 +28,17 @@
     @endfor
     </tbody>
 </table>
+
+@if(isPicker)
+    <script>
+        $('#searchResultsTable tbody tr').on('click', function () {
+            if ($(this).hasClass('active')) {
+                $(this).removeClass('active');
+            } else {
+                $(this).addClass('active').siblings().removeClass('active');
+            }
+        });
+    </script>
+@endif
 
 

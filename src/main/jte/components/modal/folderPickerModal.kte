@@ -1,0 +1,56 @@
+<div hx-ext="loading-states" class="ui small modal" id="filePickerModal">
+    <i class="close icon"></i>
+    <div class="header">
+        Search for a Folder to Select
+    </div>
+    <div class="content" data-loading-states>
+        <div class="ui fluid icon input">
+            <input name="q" type="text" placeholder="Type to search..." hx-get="/user/search?type=folder&isPicker=true"
+                   hx-trigger="keyup changed delay:250ms, search, load" hx-target="#search-results"
+                   tabindex="1">
+            <i class="search icon"></i>
+        </div>
+        <div class="ui basic fitted segment" data-loading-class="loading"
+             style="min-height: 150px; max-height: 350px; overflow-y: auto;" id="search-results">
+            <div class="ui placeholder segment">
+                <div class="ui icon header">
+                    <i class="search icon"></i>
+                    Enter a search term to begin
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui compact green approve button">Save</div>
+        <div class="ui compact cancel button">Cancel</div>
+    </div>
+</div>
+<script>
+
+
+    function showFilePickerModal() {
+        // check if modal is open
+        if ($('#filePickerModal').modal('is active')) {
+            return false;
+        }
+        $('#filePickerModal').modal({
+            duration: 250,
+            allowMultiple: false,
+            onApprove: function () {
+                $("#searchResultsTable tbody tr.active").each(function () {
+                    let id = $(this).data('id');
+                    let name = $(this).data('name');
+
+                    selectFolder(id, name);
+                });
+            }
+        }).modal('show');
+        // focus the search input
+        $('#filePickerModal').find("input[name=q]").first().focus()
+        return true;
+    }
+
+    function hideFilePickerModal() {
+        $('#filePickerModal').modal('hide');
+    }
+</script>

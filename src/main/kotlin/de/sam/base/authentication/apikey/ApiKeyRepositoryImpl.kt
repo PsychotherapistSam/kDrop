@@ -78,6 +78,22 @@ class ApiKeyRepositoryImpl : ApiKeyRepository {
         } ?: emptyList()
     }
 
+    override fun userHasApiKeys(userId: UUID): Boolean {
+        val sql = """
+            SELECT COUNT(*) FROM t_api_keys
+            WHERE user_id = CAST(:userId AS uuid);
+        """.trimIndent()
+
+        return executeWithExceptionHandling("checking if user has API keys") {
+            jdbi.withHandle<Boolean, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("userId", userId.toString())
+                    .mapTo<Int>()
+                    .one() > 0
+            }
+        } ?: false
+    }
+
     override fun createApiKey(apiKey: ApiKeyDTO): ApiKeyDTO? {
         val sql = """
             INSERT INTO t_api_keys (id, api_key, user_id, created_at)

@@ -14,10 +14,7 @@ import de.sam.base.pages.admin.AdminUserEditPage
 import de.sam.base.pages.admin.AdminUserViewPage
 import de.sam.base.pages.admin.AdminUsersPage
 import de.sam.base.pages.user.*
-import de.sam.base.pages.user.settings.UserApiKeysSettingsPage
-import de.sam.base.pages.user.settings.UserEditPage
-import de.sam.base.pages.user.settings.UserLoginLogSettingsPage
-import de.sam.base.pages.user.settings.UserTOTPSettingsPage
+import de.sam.base.pages.user.settings.*
 import de.sam.base.requirements.Requirement
 import de.sam.base.tasks.TaskController
 import de.sam.base.tasks.queue.TaskQueue
@@ -106,13 +103,19 @@ class WebServer : KoinComponent {
                     }, Requirement.IS_LOGGED_IN)
                     path("/settings") {
                         get("/", { UserEditPage().handle(it) }, UserRoles.USER)
-                        get("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
-                        post("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
-                        delete("/totp", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                        path("/totp") {
+                            get("/", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                            post("/", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                            delete("/", { UserTOTPSettingsPage().handle(it) }, UserRoles.USER)
+                        }
                         get("/loginHistory", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
-                        get("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
-                        post("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
-                        delete("/apiKeys", { UserApiKeysSettingsPage().handle(it) }, UserRoles.DEVELOPER)
+                        path("/apiKeys") {
+                            get("/", { UserApiKeysSettingsPage().handle(it) }, UserRoles.USER)
+                            post("/", { UserApiKeysSettingsPage().handle(it) }, UserRoles.USER)
+                            delete("/", { UserApiKeysSettingsPage().handle(it) }, UserRoles.USER)
+                        }
+                        get("/integrations", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
+                        post("/integrations", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
                     }
                     path("/sessions") {
                         post("/revoke", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
@@ -177,6 +180,11 @@ class WebServer : KoinComponent {
                             put("/", UserController()::updateUser, UserRoles.SELF, UserRoles.ADMIN)
                         }
                     }
+                    path("/integration") {
+                        path("/sharex") {
+                            post("/upload", FileController()::handleShareXUpload, Requirement.IS_VALID_API_KEY)
+                        }
+                    }
                     path("/files") {
                         path("/upload") {
                             get("/", FileController()::handleTUSUpload, UserRoles.USER)
@@ -188,7 +196,6 @@ class WebServer : KoinComponent {
                                 delete("/", FileController()::handleTUSUpload, UserRoles.USER)
                             }
                         }
-
                         put("/", FileController()::getFiles, UserRoles.USER)
                         delete("/", FileController()::deleteFiles, UserRoles.USER)
                         path("/{fileId}") {

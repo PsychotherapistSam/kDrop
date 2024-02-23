@@ -449,13 +449,32 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
      * @throws FileServiceException If an error occurs while searching for files.
      */
     override fun searchFiles(userId: UUID, query: String, limit: Int): List<FileDTO> {
-        val sql = """
-            SELECT * FROM t_files
-            WHERE owner = CAST(:owner AS uuid)
-            AND name ILIKE :query
-            AND is_root = false
-            LIMIT :limit;
-        """.trimIndent()
+        return searchFiles(userId, query, limit, "all")
+    }
+
+    override fun searchFiles(userId: UUID, query: String, limit: Int, type: String): List<FileDTO> {
+        val sql = when (type) {
+            "folder" -> {
+                """
+                    SELECT * FROM t_files
+                    WHERE owner = CAST(:owner AS uuid)
+                    AND name ILIKE :query
+                    AND is_root = false
+                    AND is_folder = true
+                    LIMIT :limit;
+                """.trimIndent()
+            }
+
+            else -> {
+                """
+                    SELECT * FROM t_files
+                    WHERE owner = CAST(:owner AS uuid)
+                    AND name ILIKE :query
+                    AND is_root = false
+                    LIMIT :limit;
+                """.trimIndent()
+            }
+        }
 
         return try {
             jdbi.withHandle<List<FileDTO>, Exception> { handle ->

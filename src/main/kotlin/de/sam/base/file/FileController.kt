@@ -1,20 +1,20 @@
 package de.sam.base.file
 
 import de.sam.base.authentication.PasswordHasher
+import de.sam.base.authentication.apikey.ApiKeyRepository
 import de.sam.base.config.Configuration
 import de.sam.base.database.FileDTO
+import de.sam.base.database.ShareDTO
 import de.sam.base.database.jdbi
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
 import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.tasks.types.files.HashFileTask
 import de.sam.base.tasks.types.files.ZipFilesTask
-import de.sam.base.utils.currentUserDTO
+import de.sam.base.user.integrations.IntegrationRepository
+import de.sam.base.utils.*
 import de.sam.base.utils.file.humanReadableByteCountBin
-import de.sam.base.utils.fileDTOFromId
 import de.sam.base.utils.logging.logTimeSpent
-import de.sam.base.utils.resultFile
-import de.sam.base.utils.share
 import de.sam.base.utils.string.isUUID
 import io.javalin.http.*
 import io.javalin.util.FileUtil
@@ -37,6 +37,7 @@ class FileController : KoinComponent {
     private val passwordHasher: PasswordHasher by inject()
     private val tusFileUploadSerivce: TusFileUploadService by inject()
     private val taskQueue: TaskQueue by inject()
+
 
     fun handleTUSUpload(ctx: Context) {
         val servletRequest = ctx.req()
@@ -451,19 +452,123 @@ class FileController : KoinComponent {
 
     fun performFileSearch(ctx: Context) {
         val query = ctx.queryParam("q")
+        val type = ctx.queryParam("type") ?: "all"
+        val isPicker = ctx.queryParam("isPicker") != null
 
         if (query.isNullOrBlank() || query.length < 3) {
             ctx.render("components/search/empty.kte")
             return
         }
 
-        val files = fileRepository.searchFiles(ctx.currentUserDTO!!.id, query.trim())
+        val files = fileRepository.searchFiles(ctx.currentUserDTO!!.id, query.trim(), type = type)
 
         if (files.isEmpty()) {
             ctx.render("components/search/failed.kte")
             return
         }
 
-        ctx.render("components/search/results.kte", Collections.singletonMap("files", files))
+        ctx.render("components/search/results.kte", mapOf("files" to files, "isPicker" to isPicker))
+    }
+
+    fun handleShareXUpload(ctx: Context) {
+        println("SHAREX UPLOAD WITH KEY: " + ctx.apiKeyUsed?.apiKey)
+
+        val apiKeyRepository: ApiKeyRepository by inject()
+
+        val user = apiKeyRepository.getUserForApiKey(ctx.apiKeyUsed!!.apiKey)
+        if (user == null) {
+            throw BadRequestResponse("Invalid API Key")
+        }
+
+        val integrationRepository: IntegrationRepository by inject()
+
+        val parentFile = integrationRepository.getShareXFolderForUser(user.id)
+
+        if (parentFile == null) {
+            ctx.status(400)
+            throw BadRequestResponse("No ShareX folder set")
+        }
+
+        val fileId = UUID.randomUUID()
+
+        val uploadedFile = ctx.uploadedFiles().first()
+
+        jdbi.useTransaction<Exception> { handle ->
+            val uploadFolder = File(config.fileDirectory)
+            if (!uploadFolder.exists()) {
+                uploadFolder.mkdir()
+            }
+            val uploadTempFolder = File(config.fileTempDirectory)
+            if (!uploadTempFolder.exists()) {
+                uploadTempFolder.mkdir()
+            }
+
+            val targetFile = File("${config.fileDirectory}/${fileId}")
+
+            logTimeSpent("downloading the file from the user") {
+                try {
+                    FileUtil.streamToFile(uploadedFile.content(), targetFile.path)
+                } catch (e: UploadNotFoundException) {
+                    throw BadRequestResponse("Upload not found")
+                }
+            }
+
+            if (!targetFile.exists()) {
+                Logger.error("Target file ${targetFile.path} could not be written")
+            } else {
+                Logger.debug("Target file ${targetFile.path} written")
+            }
+
+            val createdFile = fileRepository.createFile(
+                handle, FileDTO(
+                    id = fileId,
+                    name = uploadedFile.filename(),
+                    path = "upload/${UUID.randomUUID()}",
+                    mimeType = uploadedFile.contentType() ?: "application/octet-stream",
+                    parent = parentFile.id,
+                    owner = user.id,
+                    size = targetFile.length(),
+                    sizeHR = humanReadableByteCountBin(targetFile.length()),
+                    password = null,
+                    created = DateTime.now(),
+                    isFolder = false,
+                    isRoot = false,
+                    hash = null
+                )
+            )
+
+            if (config.hashing.enabled && config.hashing.onUpload) {
+                Logger.debug("Hashing file ${targetFile.path} since it was uploaded")
+                taskQueue.enqueueTask(HashFileTask(createdFile))
+            } else {
+                Logger.debug("Skipping hashing since it is disabled")
+            }
+
+            Logger.debug("Target file ${targetFile.path} moved")
+        }
+
+        Logger.debug("updating folder size during upload a singular file")
+        fileRepository.recalculateFolderSize(parentFile!!.id, user.id)
+
+        val share = shareRepository.createShare(
+            ShareDTO(
+                id = UUID.randomUUID(),
+                file = fileId,
+                user = user.id,
+                creationDate = DateTime.now(),
+                maxDownloads = null,
+                downloadCount = 0,
+                vanityName = null,
+                password = null
+            )
+        )
+
+        if (share == null) {
+            ctx.status(500).result("Failed to create share")
+            return
+        }
+
+        ctx.json(mapOf("url" to "${config.baseUrl}/s/${share.id}"))
+
     }
 }

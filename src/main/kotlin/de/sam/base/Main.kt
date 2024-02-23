@@ -19,6 +19,8 @@ import de.sam.base.tasks.queue.TaskQueue
 import de.sam.base.user.UserRepository
 import de.sam.base.user.UserRepositoryImpl
 import de.sam.base.user.UserValidator
+import de.sam.base.user.integrations.IntegrationRepository
+import de.sam.base.user.integrations.IntegrationRepositoryImpl
 import de.sam.base.utils.RateLimiter
 import de.sam.base.utils.session.Session
 import gg.jte.ContentType
@@ -54,6 +56,7 @@ fun main() {
             single<ShareRepository> { ShareRepositoryImpl() }
             single<UserRepository> { UserRepositoryImpl() }
             single<ApiKeyRepository> { ApiKeyRepositoryImpl() }
+            single<IntegrationRepository> { IntegrationRepositoryImpl() }
             single { UserValidator() }
             single { PasswordHasher() }
             single { AuthenticationService() }
