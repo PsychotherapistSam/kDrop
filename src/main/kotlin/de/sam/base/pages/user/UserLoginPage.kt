@@ -62,7 +62,10 @@ class UserLoginPage : Page(
 
             when (result) {
                 is AuthenticationResult.Success -> {
+                    ctx.req().changeSessionId() // prevent session fixation attacks
+
                     ctx.currentUserDTO = result.userDTO
+
 
                     val date = DateTime.now()
 
