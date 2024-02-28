@@ -28,13 +28,13 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun getFileById(fileID: UUID): FileDTO? {
         val sql = """
             SELECT * FROM t_files 
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         return try {
             jdbi.withHandle<FileDTO?, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("id", fileID.toString())
+                    .bind("id", fileID)
                     .mapTo<FileDTO>()
                     .findOne()
                     .getOrNull()
@@ -57,7 +57,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
         WITH RECURSIVE breadcrumb AS (
             SELECT *, 1 as depth
             FROM t_files
-            WHERE id = CAST(:id AS uuid)
+            WHERE id = :id
 
             UNION ALL
 
@@ -71,7 +71,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
         return try {
             jdbi.withHandle<List<FileDTO>, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("id", fileID.toString())
+                    .bind("id", fileID)
                     .mapTo<FileDTO>()
                     .list()
             }
@@ -90,8 +90,8 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
      */
     override fun getFolderContentForUser(folderId: UUID, userId: UUID): List<FileDTO> {
         val sql = """
-            SELECT * FROM t_files WHERE owner = CAST(:userId AS uuid) 
-            AND parent = CAST(:folderId AS uuid);
+            SELECT * FROM t_files WHERE owner = :userId 
+            AND parent = :folderId;
         """.trimIndent()
 
         return try {
@@ -120,13 +120,13 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun getRootFolderForUser(userId: UUID): FileDTO? {
         val sql = """
             SELECT * FROM t_files
-            WHERE owner = CAST(:owner AS uuid) AND is_root = TRUE;
+            WHERE owner = :owner AND is_root = TRUE;
         """.trimIndent()
 
         return try {
             jdbi.withHandle<FileDTO?, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("owner", userId.toString())
+                    .bind("owner", userId)
                     .mapTo<FileDTO>()
                     .one()
             }
@@ -164,7 +164,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     private fun calculateFolderSize(folderId: UUID): Long {
 //        val sql = """
 //        WITH RECURSIVE file_tree AS (
-//            SELECT * FROM t_files WHERE parent = CAST(:id AS uuid)
+//            SELECT * FROM t_files WHERE parent = :id
 //            UNION ALL
 //            SELECT t_files.* FROM t_files, file_tree WHERE t_files.parent = file_tree.id
 //        )
@@ -172,12 +172,12 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
 //    """.trimIndent()
 
         val sql = """
-            SELECT SUM(size) FROM t_files WHERE parent = CAST(:id AS uuid);
+            SELECT SUM(size) FROM t_files WHERE parent = :id;
         """.trimIndent()
 
         return jdbi.withHandle<Long, Exception> { handle ->
             handle.createQuery(sql)
-                .bind("id", folderId.toString())
+                .bind("id", folderId)
                 .mapTo(Long::class.java)
                 .one()
                 .or(0)
@@ -188,13 +188,13 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
         val sql = """
             UPDATE t_files
             SET size = :size, size_hr = :size_hr, created = :created
-            WHERE id = CAST(:id AS uuid)
+            WHERE id = :id
             RETURNING *;
         """.trimIndent()
 
         return jdbi.withHandle<FileDTO?, Exception> { handle ->
             handle.createUpdate(sql)
-                .bind("id", folderId.toString())
+                .bind("id", folderId)
                 .bind("size", size)
                 .bind("size_hr", humanReadableByteCountBin(size))
                 .bind("created", created.toDate())
@@ -207,18 +207,18 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun createFile(handle: Handle, file: FileDTO): FileDTO {
         val sql = """
         INSERT INTO t_files (id, name, path, mime_type, parent, owner, size, size_hr, password, created, is_folder, hash, is_root)
-        VALUES (CAST(:id AS uuid), :name, :path, :mime_type, CAST(:parent AS uuid), CAST(:owner AS uuid), :size, :size_hr, :password, :created, :is_folder, :hash, :is_root)
+        VALUES (:id, :name, :path, :mime_type, :parent, :owner, :size, :size_hr, :password, :created, :is_folder, :hash, :is_root)
         RETURNING *;
     """.trimIndent()
 
         return try {
             handle.createUpdate(sql)
-                .bind("id", file.id.toString())
+                .bind("id", file.id)
                 .bind("name", file.name)
                 .bind("path", file.path)
                 .bind("mime_type", file.mimeType)
-                .bind("parent", file.parent?.toString())
-                .bind("owner", file.owner.toString())
+                .bind("parent", file.parent)
+                .bind("owner", file.owner)
                 .bind("size", file.size)
                 .bind("size_hr", file.sizeHR)
                 .bind("password", file.password)
@@ -262,21 +262,21 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun updateFile(handle: Handle, file: FileDTO): FileDTO? {
         val sql = """
             UPDATE t_files
-            SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
-                owner = CAST(:owner AS uuid), size = :size, size_hr = :size_hr, password = :password, 
+            SET name = :name, path = :path, mime_type = :mime_type, parent = :parent, 
+                owner = :owner, size = :size, size_hr = :size_hr, password = :password, 
                 created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
-            WHERE id = CAST(:id AS uuid)
+            WHERE id = :id
             RETURNING *;
         """.trimIndent()
 
         return try {
             handle.createUpdate(sql)
-                .bind("id", file.id.toString())
+                .bind("id", file.id)
                 .bind("name", file.name)
                 .bind("path", file.path)
                 .bind("mime_type", file.mimeType)
-                .bind("parent", file.parent?.toString())
-                .bind("owner", file.owner.toString())
+                .bind("parent", file.parent)
+                .bind("owner", file.owner)
                 .bind("size", file.size)
                 .bind("size_hr", file.sizeHR)
                 .bind("password", file.password)
@@ -296,10 +296,10 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun updateFilesBatch(files: List<FileDTO>) {
         val sql = """
             UPDATE t_files
-            SET name = :name, path = :path, mime_type = :mime_type, parent = CAST(:parent AS uuid), 
-                owner = CAST(:owner AS uuid), size = :size, size_hr = :size_hr, password = :password, 
+            SET name = :name, path = :path, mime_type = :mime_type, parent = :parent, 
+                owner = :owner, size = :size, size_hr = :size_hr, password = :password, 
                 created = :created, is_folder = :is_folder,hash = :hash, is_root = :is_root
-            WHERE id = CAST(:id AS uuid)
+            WHERE id = :id
         """.trimIndent()
 
         try {
@@ -307,12 +307,12 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                 handle.prepareBatch(sql).use { batch ->
                     files.forEach { file ->
                         batch
-                            .bind("id", file.id.toString())
+                            .bind("id", file.id)
                             .bind("name", file.name)
                             .bind("path", file.path)
                             .bind("mime_type", file.mimeType)
-                            .bind("parent", file.parent?.toString())
-                            .bind("owner", file.owner.toString())
+                            .bind("parent", file.parent)
+                            .bind("owner", file.owner)
                             .bind("size", file.size)
                             .bind("size_hr", file.sizeHR)
                             .bind("password", file.password)
@@ -387,7 +387,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
 
         return jdbi.withHandle<List<FileDTO>, Exception> { handle ->
             val conn = handle.jdbi.open().connection
-            val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it.toString() }.toTypedArray())
+            val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it }.toTypedArray())
 
             handle.createQuery(sql)
                 .bind(0, uuidArray)
@@ -405,13 +405,13 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
     override fun deleteFilesAndShares(fileIDs: List<UUID>): List<FileDTO> {
         val fileSql = """
             DELETE FROM t_files
-            WHERE id = ANY(CAST(:ids AS uuid[]))
+            WHERE id = ANY(:ids)
             RETURNING *;
         """.trimIndent()
 
         val sharesSql = """
             DELETE FROM t_shares
-            WHERE file = ANY(CAST(:ids AS uuid[]));
+            WHERE file = ANY(:ids);
         """.trimIndent()
 
         return try {
@@ -419,7 +419,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
 
             jdbi.useTransaction<Exception> { handle ->
                 val conn = handle.jdbi.open().connection
-                val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it.toString() }.toTypedArray())
+                val uuidArray = conn.createArrayOf("uuid", fileIDs.map { it }.toTypedArray())
 
                 // Delete shares
                 handle.createUpdate(sharesSql)
@@ -457,7 +457,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
             "folder" -> {
                 """
                     SELECT * FROM t_files
-                    WHERE owner = CAST(:owner AS uuid)
+                    WHERE owner = :owner
                     AND name ILIKE :query
                     AND is_root = false
                     AND is_folder = true
@@ -468,7 +468,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
             else -> {
                 """
                     SELECT * FROM t_files
-                    WHERE owner = CAST(:owner AS uuid)
+                    WHERE owner = :owner
                     AND name ILIKE :query
                     AND is_root = false
                     LIMIT :limit;
@@ -479,7 +479,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
         return try {
             jdbi.withHandle<List<FileDTO>, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("owner", userId.toString())
+                    .bind("owner", userId)
                     .bind("query", "%$query%")
                     .bind("limit", limit)
                     .mapTo<FileDTO>()

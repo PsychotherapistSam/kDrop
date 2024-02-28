@@ -142,14 +142,14 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
 
         val sql = """
             DELETE FROM t_users
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         Logger.debug("Deleting user $userId")
         return executeWithExceptionHandling("deleting user") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
-                    .bind("id", userId.toString())
+                    .bind("id", userId)
                     .execute()
             }
             true
@@ -205,13 +205,13 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
     override fun getUserById(it: UUID): UserDTO? {
         val sql = """
             SELECT * FROM t_users
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         return executeWithExceptionHandling("fetching user") {
             jdbi.withHandle<UserDTO?, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("id", it.toString())
+                    .bind("id", it)
                     .mapTo<UserDTO>()
                     .findOne()
                     .getOrNull()
@@ -277,14 +277,14 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         val sql = """
             UPDATE t_users
             SET last_login = :last_login
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         return executeWithExceptionHandling("updating last login time") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("last_login", dateTime.toDate())
-                    .bind("id", userId.toString())
+                    .bind("id", userId)
                     .execute()
             }
             true

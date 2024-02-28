@@ -12,7 +12,7 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
         val sql = """
             INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id)
-            VALUES (CAST(:id AS uuid), CAST(:user AS uuid), :ip, :userAgent, :date, :sessionId);
+            VALUES (:id, :user, :ip, :userAgent, :date, :sessionId);
         """.trimIndent()
 
         executeWithExceptionHandling("logging login for user $userId") {
@@ -32,13 +32,13 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun getLoginHistoryByUserId(userId: UUID): List<LoginLogDTO>? {
         val sql = """
             SELECT * FROM t_login_log
-            WHERE "user" = CAST(:userId AS uuid);
+            WHERE "user" = :userId;
         """.trimIndent()
 
         return executeWithExceptionHandling("fetching login logs for user $userId") {
             jdbi.withHandle<List<LoginLogDTO>, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("userId", userId.toString())
+                    .bind("userId", userId)
                     .mapTo(LoginLogDTO::class.java)
                     .list()
             }
@@ -48,14 +48,14 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun getLimitedLoginHistoryByUserId(userId: UUID, days: Int): List<LoginLogDTO>? {
         val sql = """
             SELECT * FROM t_login_log
-            WHERE "user" = CAST(:userId AS uuid)
+            WHERE "user" = :userId
             AND date > NOW() - INTERVAL '$days days';
         """.trimIndent()
 
         return executeWithExceptionHandling("fetching limited login logs for user $userId") {
             jdbi.withHandle<List<LoginLogDTO>, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("userId", userId.toString())
+                    .bind("userId", userId)
                     .mapTo(LoginLogDTO::class.java)
                     .list()
             }
@@ -65,13 +65,13 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun deleteAllLoginLogsForUser(userId: UUID) {
         val sql = """
             DELETE FROM t_login_log
-            WHERE "user" = CAST(:userId AS uuid);
+            WHERE "user" = :userId;
         """.trimIndent()
 
         executeWithExceptionHandling("deleting login logs for user $userId") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
-                    .bind("userId", userId.toString())
+                    .bind("userId", userId)
                     .execute()
             }
         }
@@ -97,13 +97,13 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun getLogById(id: UUID): LoginLogDTO? {
         val sql = """
             SELECT * FROM t_login_log
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         return executeWithExceptionHandling("fetching login logs for id $id") {
             jdbi.withHandle<LoginLogDTO?, Exception> { handle ->
                 handle.createQuery(sql)
-                    .bind("id", id.toString())
+                    .bind("id", id)
                     .mapTo(LoginLogDTO::class.java)
                     .findFirst()
                     .orElse(null)
@@ -114,13 +114,13 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun removeLogEntry(id: UUID) {
         val sql = """
             DELETE FROM t_login_log
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         executeWithExceptionHandling("deleting login log entry $id") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
-                    .bind("id", id.toString())
+                    .bind("id", id)
                     .execute()
             }
         }
@@ -129,24 +129,24 @@ class LoginLogRepositoryImpl : LoginLogRepository {
     override fun updateLoginLogEntry(loginLog: LoginLogDTO) {
         val sql = """
             UPDATE t_login_log
-            SET "user" = CAST(:user AS uuid),
+            SET "user" = :user,
                 ip = :ip,
                 user_agent = :userAgent,
                 date = :date,
                 session_id = :sessionId,
                 revoked = :revoked
-            WHERE id = CAST(:id AS uuid);
+            WHERE id = :id;
         """.trimIndent()
 
         executeWithExceptionHandling("updating login log entry ${loginLog.id}") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)
-                    .bind("user", loginLog.user.toString())
+                    .bind("user", loginLog.user)
                     .bind("ip", loginLog.ip)
                     .bind("userAgent", loginLog.userAgent)
                     .bind("date", loginLog.date.toDate())
                     .bind("sessionId", loginLog.sessionId)
-                    .bind("id", loginLog.id.toString())
+                    .bind("id", loginLog.id)
                     .bind("revoked", loginLog.revoked)
                     .execute()
             }
