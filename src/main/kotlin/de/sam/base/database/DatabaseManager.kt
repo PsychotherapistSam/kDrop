@@ -44,9 +44,13 @@ class DatabaseManager(private val config: Configuration) {
 
         val sqlLogger: SqlLogger = object : SqlLogger {
             override fun logAfterExecution(context: StatementContext) {
+                val sqlWithoutParameters = context.rawSql
+                    .replace("\n", " ")
+                    .replace(Regex("\\s+"), " ")
+
                 Logger.tag("database-query").info(
-                    "sql {}, parameters {}, timeTaken {} ms", context.renderedSql,
-                    context.binding.toString(), context.getElapsedTime(ChronoUnit.MILLIS)
+                    "Executed SQL: [{}], Execution Time: {} ms",
+                    sqlWithoutParameters, context.getElapsedTime(ChronoUnit.MILLIS)
                 )
             }
         }
