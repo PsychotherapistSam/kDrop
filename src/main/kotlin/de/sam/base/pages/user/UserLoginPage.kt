@@ -66,7 +66,6 @@ class UserLoginPage : Page(
 
                     ctx.currentUserDTO = result.userDTO
 
-
                     val date = DateTime.now()
 
                     loginLogRepository.logLoginForUserId(ctx, result.userDTO.id, date)

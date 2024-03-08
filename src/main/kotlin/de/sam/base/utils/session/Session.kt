@@ -15,7 +15,7 @@ class Session : KoinComponent {
 
     init {
         sessionHandler = SessionHandler().apply {
-            sessionCache = DefaultSessionCache(this).apply {
+            sessionCache = DefaultSessionCache(this).apply { // use NullSessionCache when running multiple instances
                 sessionDataStore = JDBCSessionDataStoreFactory().apply {
                     setDatabaseAdaptor(DatabaseAdaptor().apply {
                         datasource = hikariDataSource
