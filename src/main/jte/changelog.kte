@@ -10,9 +10,31 @@ content = @`
         <%-- _="on load add .active to the first <div.title/> then add .active to the first <div.content/>" --%>
         <div class="active title">
             <i class="dropdown icon"></i>
-            v0.0.8 - 17. February 2024
+            v0.0.9 - 08. March 2024
         </div>
         <div class="active content">
+            <h4 class="ui dividing header">Security</h4>
+            <ul class="ui list">
+                <li>Fixed <abbr title="Hijacking session IDs by obtaining them before the user logs in.">Session
+                        Fixation</abbr> vulnerability.
+                </li>
+            </ul>
+            <h4 class="ui dividing header">New Features</h4>
+            <ul class="ui list">
+                <li>Added API Keys.</li>
+                <li>Added a ShareX Integration for uploading files and then creating shares automatically.</li>
+                <li>Added Embeds (Twitter, Messengers etc.)</li>
+            </ul>
+            <h4 class="ui dividing header">Improvements</h4>
+            <ul class="ui list">
+                <li>Shares are now properly sorted in the Share List</li>
+            </ul>
+        </div>
+        <div class="title">
+            <i class="dropdown icon"></i>
+            v0.0.8 - 17. February 2024
+        </div>
+        <div class="content">
             <h4 class="ui dividing header">New Features</h4>
             <ul class="ui list">
                 <li>Allow users to view and revoke previous sessions.</li>
