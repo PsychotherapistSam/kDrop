@@ -46,18 +46,18 @@ class IntegrationRepositoryImpl : IntegrationRepository, KoinComponent {
         } != 0
     }
 
-    override fun disableShareXFolderForUser(userId: UUID) {
+    override fun disableShareXFolderForUser(userId: UUID): Boolean {
         val sql = """
             DELETE FROM t_sharex_integration
             WHERE user_id = :user_id;
         """.trimIndent()
 
-        executeWithExceptionHandling("disabling ShareX folder for user") {
+        return executeWithExceptionHandling("disabling ShareX folder for user") {
             jdbi.withHandle<Int, Exception> { handle ->
                 handle.createUpdate(sql)
                     .bind("user_id", userId)
                     .execute()
             }
-        }
+        } != null
     }
 }

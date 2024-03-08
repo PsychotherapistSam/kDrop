@@ -30,7 +30,6 @@ class UserIntegrationsSettingsPage : Page(
 
     override fun before() {
         userHasApiKeys = apiKeyRepository.getApiKeysForUser(ctx.currentUserDTO!!.id).isNotEmpty()
-
         shareXFolder = integrationRepository.getShareXFolderForUser(ctx.currentUserDTO!!.id)
     }
 
@@ -57,10 +56,37 @@ class UserIntegrationsSettingsPage : Page(
                 val result =
                     integrationRepository.setShareXFolderForUser(ctx.currentUserDTO!!.id, file.id)
 
+                shareXFolder = file
+
                 if (!result) {
                     errors.add("Failed to set ShareX folder")
                     return
                 }
+            }
+
+            else -> {
+                errors.add("Invalid integration")
+            }
+        }
+    }
+
+    override fun delete() {
+        val integration = ctx.formParam("integration")
+
+        when (integration) {
+            "sharex" -> {
+                val result = integrationRepository.disableShareXFolderForUser(ctx.currentUserDTO!!.id)
+
+                if (!result) {
+                    errors.add("Failed to remove ShareX folder")
+                    return
+                }
+
+                shareXFolder = null
+            }
+
+            else -> {
+                errors.add("Invalid integration")
             }
         }
     }

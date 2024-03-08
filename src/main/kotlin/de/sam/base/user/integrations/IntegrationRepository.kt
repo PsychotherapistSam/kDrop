@@ -26,6 +26,6 @@ interface IntegrationRepository : SqlRepository {
      *
      * @param userId The ID of the user.
      */
-    fun disableShareXFolderForUser(userId: UUID)
+    fun disableShareXFolderForUser(userId: UUID): Boolean
 
 }

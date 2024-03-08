@@ -114,8 +114,11 @@ class WebServer : KoinComponent {
                             post("/", { UserApiKeysSettingsPage().handle(it) }, UserRoles.USER)
                             delete("/", { UserApiKeysSettingsPage().handle(it) }, UserRoles.USER)
                         }
-                        get("/integrations", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
-                        post("/integrations", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
+                        path("/integrations") {
+                            get("/", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
+                            post("/", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
+                            delete("/", { UserIntegrationsSettingsPage().handle(it) }, UserRoles.USER)
+                        }
                     }
                     path("/sessions") {
                         post("/revoke", { UserLoginLogSettingsPage().handle(it) }, UserRoles.USER)
@@ -183,6 +186,7 @@ class WebServer : KoinComponent {
                     path("/integration") {
                         path("/sharex") {
                             post("/upload", FileController()::handleShareXUpload, Requirement.IS_VALID_API_KEY)
+                            get("/config", FileController()::generateShareXConfig, UserRoles.USER)
                         }
                     }
                     path("/files") {

@@ -471,9 +471,8 @@ class FileController : KoinComponent {
         ctx.render("components/search/results.kte", mapOf("files" to files, "isPicker" to isPicker))
     }
 
+    // API Key Authenticated
     fun handleShareXUpload(ctx: Context) {
-        println("SHAREX UPLOAD WITH KEY: " + ctx.apiKeyUsed?.apiKey)
-
         val apiKeyRepository: ApiKeyRepository by inject()
 
         val user = apiKeyRepository.getUserForApiKey(ctx.apiKeyUsed!!.apiKey)
@@ -570,6 +569,45 @@ class FileController : KoinComponent {
         }
 
         ctx.json(mapOf("url" to "${config.baseUrl}/s/${share.id}"))
+    }
 
+    fun generateShareXConfig(ctx: Context) {
+        val apiKeyRepository: ApiKeyRepository by inject()
+        val integrationRepository: IntegrationRepository by inject()
+        val user = ctx.currentUserDTO!!
+
+        val shareXFolder = integrationRepository.getShareXFolderForUser(user.id)
+
+        if (shareXFolder == null) {
+            ctx.status(400)
+            throw BadRequestResponse("No ShareX folder set")
+        }
+
+        val apiKey = apiKeyRepository.getApiKeysForUser(user.id).firstOrNull()
+
+        if (apiKey == null) {
+            ctx.status(400)
+            throw BadRequestResponse("No API Key created")
+        }
+
+        val shareXConfig = """
+            {
+                "Version": "14.1.0",
+                "Name": "${config.name} - File",
+                "DestinationType": "ImageUploader, TextUploader, FileUploader",
+                "RequestMethod": "POST",
+                "RequestURL": "${config.baseUrl}/api/v1/integration/sharex/upload",
+                "Headers": {
+                    "Authorization": "Bearer ${apiKey.apiKey}"
+                },
+                "URL": "{json:url}",
+                "Body": "MultipartFormData",
+                "FileFormName": "file"
+            }
+        """.trimIndent()
+
+        ctx.header("Content-Type", "application/json")
+        ctx.header("Content-Disposition", "attachment; filename=\"${config.name} - File.sxcu\"")
+        ctx.json(shareXConfig)
     }
 }
