@@ -1,5 +1,7 @@
 @import de.sam.base.pages.ErrorPage
 @import de.sam.base.pages.user.UserLoginPage
+@import de.sam.base.pages.user.UserTOTPValidatePage
+@import de.sam.base.utils.needsToVerifyTOTP
 
 @param page: ErrorPage
 
@@ -16,16 +18,20 @@ content = @`
                     </div>
                     <p>
                         ${page.e.message}
-                        @if(page.e.status == 401 && page.currentUserDTO == null)
-                            <br>You can log in <a href="${UserLoginPage.ROUTE}"
-                                                  hx-get="${UserLoginPage.ROUTE}"
-                                                  hx-target="body" hx-push-url="true">here</a>.
+                        @if(page.e.status == 401)
+                            @if(page.currentUserDTO == null)
+                                <br>You can log in <a href="${UserLoginPage.ROUTE}"
+                                                      hx-get="${UserLoginPage.ROUTE}"
+                                                      hx-target="body" hx-push-url="true">here</a>.
+                            @elseif(page.ctx.needsToVerifyTOTP)
+                                <br>You can do that <a href="${UserTOTPValidatePage.ROUTE}"
+                                                       hx-get="${UserTOTPValidatePage.ROUTE}"
+                                                       hx-target="body" hx-push-url="true">here</a>.
+                            @endif
                         @endif
                     </p>
-
                 </div>
             </div>
-
         </div>
     </div>
 `

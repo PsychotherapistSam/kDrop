@@ -24,6 +24,7 @@ import java.util.*
 enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : RouteRole, KoinComponent {
     IS_LOGGED_IN("You need to be logged in to access this resource.", HttpStatus.FORBIDDEN) {
         override fun isMet(ctx: Context): Boolean {
+            // not checking for TOTP here, because its used during TOTP validation
             return ctx.currentUserDTO != null
         }
     },

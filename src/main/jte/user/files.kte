@@ -44,7 +44,7 @@ content = @`
     </script>
 `,
 extraContent = @`
-    @if(page.currentUserDTO != null && page.parent.isFolder!!)
+    @if(page.ctx.isLoggedIn != null && page.parent.isFolder!!)
     <%--        @template.components.files.modals()--%>
     <%--        @template.components.files.fileListContextMenuComp(parent = page.parent)--%>
     @endif

@@ -92,6 +92,9 @@ class CustomAccessManager : KoinComponent {
 
         if (routeRolesMap.any { !it.special }) {
             if (!ctx.isLoggedIn) {
+                if (ctx.needsToVerifyTOTP) {
+                    throw UnauthorizedResponse("You need to verify your TOTP to access this resource.")
+                }
                 throw UnauthorizedResponse("You need to be logged in to access this resource.")
             }
 
