@@ -10,7 +10,8 @@ class ShareRepositoryImpl : ShareRepository {
     override fun getAllSharesForUser(userId: UUID): List<ShareDTO>? {
         val sql = """
             SELECT * FROM t_shares
-            WHERE "user" = :userId;
+            WHERE "user" = :userId
+            ORDER BY creation_date;
         """.trimIndent()
 
         return executeWithExceptionHandling("fetching shares for user $userId") {
