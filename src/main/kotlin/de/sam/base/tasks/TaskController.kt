@@ -11,6 +11,7 @@ import io.javalin.http.Context
 import io.javalin.http.sse.SseClient
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.tinylog.kotlin.Logger
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class TaskController : KoinComponent {
@@ -83,8 +84,8 @@ class TaskController : KoinComponent {
             }
         }
 
+        Logger.tag("Tasks").info("Task $param enqueued")
+
         ctx.redirect("/admin/task")
     }
-
-
 }

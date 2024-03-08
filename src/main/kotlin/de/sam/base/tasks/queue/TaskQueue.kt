@@ -80,7 +80,7 @@ class TaskQueue {
             )
         }
         if (taskQueue.trySend(taskWithStatus).isFailure) {
-            Logger.warn("Task queue is full. Task ${taskWithStatus.task.id} was not added.")
+            Logger.tag("Tasks").warn("Task queue is full. Task ${taskWithStatus.task.id} was not added.")
         }
         notifyTaskStatusChange()
     }

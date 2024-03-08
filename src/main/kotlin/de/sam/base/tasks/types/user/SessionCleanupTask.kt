@@ -10,7 +10,7 @@ import org.tinylog.kotlin.Logger
 class SessionCleanupTask : Task(name = "File hashing", concurrency = 1), KoinComponent {
     private val userRepository: UserRepository by inject()
     override suspend fun execute() {
-        Logger.warn("Cleaning up all sessions")
+        Logger.tag("Tasks").info("Cleaning up all sessions")
         userRepository.deleteAllSessions()
         delay(2000)
     }

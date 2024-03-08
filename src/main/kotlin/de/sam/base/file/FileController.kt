@@ -81,9 +81,9 @@ class FileController : KoinComponent {
                 }
 
                 if (!targetFile.exists()) {
-                    Logger.error("Target file ${targetFile.path} could not be written")
+                    Logger.tag("Web").error("Target file ${targetFile.path} could not be written")
                 } else {
-                    Logger.debug("Target file ${targetFile.path} written")
+                    Logger.tag("Web").debug("Target file ${targetFile.path} written")
                 }
 
                 val createdFile = fileRepository.createFile(
@@ -105,13 +105,13 @@ class FileController : KoinComponent {
                 )
 
                 if (config.hashing.enabled && config.hashing.onUpload) {
-                    Logger.debug("Hashing file ${targetFile.path} since it was uploaded")
+                    Logger.tag("Web").debug("Hashing file ${targetFile.path} since it was uploaded")
                     taskQueue.enqueueTask(HashFileTask(createdFile))
                 } else {
-                    Logger.debug("Skipping hashing since it is disabled")
+                    Logger.tag("Web").debug("Skipping hashing since it is disabled")
                 }
 
-                Logger.debug("Target file ${targetFile.path} moved")
+                Logger.tag("Web").debug("Target file ${targetFile.path} moved")
                 tusFileUploadSerivce.deleteUpload(uploadURI)
             }
 
@@ -121,11 +121,12 @@ class FileController : KoinComponent {
 
                 // do the calculation once when half of the files have been uploaded and once when the upload is finished
                 if (batchSize / 2 == currentIndex + 1 || batchSize == currentIndex + 1) {
-                    Logger.debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
+                    Logger.tag("Web")
+                        .debug("updating folder size during upload of batch ${currentIndex + 1}/${batchSize}")
                     fileRepository.recalculateFolderSize(parentFileId, userId)
                 }
             } else {
-                Logger.debug("updating folder size during upload a singular file")
+                Logger.tag("Web").debug("updating folder size during upload a singular file")
                 fileRepository.recalculateFolderSize(parentFileId, userId)
             }
         }
@@ -136,7 +137,7 @@ class FileController : KoinComponent {
     fun getSingleFile(ctx: Context) {
         val file = ctx.fileDTOFromId ?: fileRepository.getFileById(ctx.share!!.file)
         ?: throw NotFoundResponse("File not found") // if not throw an error
-            .also { Logger.error(it.message) }
+            .also { Logger.tag("Web").error(it.message) }
 
 
         val isShareRequest = ctx.share != null
@@ -231,7 +232,7 @@ class FileController : KoinComponent {
                             return@thread
                         }
                     }
-                    Logger.debug("deleted zip file")
+                    Logger.tag("Web").debug("deleted zip file")
                 }
             }?.exceptionally {
                 throw InternalServerErrorResponse("Zipping failed failed")
@@ -300,7 +301,7 @@ class FileController : KoinComponent {
         deletedFiles.forEach { file ->
             val systemFile = File("${config.fileDirectory}/${file.id}")
             if (systemFile.exists()) {
-                Logger.debug("Deleting file ${file.id}")
+                Logger.tag("Web").debug("Deleting file ${file.id}")
                 systemFile.delete()
             }
         }
@@ -309,7 +310,7 @@ class FileController : KoinComponent {
             if (parent != null) {
                 val parentFile = fileRepository.getFileById(parent)
                 if (parentFile != null && parentFile.isFolder) {
-                    Logger.debug("Recalculating folder size for ${parentFile.id}")
+                    Logger.tag("Web").debug("Recalculating folder size for ${parentFile.id}")
                     fileRepository.recalculateFolderSize(parentFile.id, userId)
                 }
             }
@@ -350,7 +351,7 @@ class FileController : KoinComponent {
         logTimeSpent("refreshing all moved files parents size") {
             oldParents.forEach { parent ->
                 if (parent != null) {
-                    Logger.debug("refreshing size of $parent")
+                    Logger.tag("Web").debug("refreshing size of $parent")
                     fileRepository.recalculateFolderSize(parent, user.id)
                 }
             }
@@ -514,9 +515,9 @@ class FileController : KoinComponent {
             }
 
             if (!targetFile.exists()) {
-                Logger.error("Target file ${targetFile.path} could not be written")
+                Logger.tag("Web").error("Target file ${targetFile.path} could not be written")
             } else {
-                Logger.debug("Target file ${targetFile.path} written")
+                Logger.tag("Web").debug("Target file ${targetFile.path} written")
             }
 
             val createdFile = fileRepository.createFile(
@@ -538,16 +539,16 @@ class FileController : KoinComponent {
             )
 
             if (config.hashing.enabled && config.hashing.onUpload) {
-                Logger.debug("Hashing file ${targetFile.path} since it was uploaded")
+                Logger.tag("Web").debug("Hashing file ${targetFile.path} since it was uploaded")
                 taskQueue.enqueueTask(HashFileTask(createdFile))
             } else {
-                Logger.debug("Skipping hashing since it is disabled")
+                Logger.tag("Web").debug("Skipping hashing since it is disabled")
             }
 
-            Logger.debug("Target file ${targetFile.path} moved")
+            Logger.tag("Web").debug("Target file ${targetFile.path} moved")
         }
 
-        Logger.debug("updating folder size during upload a singular file")
+        Logger.tag("Web").debug("updating folder size during upload a singular file")
         fileRepository.recalculateFolderSize(parentFile!!.id, user.id)
 
         val share = shareRepository.createShare(

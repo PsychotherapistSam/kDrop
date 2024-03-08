@@ -115,29 +115,29 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             }
             return userDTO
         } catch (e: UnableToExecuteStatementException) {
-            Logger.error("Unable to execute statement", e)
+            Logger.tag("Database").error("Unable to execute statement", e)
         } catch (e: SQLException) {
-            Logger.error("Database error", e)
+            Logger.tag("Database").error("Database error", e)
         } catch (e: Exception) {
-            Logger.error("Unexpected error", e)
+            Logger.tag("Database").error("Unexpected error", e)
         }
         return null
     }
 
     override fun deleteUser(userId: UUID): Boolean {
 //        shareService.deleteAllSharesForUser(userId)
-        Logger.debug("Deleting user data for $userId")
+        Logger.tag("Database").debug("Deleting user data for $userId")
 
-        Logger.debug("Deleting shares for user $userId")
+        Logger.tag("Database").debug("Deleting shares for user $userId")
         loginLogRepository.deleteAllLoginLogsForUser(userId)
 
-        Logger.debug("Deleting root folder and all files for user $userId")
+        Logger.tag("Database").debug("Deleting root folder and all files for user $userId")
         val rootFolder = fileRepository.getRootFolderForUser(userId)
             ?: throw Exception("Failed to get root folder for user $userId")
 
         FileController().deleteFileList(listOf(rootFolder.id), userId)
 
-        Logger.debug("Deleting orphaned files for user $userId")
+        Logger.tag("Database").debug("Deleting orphaned files for user $userId")
         fileRepository.deleteAllFilesFromUser(userId)
 
         val sql = """
@@ -145,7 +145,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
             WHERE id = :id;
         """.trimIndent()
 
-        Logger.debug("Deleting user $userId")
+        Logger.tag("Database").debug("Deleting user $userId")
         return executeWithExceptionHandling("deleting user") {
             jdbi.withHandle<Unit, Exception> { handle ->
                 handle.createUpdate(sql)

@@ -46,7 +46,8 @@ class UserFilesPage : Page(
         logTimeSpent("getting the files list") {
             if (parent.isFolder!!) {
                 if (!ctx.isLoggedIn) {
-                    Logger.debug("File not found: user not logged in due to parent = null and folder requiring a user")
+                    Logger.tag("Web")
+                        .debug("File not found: user not logged in due to parent = null and folder requiring a user")
                     throw NotFoundResponse("File not found")
                 }
                 logTimeSpent("getting the file list") {

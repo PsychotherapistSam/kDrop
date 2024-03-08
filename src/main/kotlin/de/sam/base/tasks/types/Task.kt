@@ -33,9 +33,9 @@ abstract class Task(
         this.description = description
         if (log) {
             when (logLevel) {
-                0 -> Logger.info(description)
-                1 -> Logger.warn(description)
-                2 -> Logger.error(description)
+                0 -> Logger.tag("Tasks").info(description)
+                1 -> Logger.tag("Tasks").warn(description)
+                2 -> Logger.tag("Tasks").error(description)
             }
         }
         pushUpdate()

@@ -45,7 +45,7 @@ class CustomAccessManager : KoinComponent {
             info.initDeviceScan()
             ctx.isMobileUser = info.isTierIphone
         }
-        Logger.debug("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
+        Logger.tag("Web").debug("detected useragent in in ${time.toDouble(DurationUnit.MILLISECONDS)}ms")
 
         if (config.enforceHost) {
             if (URI(ctx.url()).host != URI(config.host).host) {
@@ -77,9 +77,10 @@ class CustomAccessManager : KoinComponent {
             val (isMet, duration) = measureTimedValue {
                 it.isMet(ctx)
             }
-            Logger.debug("Requirement ${it.name} took ${duration.toDouble(DurationUnit.MILLISECONDS)} ms")
+            Logger.tag("Requirements")
+                .debug("Requirement ${it.name} took ${duration.toDouble(DurationUnit.MILLISECONDS)} ms")
             if (!isMet) {
-                Logger.debug("Requirement ${it.name} failed")
+                Logger.tag("Requirements").debug("Requirement ${it.name} failed")
                 when (it.httpStatus) {
                     HttpStatus.NOT_FOUND -> throw NotFoundResponse(it.errorMessage)
                     HttpStatus.FORBIDDEN -> throw ForbiddenResponse(it.errorMessage)

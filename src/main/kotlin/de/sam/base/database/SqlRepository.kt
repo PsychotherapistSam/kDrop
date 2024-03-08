@@ -9,13 +9,13 @@ interface SqlRepository {
         return try {
             block()
         } catch (e: UnableToExecuteStatementException) {
-            Logger.error("Unable to execute statement", e)
+            Logger.tag("Database").error("Unable to execute statement", e)
             null
         } catch (e: SQLException) {
-            Logger.error("Database error ${messageType?.let { "while $it" }}", e)
+            Logger.tag("Database").error("Database error ${messageType?.let { "while $it" }}", e)
             null
         } catch (e: Exception) {
-            Logger.error("Unexpected error ${messageType?.let { "while $it" }}", e)
+            Logger.tag("Database").error("Unexpected error ${messageType?.let { "while $it" }}", e)
             null
         }
     }

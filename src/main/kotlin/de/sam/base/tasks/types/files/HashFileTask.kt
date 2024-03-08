@@ -23,7 +23,7 @@ class HashFileTask(var file: FileDTO) : Task(name = "File hashing", concurrency 
             val systemFile = File("${config.fileDirectory}/${file.id}")
             val hash = Files.asByteSource(systemFile).hash(Hashing.sha512()).toString()
 
-            Logger.debug("File ${file.id} has hash $hash")
+            Logger.tag("Tasks").debug("File ${file.id} has hash $hash")
 
             file = file.copy(hash = hash)
 

@@ -48,7 +48,7 @@ class DatabaseManager(private val config: Configuration) {
                     .replace("\n", " ")
                     .replace(Regex("\\s+"), " ")
 
-                Logger.tag("database-query").info(
+                Logger.tag("Query").info(
                     "Executed SQL: [{}], Execution Time: {} ms",
                     sqlWithoutParameters, context.getElapsedTime(ChronoUnit.MILLIS)
                 )

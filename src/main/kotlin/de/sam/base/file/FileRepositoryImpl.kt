@@ -149,13 +149,15 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                 var folder: FileDTO? = getFileById(folderId)
 
                 while (folder != null) {
-                    Logger.debug("updating folder ${folder.name} which was ${folder.sizeHR}")
+                    Logger.tag("Database").debug("updating folder ${folder.name} which was ${folder.sizeHR}")
                     val size = calculateFolderSize(folder.id)
                     folder = updateFolderSize(folder.id, size, DateTime.now())
-                    Logger.debug("folder is now ${folder?.sizeHR}")
+                    Logger.tag("Database").debug("folder is now ${folder?.sizeHR}")
                     folder = folder?.parent?.let { getFileById(it) }
                 }
-            }.let { Logger.debug("refreshed filesize tree in ${it.toLong(DurationUnit.MILLISECONDS)}ms") }
+            }.let {
+                Logger.tag("Database").debug("refreshed filesize tree in ${it.toLong(DurationUnit.MILLISECONDS)}ms")
+            }
         } catch (e: Exception) {
             throw FileServiceException("Error recalculating folder size for folder with ID $folderId", e)
         }

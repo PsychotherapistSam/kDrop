@@ -34,19 +34,19 @@ import java.io.File
 fun main() {
     val configFile = File("./config.yml")
     if (!configFile.exists()) {
-        Logger.warn("Config file not found, creating new one with defaults")
+        Logger.tag("Config").warn("Config file not found, creating new one with defaults")
         Configuration.saveToFile(configFile)
     }
     val config = Configuration.fromFile(configFile)
 
     org.tinylog.configuration.Configuration.set("writer.level", config.logLevel)
-    Logger.info("Log Level: " + config.logLevel)
-    Logger.debug("Loaded config file")
+    Logger.tag("Logger").info("Log Level: " + config.logLevel)
+    Logger.tag("Config").debug("Loaded config file")
 
-    Logger.debug("Starting database connection")
+    Logger.tag("Database").debug("Starting database connection")
     DatabaseManager(config).start()
 
-    Logger.debug("Starting koin")
+    Logger.tag("Koin").debug("Starting koin")
     startKoin {
         modules(module {
             single { config }
@@ -85,7 +85,7 @@ fun main() {
         })
     }
 
-    Logger.debug("Starting webserver")
+    Logger.tag("Web").debug("Starting webserver")
     WebServer().start()
-    Logger.info("Started Successfully")
+    Logger.tag("Generic").info("Started Successfully")
 }

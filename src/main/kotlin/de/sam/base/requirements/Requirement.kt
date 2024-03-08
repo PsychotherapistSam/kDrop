@@ -54,12 +54,12 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                     fileCache.remove(fileId)
                 }
 
-                logTimeSpent("Getting file by id") {
+                logTimeSpent("Getting file by id", "Requirements") {
                     val fileRepository: FileRepository by inject()
                     val fileDTO = fileRepository.getFileById(fileId)
 
                     if (fileDTO != null) {
-                        Logger.trace("Setting fileDTO and DAO to request attribute")
+                        Logger.tags("Requirements").trace("Setting fileDTO and DAO to request attribute")
                         ctx.fileDTOFromId = fileDTO
                         fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO)
                     }
@@ -71,7 +71,7 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
             }
 
             if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
-                Logger.error("File not found: access manager")
+                Logger.tags("Requirements").error("File not found: access manager")
                 return false
             }
 
@@ -83,7 +83,7 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
             val shareId = ctx.pathParamAsClass<String>("shareId").get()
             val shareRepository: ShareRepository by inject()
 
-            logTimeSpent("Getting share by id") {
+            logTimeSpent("Getting share by id", "Requirements") {
                 val share =
                     if (shareId.isUUID)
                         shareRepository.getShareById(UUID.fromString(shareId))
@@ -91,16 +91,16 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                         shareRepository.getShareByName(shareId) ?: return false
 
                 if (share == null) {
-                    Logger.info("Share not found: access manager (actually not found)")
+                    Logger.tags("Requirements").info("Share not found: access manager (actually not found)")
                     return false
                 }
 
                 if (ctx.method() == HandlerType.DELETE && ctx.currentUserDTO?.id != share.user) {
-                    Logger.info("Share not found: access manager (user not owner)")
+                    Logger.tags("Requirements").info("Share not found: access manager (user not owner)")
                     return false
                 }
 
-                Logger.trace("Setting shareDTO and DAO to request attribute")
+                Logger.tags("Requirements").trace("Setting shareDTO and DAO to request attribute")
                 ctx.share = share
                 return true
             }

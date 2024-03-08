@@ -48,7 +48,7 @@ class WebServer : KoinComponent {
     private val taskController: TaskController by inject()
 
     fun start() {
-        Logger.debug("Creating javalin app")
+        Logger.tag("Web").debug("Creating javalin app")
         val app = Javalin.create { javalinConfig ->
 
             javalinConfig.fileRenderer(JavalinJte(templateEngine))
@@ -62,7 +62,7 @@ class WebServer : KoinComponent {
             // TODO: javalinConfig.registerPlugin(RouteOverviewPlugin("/admin/routes", UserRoles.ADMIN))
 
             javalinConfig.requestLogger.http { ctx, timeInMs ->
-                Logger.info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
+                Logger.tag("Web").info("${ctx.method()} ${ctx.path()} ${ctx.status()} ${timeInMs}ms")
             }
 
             javalinConfig.staticFiles.add {
@@ -76,7 +76,7 @@ class WebServer : KoinComponent {
             val jackson = JavalinJackson.defaultMapper().apply { registerModule(JodaModule()) }
             javalinConfig.jsonMapper(JavalinJackson(jackson))
 
-            Logger.debug("Registering Page routes")
+            Logger.tag("Web").debug("Registering Page routes")
             javalinConfig.router.apiBuilder {
                 before("*") { ctx ->
                     ctx.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
@@ -167,7 +167,7 @@ class WebServer : KoinComponent {
             }
 
             // https://stackoverflow.com/a/7260540
-            Logger.debug("Registering API routes")
+            Logger.tag("Web").debug("Registering API routes")
             javalinConfig.router.apiBuilder {
                 path("/api/v1") {
                     path("/session") {
@@ -247,10 +247,10 @@ class WebServer : KoinComponent {
 
         app.beforeMatched(CustomAccessManager()::manage)
 
-        Logger.debug("Registering Task Queue Handler")
+        Logger.tag("Web").debug("Registering Task Queue Handler")
         taskQueue.onTaskStatusChange = taskController.onTaskStatusChange
 
-        Logger.debug("Registering Javalin exception handlers")
+        Logger.tag("Web").debug("Registering Javalin exception handlers")
         app.exception(HttpResponseException::class.java) { e, ctx ->
             if (e is InternalServerErrorResponse) {
                 Logger.error(e.message)
@@ -268,8 +268,8 @@ class WebServer : KoinComponent {
         }
         // register general error handler
         app.exception(Exception::class.java) { e, ctx ->
-            Logger.error(e)
-            Logger.error(e.message)
+            Logger.tag("Web").error(e)
+            Logger.tag("Web").error(e.message)
             ctx.status(500)
             ctx.json(arrayOf(e.message))
         }
