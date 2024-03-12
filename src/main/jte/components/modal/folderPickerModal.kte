@@ -1,10 +1,10 @@
-<div hx-ext="loading-states" class="ui small modal" id="filePickerModal">
+<div class="ui small modal" id="filePickerModal">
     <i class="close icon"></i>
     <div class="header">
         Select a folder
     </div>
 
-    <div class="ui basic vertically fitted segment"
+    <div class="ui basic vertically fitted scrolling segment"
          hx-get="/user/folderTree"
          hx-trigger="intersect">
     </div>
