@@ -4,6 +4,7 @@ import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
 import de.sam.base.file.repository.FileRepository
+import de.sam.base.file.sorting.FileSortingDirection
 import de.sam.base.utils.file.humanReadableByteCountBin
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
@@ -564,23 +565,29 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
             SELECT * FROM t_files WHERE owner = :owner AND is_folder = TRUE;            
         """.trimIndent()
 
+        val sorter = FileSortingDirection.sortDirections[0]
+
         val folders = try {
             jdbi.withHandle<List<FileDTO>, Exception> { handle ->
                 handle.createQuery(sql)
                     .bind("owner", userId)
                     .mapTo<FileDTO>()
                     .list()
+                    .sortedWith(sorter::compare)
             }
         } catch (e: Exception) {
             throw FileServiceException("Error fetching folder tree structure for user with ID $userId", e)
         }
 
-        val folderMap = folders.associateBy { it.id }.mapValues { (id, folder) ->
-            FolderTreeStructure(folder.name, id, mutableListOf())
-        }
+        val folderMap = folders
+            .associateBy { it.id }
+            .mapValues { (id, folder) ->
+                FolderTreeStructure("${folder.name} (${folder.sizeHR})", id, mutableListOf())
+            }
 
         fun addChildrenToFolder(folderStructure: FolderTreeStructure) {
             val children = folders.filter { it.parent == folderStructure.id }
+
             for (child in children) {
                 val childStructure = folderMap[child.id]!!
                 addChildrenToFolder(childStructure)
