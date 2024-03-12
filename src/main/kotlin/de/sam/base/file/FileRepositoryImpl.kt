@@ -582,7 +582,7 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
         val folderMap = folders
             .associateBy { it.id }
             .mapValues { (id, folder) ->
-                FolderTreeStructure("${folder.name} (${folder.sizeHR})", id, mutableListOf())
+                FolderTreeStructure(folder.name, id, mutableListOf())
             }
 
         fun addChildrenToFolder(folderStructure: FolderTreeStructure) {
