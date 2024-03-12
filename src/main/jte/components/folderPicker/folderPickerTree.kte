@@ -1,0 +1,32 @@
+@import de.sam.base.file.FolderTreeStructure
+@import java.util.UUID
+
+@param folderStructure: FolderTreeStructure
+
+@template.components.folderPicker.folderPickerTreeElement(root = true, folderStructure = folderStructure)
+<script>
+    var selectedFolder = null;
+    var selectedFolderId = null;
+    var selectedFolderName = null;
+
+    $('.ui.accordion').accordion({
+        exclusive: false,
+        onOpening: function () {
+            $(selectedFolder).prev().removeClass('selected');
+            selectedFolder = this;
+            selectedFolderId = $(this).prev().attr('data-id');
+            selectedFolderName = $(this).prev().text();
+            $(this).prev().addClass('selected');
+
+            if ($(this).find('.title').length === 0) {
+                throw new Error('No children');
+            }
+        }
+    });
+</script>
+
+<style>
+    .selected {
+        background-color: #f0f0f0;
+    }
+</style>

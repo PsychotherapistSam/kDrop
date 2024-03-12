@@ -1,6 +1,7 @@
 package de.sam.base.file.repository
 
 import de.sam.base.database.FileDTO
+import de.sam.base.file.FolderTreeStructure
 import org.jdbi.v3.core.Handle
 import java.util.*
 
@@ -22,4 +23,5 @@ interface FileRepository {
     fun deleteAllFilesFromUser(userId: UUID)
     fun countTotalFiles(): Int
     fun getFilesWithoutHashes(): List<FileDTO>
+    fun getFolderTreeStructure(userId: UUID): FolderTreeStructure
 }

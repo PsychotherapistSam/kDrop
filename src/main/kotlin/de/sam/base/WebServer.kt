@@ -125,6 +125,7 @@ class WebServer : KoinComponent {
                     }
                     get("/shares", { UserSharesPage().handle(it) }, UserRoles.USER)
                     get("/search", FileController()::performFileSearch, UserRoles.USER)
+                    get("/folderTree", FileController()::getFolderTree, UserRoles.USER)
                     path("/files") {
                         get(
                             "/",

@@ -1,0 +1,21 @@
+@import de.sam.base.file.FolderTreeStructure
+@import java.util.*
+
+@param root: Boolean
+@param folderStructure: FolderTreeStructure
+
+!{val rootClass = if(root) "ui compact tree accordion" else "accordion"}
+
+<div class="${rootClass}">
+    @for(folder in folderStructure.folders)
+        <div class="title" data-id="${folder.id.toString()}">
+            <i class="dropdown icon"></i>
+            ${folder.name}
+        </div>
+        <div class="content">
+            @if(folder.folders.isNotEmpty())
+                @template.components.folderPicker.folderPickerTreeElement(root = false, folderStructure = folder)
+            @endif
+        </div>
+    @endfor
+</div>

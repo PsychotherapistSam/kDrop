@@ -551,4 +551,47 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
             throw FileServiceException("Could not fetch files without hashes", e)
         }
     }
+
+    /**
+     * Retrieves the folder tree structure for a specific user.
+     *
+     * @param userId The ID of the user.
+     * @return A [FolderTreeStructure] object representing the folder tree structure.
+     * @throws FileServiceException If there is an error retrieving the folder tree structure.
+     */
+    override fun getFolderTreeStructure(userId: UUID): FolderTreeStructure {
+        val sql = """
+            SELECT * FROM t_files WHERE owner = :owner AND is_folder = TRUE;            
+        """.trimIndent()
+
+        val folders = try {
+            jdbi.withHandle<List<FileDTO>, Exception> { handle ->
+                handle.createQuery(sql)
+                    .bind("owner", userId)
+                    .mapTo<FileDTO>()
+                    .list()
+            }
+        } catch (e: Exception) {
+            throw FileServiceException("Error fetching folder tree structure for user with ID $userId", e)
+        }
+
+        val folderMap = folders.associateBy { it.id }.mapValues { (id, folder) ->
+            FolderTreeStructure(folder.name, id, mutableListOf())
+        }
+
+        fun addChildrenToFolder(folderStructure: FolderTreeStructure) {
+            val children = folders.filter { it.parent == folderStructure.id }
+            for (child in children) {
+                val childStructure = folderMap[child.id]!!
+                addChildrenToFolder(childStructure)
+                folderStructure.folders = (folderStructure.folders + childStructure).toMutableList()
+            }
+        }
+
+        val rootFolder = folders.find { it.isRoot == true }!!
+        val rootFolderStructure = folderMap[rootFolder.id]!!
+        addChildrenToFolder(rootFolderStructure)
+
+        return rootFolderStructure
+    }
 }

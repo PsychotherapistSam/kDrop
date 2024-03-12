@@ -471,6 +471,13 @@ class FileController : KoinComponent {
         ctx.render("components/search/results.kte", mapOf("files" to files, "isPicker" to isPicker))
     }
 
+    fun getFolderTree(ctx: Context) {
+        val folderStructure = fileRepository.getFolderTreeStructure(ctx.currentUserDTO!!.id)
+
+        ctx.render("components/folderPicker/folderPickerTree.kte", mapOf("folderStructure" to folderStructure))
+        return
+    }
+
     // API Key Authenticated
     fun handleShareXUpload(ctx: Context) {
         val apiKeyRepository: ApiKeyRepository by inject()
