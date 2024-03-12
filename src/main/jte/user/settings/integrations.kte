@@ -24,6 +24,9 @@ content = @`
             work. Make sure to set up one beforehand.
         </div>
     </div>
+
+    @template.components.messageDisplay(messages = page.messages)
+
     <div class="ui basic fitted segment">
         <h2>ShareX Integration Setup</h2>
         @template.components.modal.folderPickerModal()
@@ -96,18 +99,6 @@ content = @`
             <%--                <button class="ui red button">Disable</button>--%>
             <%--            </div>--%>
         </div>
-        @if(page.errors.isNotEmpty())
-            <div class="ui error message">
-                <div class="header">
-                    Error while saving integration settings
-                </div>
-                <ul class="list">
-                    @for(error in page.errors)
-                        <li>${error}</li>
-                    @endfor
-                </ul>
-            </div>
-        @endif
     </div>
 
     <script>

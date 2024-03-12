@@ -1,0 +1,16 @@
+@param messages: MutableList<Triple<String, String, String>>
+
+@if(messages.isNotEmpty())
+    @for(message in messages)
+        <div class="ui message ${message.first}">
+            <div class="header">
+                @if(message.first == "error")
+                    Error
+                @else
+                    Success
+                @endif
+            </div>
+            <p>${message.second}</p>
+        </div>
+    @endfor
+@endif

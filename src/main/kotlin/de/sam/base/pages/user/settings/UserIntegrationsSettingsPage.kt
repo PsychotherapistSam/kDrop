@@ -24,15 +24,14 @@ class UserIntegrationsSettingsPage : Page(
 
     var userHasApiKeys = false
 
-    var errors: MutableList<String> = mutableListOf()
-
     var shareXFolder: FileDTO? = null
+
+    var messages = mutableListOf<Triple<String, String, String>>()
 
     override fun before() {
         userHasApiKeys = apiKeyRepository.getApiKeysForUser(ctx.currentUserDTO!!.id).isNotEmpty()
         shareXFolder = integrationRepository.getShareXFolderForUser(ctx.currentUserDTO!!.id)
     }
-
 
     override fun post() {
         val integration = ctx.formParam("integration")
@@ -42,30 +41,62 @@ class UserIntegrationsSettingsPage : Page(
                 val folderId = ctx.formParam("upload-folder-id")
 
                 if (!folderId.isUUID) {
-                    errors.add("Invalid folder ID")
+                    messages.add(
+                        Triple(
+                            "error",
+                            "Error while saving integration settings for ShareX",
+                            "Invalid folder ID"
+                        )
+                    )
                     return
                 }
 
                 val file = fileRepository.getFileById(UUID.fromString(folderId))
 
                 if (file == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
-                    errors.add("Folder not found")
+                    messages.add(
+                        Triple(
+                            "error",
+                            "Error while saving integration settings for ShareX",
+                            "Folder not found"
+                        )
+                    )
                     return
                 }
 
-                val result =
+                var result =
                     integrationRepository.setShareXFolderForUser(ctx.currentUserDTO!!.id, file.id)
 
                 shareXFolder = file
 
                 if (!result) {
-                    errors.add("Failed to set ShareX folder")
+                    messages.add(
+                        Triple(
+                            "error",
+                            "Error while saving integration settings for ShareX",
+                            "Failed to set ShareX folder"
+                        )
+                    )
                     return
                 }
+
+                messages.add(
+                    Triple(
+                        "success",
+                        "Successfully saved integration settings for ShareX",
+                        "ShareX folder set successfully"
+                    )
+                )
             }
 
             else -> {
-                errors.add("Invalid integration")
+                messages.add(
+                    Triple(
+                        "Error while saving integration settings",
+                        "Failure",
+                        "Invalid integration"
+                    )
+                )
             }
         }
     }
@@ -78,15 +109,26 @@ class UserIntegrationsSettingsPage : Page(
                 val result = integrationRepository.disableShareXFolderForUser(ctx.currentUserDTO!!.id)
 
                 if (!result) {
-                    errors.add("Failed to remove ShareX folder")
+                    messages.add(
+                        Triple(
+                            "error",
+                            "Error while saving integration settings for ShareX",
+                            "Failed to remove ShareX folder"
+                        )
+                    )
                     return
                 }
-
                 shareXFolder = null
             }
 
             else -> {
-                errors.add("Invalid integration")
+                messages.add(
+                    Triple(
+                        "error",
+                        "Error while saving integration settings",
+                        "Invalid integration"
+                    )
+                )
             }
         }
     }
