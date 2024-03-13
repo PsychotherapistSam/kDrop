@@ -8,33 +8,35 @@
 
 @param page: Page
 
-<div class="ui secondary pointing menu" hx-target="body" hx-push-url="true">
-    <a class="@if(page is UserEditPage) active @endif item"
-       href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
-        General Settings
-    </a>
-    <a class="@if(page is UserTOTPSettingsPage) active @endif item"
-       href="${UserTOTPSettingsPage.ROUTE}" hx-get="${UserTOTPSettingsPage.ROUTE}">
-        TOTP
-    </a>
-    <a class="@if(page is UserLoginLogSettingsPage) active @endif item"
-       href="${UserLoginLogSettingsPage.ROUTE}" hx-get="${UserLoginLogSettingsPage.ROUTE}">
-        Login History
-    </a>
-    <a class="@if(page is UserApiKeysSettingsPage) active @endif item"
-       href="${UserApiKeysSettingsPage.ROUTE}" hx-get="${UserApiKeysSettingsPage.ROUTE}">
-        API Keys
-    </a>
-    <a class="@if(page is UserIntegrationsSettingsPage) active @endif item"
-       href="${UserIntegrationsSettingsPage.ROUTE}" hx-get="${UserIntegrationsSettingsPage.ROUTE}">
-        Integrations
-    </a>
-    @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
-        <a class="right item"
-           href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
-           hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
-           hx-target="body" hx-push-url="true">
-            View your Settings as Admin
+<div class="ui basic fitted horizontal scrolling segment">
+    <div class="ui secondary pointing menu" hx-target="body" hx-push-url="true">
+        <a class="@if(page is UserEditPage) active @endif item"
+           href="${UserEditPage.ROUTE}" hx-get="${UserEditPage.ROUTE}">
+            General Settings
         </a>
-    @endif
+        <a class="@if(page is UserTOTPSettingsPage) active @endif item"
+           href="${UserTOTPSettingsPage.ROUTE}" hx-get="${UserTOTPSettingsPage.ROUTE}">
+            TOTP
+        </a>
+        <a class="@if(page is UserLoginLogSettingsPage) active @endif item"
+           href="${UserLoginLogSettingsPage.ROUTE}" hx-get="${UserLoginLogSettingsPage.ROUTE}">
+            Login History
+        </a>
+        <a class="@if(page is UserApiKeysSettingsPage) active @endif item"
+           href="${UserApiKeysSettingsPage.ROUTE}" hx-get="${UserApiKeysSettingsPage.ROUTE}">
+            API Keys
+        </a>
+        <a class="@if(page is UserIntegrationsSettingsPage) active @endif item"
+           href="${UserIntegrationsSettingsPage.ROUTE}" hx-get="${UserIntegrationsSettingsPage.ROUTE}">
+            Integrations
+        </a>
+        @if(page.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN))
+            <a class="right item"
+               href="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+               hx-get="/admin/users/${page.currentUserDTO!!.id.toString()}/edit"
+               hx-target="body" hx-push-url="true">
+                View your Settings as Admin
+            </a>
+        @endif
+    </div>
 </div>
