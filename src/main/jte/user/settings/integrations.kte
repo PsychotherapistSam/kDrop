@@ -35,7 +35,7 @@ content = @`
             <div class="${if(page.userHasApiKeys)  "" else "disabled"} field">
                 <label>Target Folder</label>
                 <div class="ui compact left action input">
-                    <button class="ui button" id="select-folder" _="on click call showFilePickerModal()">Select Folder
+                    <button class="ui button" id="select-folder" _="on click call showFolderPickerModal()">Select Folder
                     </button>
                     <input type="text" name="upload-folder" placeholder="Choose a folder" readonly
                            value="${page.shareXFolder?.name}">
@@ -71,9 +71,9 @@ content = @`
             @endif
             <script>
                 function selectFolder(id, name) {
-                    let isActive = $('#filePickerModal').modal('is active');
+                    let isActive = $('#folderPickerModal').modal('is active');
                     if (isActive && id !== undefined && name !== undefined) {
-                        hideFilePickerModal();
+                        hideFolderPickerModal();
 
                         $('input[name="upload-folder"]').val(name);
                         $('input[name="upload-folder-id"]').val(id);

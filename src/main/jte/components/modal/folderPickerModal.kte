@@ -1,4 +1,4 @@
-<div class="ui small modal" id="filePickerModal">
+<div class="ui small modal" id="folderPickerModal">
     <i class="close icon"></i>
     <div class="header">
         Select a folder
@@ -15,21 +15,25 @@
     </div>
 </div>
 <script>
-    function showFilePickerModal() {
-        if ($('#filePickerModal').modal('is active')) {
+    function showFolderPickerModal(isNavigator = false) {
+        if ($('#folderPickerModal').modal('is active')) {
             return false;
         }
-        $('#filePickerModal').modal({
+        $('#folderPickerModal').modal({
             duration: 250,
             allowMultiple: false,
             onApprove: function () {
-                selectFolder(selectedFolderId, selectedFolderName.trim());
+                if (isNavigator) {
+                    window.location.href = '/user/files/' + selectedFolderId;
+                } else {
+                    selectFolder(selectedFolderId, selectedFolderName.trim());
+                }
             }
         }).modal('show');
         return true;
     }
 
-    function hideFilePickerModal() {
-        $('#filePickerModal').modal('hide');
+    function hideFolderPickerModal() {
+        $('#folderPickerModal').modal('hide');
     }
 </script>

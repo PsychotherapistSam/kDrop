@@ -454,7 +454,6 @@ class FileController : KoinComponent {
     fun performFileSearch(ctx: Context) {
         val query = ctx.queryParam("q")
         val type = ctx.queryParam("type") ?: "all"
-        val isPicker = ctx.queryParam("isPicker") != null
 
         if (query.isNullOrBlank() || query.length < 3) {
             ctx.render("components/search/empty.kte")
@@ -468,7 +467,7 @@ class FileController : KoinComponent {
             return
         }
 
-        ctx.render("components/search/results.kte", mapOf("files" to files, "isPicker" to isPicker))
+        ctx.render("components/search/results.kte", mapOf("files" to files))
     }
 
     fun getFolderTree(ctx: Context) {

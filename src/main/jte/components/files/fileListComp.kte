@@ -75,6 +75,10 @@
             <div class="ui secondary compact icon button" onclick="showSearchModal()">
                 <i class="search icon"></i>
             </div>
+            <div class="ui secondary compact icon button" onclick="showFolderPickerModal(true)">
+                <i class="sitemap icon"></i>
+            </div>
+            @template.components.modal.folderPickerModal()
         </div>
     </div>
     <table class="ui unstackable table context-bounds" id="fileTable">
