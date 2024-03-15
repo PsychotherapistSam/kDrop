@@ -75,6 +75,7 @@ class UserLoginPage : Page(
                         ctx.needsToVerifyTOTP = true
                         ctx.hxRedirect(UserTOTPValidatePage.ROUTE)
                     } else {
+                        ctx.needsToVerifyTOTP = false
                         ctx.hxRedirect(returnToUrl)
                     }
                 }
