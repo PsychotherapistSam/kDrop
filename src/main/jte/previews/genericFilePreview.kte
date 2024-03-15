@@ -30,47 +30,56 @@
             <h4 class="ui horizontal divider header">
                 Actions
             </h4>
+            <style>
+                .ui.spaced.buttons .ui.button {
+                    margin-bottom: 0;
+                }
+            </style>
             @if(share)
-                <div class="ui fluid stackable icon buttons">
-                    <a href="/user/files/${file.id.toString()}"
-                       target="_blank"
-                       class="ui icon button">
-                        <i class="ui share icon"></i>
-                        Go to my File
-                    </a>
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled icon button">
-                        <i class="ui pen icon"></i>
-                        Edit Share
-                    </a>
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled negative icon button">
-                        <i class="ui trash icon"></i>
-                        Delete Share
-                    </a>
+                <div class="ui basic fitted center aligned segment">
+                    <div class="ui wrapping spaced icon buttons">
+                        <a href="/user/files/${file.id.toString()}"
+                           target="_blank"
+                           class="ui icon button">
+                            <i class="ui share icon"></i>
+                            Go to my File
+                        </a>
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled icon button">
+                            <i class="ui pen icon"></i>
+                            Edit Share
+                        </a>
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled negative icon button">
+                            <i class="ui trash icon"></i>
+                            Delete Share
+                        </a>
+                    </div>
                 </div>
             @else
-                <div class="ui fluid icon buttons">
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled icon button">
-                        <i class="ui share icon"></i>
-                        Share File
-                    </a>
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled icon button">
-                        <i class="ui list icon"></i>
-                        View shares
-                    </a>
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled icon button">
-                        <i class="ui pen icon"></i>
-                        Edit File
-                    </a>
-                    <a href="/user/files/${file.id.toString()}"
-                       class="ui disabled negative icon button">
-                        <i class="ui trash icon"></i>
-                        Delete File
-                    </a>
+                <div class="ui basic fitted center aligned segment">
+                    <div class="ui wrapping spaced icon buttons">
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled icon button">
+                            <i class="ui share icon"></i>
+                            Share File
+                        </a>
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled icon button">
+                            <i class="ui list icon"></i>
+                            View shares
+                        </a>
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled icon button">
+                            <i class="ui pen icon"></i>
+                            Edit File
+                        </a>
+                        <a href="/user/files/${file.id.toString()}"
+                           class="ui disabled negative icon button">
+                            <i class="ui trash icon"></i>
+                            Delete File
+                        </a>
+                    </div>
                 </div>
             @endif
         </div>
