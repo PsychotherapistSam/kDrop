@@ -29,13 +29,13 @@ content = @`
         !{val typeString = if(currentIsFolder) "folder" else "file"}
         <div class="ui warning message">
             <div class="header">
-                This ${typeString} is publically accessible!
+                This ${typeString} is publicly accessible!
             </div>
-            This ${typeString} is publically accessible to all people who have access to the link.
+            This ${typeString} is publicly accessible to all people who have access to the link.
             @if(currentIsFolder)
                 All files or folders in this folder will inherit this access by default.
             @endif
-            You can change this behavior by setting the access of this ${typeString} to private.
+            You can change this behavior by removing the share.
         </div>
     @endif
 

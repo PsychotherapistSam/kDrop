@@ -25,8 +25,63 @@
         <i class="ui download icon"></i>
         Download
     </a>
-    @if(!ctx.isLoggedIn || ctx.preferencesString!!.split(",").contains("file-previews"))
+    @if(ctx.isLoggedIn && ctx.currentUserDTO!!.id == file.owner)
         <div class="ui basic fitted segment">
+            <h4 class="ui horizontal divider header">
+                Actions
+            </h4>
+            @if(share)
+                <div class="ui fluid stackable icon buttons">
+                    <a href="/user/files/${file.id.toString()}"
+                       target="_blank"
+                       class="ui icon button">
+                        <i class="ui share icon"></i>
+                        Go to my File
+                    </a>
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled icon button">
+                        <i class="ui pen icon"></i>
+                        Edit Share
+                    </a>
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled negative icon button">
+                        <i class="ui trash icon"></i>
+                        Delete Share
+                    </a>
+                </div>
+            @else
+                <div class="ui fluid icon buttons">
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled icon button">
+                        <i class="ui share icon"></i>
+                        Share File
+                    </a>
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled icon button">
+                        <i class="ui list icon"></i>
+                        View shares
+                    </a>
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled icon button">
+                        <i class="ui pen icon"></i>
+                        Edit File
+                    </a>
+                    <a href="/user/files/${file.id.toString()}"
+                       class="ui disabled negative icon button">
+                        <i class="ui trash icon"></i>
+                        Delete File
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    !{val typesWithPreview = listOf(FileType.PDF, FileType.JSON, FileType.PLAIN, FileType.VIDEO_MP4, FileType.AUDIO, FileType.IMAGE)}
+    @if((!ctx.isLoggedIn || ctx.preferencesString!!.split(",").contains("file-previews")) && typesWithPreview.contains(file.getTypeEnum()))
+        <div class="ui basic fitted segment">
+            <h4 class="ui horizontal divider header">
+                Preview
+            </h4>
             @if(file.getTypeEnum() == FileType.PDF)
             <object data="${fileUrl}" type="application/pdf"
                     style="overflow: hidden; height: 65vh; width: 100%; border: none;">
