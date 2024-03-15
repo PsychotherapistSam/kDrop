@@ -2,11 +2,11 @@ package de.sam.base.user
 
 import de.sam.base.authentication.PasswordHasher
 import de.sam.base.database.UserDTO
-import de.sam.base.utils.CacheInvalidation
 import de.sam.base.utils.currentUserDTO
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import de.sam.base.utils.preferences.Preferences
+import de.sam.base.utils.session.Session
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.UnauthorizedResponse
@@ -20,6 +20,8 @@ class UserController : KoinComponent {
     private val userValidatorNew: UserValidator by inject()
     private val userRepository: UserRepository by inject()
     private val passwordHasher: PasswordHasher by inject()
+    private val session: Session by inject()
+
     fun updateUser(ctx: Context) {
         val selectedUserDTO = ctx.attribute<UserDTO>("requestUserParameter")!!
 
@@ -95,7 +97,7 @@ class UserController : KoinComponent {
             if (isSelf) {
                 ctx.currentUserDTO = newUser
             }
-            CacheInvalidation.userTokens[selectedUserDTO.id] = System.currentTimeMillis()
+            session.forceUpdateUserSessionObject(selectedUserDTO.id, newUser)
         }
     }
 
@@ -107,7 +109,7 @@ class UserController : KoinComponent {
         }
 
         userRepository.deleteUser(selectedUserDTO.id)
-        CacheInvalidation.userTokens[selectedUserDTO.id] = System.currentTimeMillis()
+        session.invalidateAllSessions(selectedUserDTO.id)
     }
 
     fun getUserParameter(ctx: Context) {

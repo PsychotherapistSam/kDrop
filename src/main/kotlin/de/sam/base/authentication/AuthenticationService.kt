@@ -10,7 +10,6 @@ import java.util.*
 
 class AuthenticationService : KoinComponent {
     private val userRepository: UserRepository by inject()
-
     private val userValidator: UserValidator by inject()
     private val passwordHasher: PasswordHasher by inject()
 

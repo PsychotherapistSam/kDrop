@@ -53,25 +53,6 @@ class CustomAccessManager : KoinComponent {
             }
         }
 
-        // cache busting for sessions
-        if (ctx.isLoggedIn) {
-            val userId = ctx.currentUserDTO!!.id
-            val sessionToken = ctx.tokenTime ?: -1
-            val currentToken = CacheInvalidation.userTokens[userId] ?: -1
-
-            if (sessionToken < currentToken) {
-                val user = userRepository.getUserById(userId)
-                if (user == null) {
-                    ctx.currentUserDTO = null
-                    ctx.req().session.invalidate()
-                    return
-                }
-
-                ctx.currentUserDTO = user
-                ctx.tokenTime = currentToken
-            }
-        }
-
         val requirements = routeRoles.filterIsInstance<Requirement>()
         requirements.forEach {
             val (isMet, duration) = measureTimedValue {
