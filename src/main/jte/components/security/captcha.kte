@@ -1,14 +1,16 @@
-@import de.sam.base.config.Configuration
+@import de.sam.base.Page
+@import de.sam.base.captcha.Captcha
 
-@param location: String
-@param config: Configuration
+@param page: Page
 
-@if(config.captcha != null && config.captcha!!.locations.contains(location))
-    @if (config.captcha!!.service == "recaptcha")
+!{val captcha = page.captcha}
+
+@if(captcha.isActiveOnPage(page))
+    @if (captcha.activeService!!.service == "recaptcha")
         <div class="field">
-            <div class="g-recaptcha" data-sitekey="${config.captcha!!.siteKey}"></div>
+            <div class="g-recaptcha" data-sitekey="${captcha.activeService!!.siteKey}"></div>
         </div>
-    @elseif (config.captcha!!.service == "turnstile")
+    @elseif (captcha.activeService!!.service == "turnstile")
     <%-- Script needs to be manually invoked / ran like this, and can not be ran like recaptcha because of htmx --%>
         <div class="field">
             <div id="turnstile-container"></div>
@@ -16,7 +18,7 @@
         <script>
             turnstile.ready(function () {
                 turnstile.render('#turnstile-container', {
-                    sitekey: '${config.captcha!!.siteKey}',
+                    sitekey: '${captcha.activeService!!.siteKey}',
                     theme: 'light',
                 });
             });

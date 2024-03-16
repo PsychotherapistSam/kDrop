@@ -3,7 +3,6 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
-import de.sam.base.captcha.Captcha
 import de.sam.base.user.UserRoles
 import de.sam.base.utils.*
 import io.javalin.http.ForbiddenResponse
@@ -17,8 +16,6 @@ class UserRegistrationPage : Page(
     companion object {
         const val ROUTE: String = "/registration"
     }
-
-    private val captcha: Captcha by inject()
 
     private val authenticationService: AuthenticationService by inject()
 
@@ -57,7 +54,7 @@ class UserRegistrationPage : Page(
                 return@prolongAtLeast
             }
 
-            if (config.captcha != null && config.captcha!!.locations.contains("registration") && !canBypassCaptcha) {
+            if (!canBypassCaptcha && captcha.isActiveOnPage(this)) {
                 val captchaErrors = captcha.validate(ctx)
                 if (captchaErrors.isNotEmpty()) {
                     lastTryUsername = username ?: ""

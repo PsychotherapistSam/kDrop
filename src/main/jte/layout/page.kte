@@ -67,10 +67,10 @@
 
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
 
-    @if(page.config.captcha != null)
-        @if (page.config.captcha!!.service == "recaptcha")
+    @if(page.captcha.isActiveOnPage(page))
+        @if (page.captcha.activeService!!.service == "recaptcha")
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-        @elseif (page.config.captcha!!.service == "turnstile")
+        @elseif (page.captcha.activeService!!.service == "turnstile")
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
         @endif
     @endif

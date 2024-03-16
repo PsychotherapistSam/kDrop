@@ -4,7 +4,6 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.log.LoginLogRepository
-import de.sam.base.captcha.Captcha
 import de.sam.base.user.UserRepository
 import de.sam.base.utils.*
 import kotlinx.coroutines.runBlocking
@@ -18,8 +17,6 @@ class UserLoginPage : Page(
     companion object {
         const val ROUTE: String = "/login"
     }
-
-    private val captcha: Captcha by inject()
 
     private val loginLogRepository: LoginLogRepository by inject()
     private val authenticationService: AuthenticationService by inject()
@@ -49,7 +46,7 @@ class UserLoginPage : Page(
                 return@prolongAtLeast
             }
 
-            if (config.captcha != null && config.captcha!!.locations.contains("login")) {
+            if (captcha.isActiveOnPage(this)) {
                 val captchaErrors = captcha.validate(ctx)
                 if (captchaErrors.isNotEmpty()) {
                     lastTryUsername = username ?: ""

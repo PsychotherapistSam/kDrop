@@ -21,7 +21,7 @@ content = @`
                     <label for="password">Password</label>
                     <input type="password" name="password" id="password" placeholder="Password" tabindex="2">
                 </div>
-                @template.components.security.captcha("registration", page.config)
+                @template.components.security.captcha(page)
                 @if(page.errors.isNotEmpty())
                     <div class="ui negative message">
                         <ul class="list">

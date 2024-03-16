@@ -1,5 +1,6 @@
 package de.sam.base
 
+import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
 import de.sam.base.database.UserDTO
 import de.sam.base.utils.currentUserDTO
@@ -20,6 +21,7 @@ abstract class Page(
 ) : Handler, KoinComponent {
 
     val config: Configuration by inject()
+    val captcha: Captcha by inject()
 
     var pageDiff: Long = 0
     private var templateStartTime: Long? = null

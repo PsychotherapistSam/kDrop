@@ -1,6 +1,7 @@
 package de.sam.base.captcha
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.sam.base.Page
 import de.sam.base.config.Configuration
 import io.javalin.http.Context
 import io.javalin.http.InternalServerErrorResponse
@@ -18,9 +19,10 @@ class Captcha : KoinComponent {
         "recaptcha" to Pair("https://www.google.com/recaptcha/api/siteverify", "g-recaptcha-response"),
         "turnstile" to Pair("https://challenges.cloudflare.com/turnstile/v0/siteverify", "cf-turnstile-response")
     )
+    val activeService: Configuration.Captcha? = config.captcha
 
-    private fun getServicePair(ctx: Context): Pair<String, String>? {
-        return captchaServiceUrlMap.values.firstOrNull { ctx.formParam(it.second) != null }
+    fun isActiveOnPage(page: Page): Boolean {
+        return config.captcha != null && config.captcha!!.locations.any { it.lowercase() == page.javaClass.simpleName.lowercase() }
     }
 
     fun validate(ctx: Context): List<String> {
@@ -32,7 +34,7 @@ class Captcha : KoinComponent {
         val captchaSolution =
             ctx.formParamAsClass<String>(formKey)
                 .allowNullable()
-                .check({ it != null && it.isNotBlank() }, "Solving the captcha is required")
+                .check({ !it.isNullOrBlank() }, "Solving the captcha is required")
 
         if (captchaSolution.errors().isNotEmpty()) {
             errors.add(captchaSolution.errors().values.first()[0].message)
@@ -64,5 +66,9 @@ class Captcha : KoinComponent {
         }
         return errors
 
+    }
+
+    private fun getServicePair(ctx: Context): Pair<String, String>? {
+        return captchaServiceUrlMap.values.firstOrNull { ctx.formParam(it.second) != null }
     }
 }
