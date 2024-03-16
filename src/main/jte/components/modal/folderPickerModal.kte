@@ -23,6 +23,14 @@
             duration: 250,
             allowMultiple: false,
             onApprove: function () {
+                if (!selectedFolderId) {
+                    $.toast({
+                        class: 'warning',
+                        message: 'You must select a folder first.'
+                    });
+                    return false;
+                }
+
                 if (isNavigator) {
                     window.location.href = '/user/files/' + selectedFolderId;
                 } else {

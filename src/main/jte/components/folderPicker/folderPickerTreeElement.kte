@@ -6,16 +6,25 @@
 
 !{val rootClass = if(root) "ui compact tree accordion" else "accordion"}
 
-<div class="${rootClass}">
-    @for(folder in folderStructure.folders)
-        <div class="title" data-id="${folder.id.toString()}">
-            <i class="dropdown icon"></i>
-            ${folder.name}
+@if(folderStructure.folders.isEmpty())
+    <div class="ui basic placeholder segment">
+        <div class="ui icon header" style="margin: unset">
+            <i class="file icon"></i>
+            You don't have any folders yet
         </div>
-        <div class="content">
-            @if(folder.folders.isNotEmpty())
-                @template.components.folderPicker.folderPickerTreeElement(root = false, folderStructure = folder)
-            @endif
-        </div>
-    @endfor
-</div>
+    </div>
+@else
+    <div class="${rootClass}">
+        @for(folder in folderStructure.folders)
+            <div class="title" data-id="${folder.id.toString()}">
+                <i class="dropdown icon"></i>
+                ${folder.name}
+            </div>
+            <div class="content">
+                @if(folder.folders.isNotEmpty())
+                    @template.components.folderPicker.folderPickerTreeElement(root = false, folderStructure = folder)
+                @endif
+            </div>
+        @endfor
+    </div>
+@endif
