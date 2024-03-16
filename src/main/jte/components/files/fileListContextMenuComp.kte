@@ -25,13 +25,13 @@
             Preview
             <i class="image icon"></i>
         </a>
-        <a class="item" data-action="share">
-            Share
-            <i class="share alternate icon"></i>
-        </a>
         <a class="item" data-action="download">
             Download
             <i class="download icon"></i>
+        </a>
+        <a class="item" data-action="share">
+            Share
+            <i class="share alternate icon"></i>
         </a>
         <a class="item" data-action="edit">
             Edit
