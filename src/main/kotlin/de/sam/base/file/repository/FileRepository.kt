@@ -20,7 +20,7 @@ interface FileRepository {
     fun deleteFilesAndShares(fileIDs: List<UUID>): List<FileDTO>
     fun searchFiles(userId: UUID, query: String, limit: Int = 25): List<FileDTO>
     fun searchFiles(userId: UUID, query: String, limit: Int = 25, type: String = "all"): List<FileDTO>
-    fun deleteAllFilesFromUser(userId: UUID)
+    fun deleteAllFilesFromUser(userId: UUID): List<FileDTO>
     fun countTotalFiles(): Int
     fun getFilesWithoutHashes(): List<FileDTO>
     fun getFolderTreeStructure(userId: UUID): FolderTreeStructure

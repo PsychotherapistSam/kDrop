@@ -2,14 +2,20 @@ package de.sam.base.authentication.log
 
 import de.sam.base.database.LoginLogDTO
 import de.sam.base.database.jdbi
+import de.sam.base.user.UserRepository
 import de.sam.base.utils.realIp
 import io.javalin.http.Context
 import org.joda.time.DateTime
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.*
 
-class LoginLogRepositoryImpl : LoginLogRepository {
+class LoginLogRepositoryImpl : LoginLogRepository, KoinComponent {
+    private val userRepository: UserRepository by inject()
 
     override fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
+        userRepository.updateLastLoginTime(userId, date)
+
         val sql = """
             INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id)
             VALUES (:id, :user, :ip, :userAgent, :date, :sessionId);

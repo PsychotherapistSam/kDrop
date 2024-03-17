@@ -107,9 +107,8 @@ class UserController : KoinComponent {
         if (ctx.currentUserDTO != selectedUserDTO && !ctx.currentUserDTO!!.hasRolePowerLevel(UserRoles.ADMIN)) {
             throw UnauthorizedResponse("You are not allowed to delete this user")
         }
-
-        userRepository.deleteUser(selectedUserDTO.id)
         session.invalidateAllSessions(selectedUserDTO.id)
+        userRepository.deleteUser(selectedUserDTO.id)
     }
 
     fun getUserParameter(ctx: Context) {

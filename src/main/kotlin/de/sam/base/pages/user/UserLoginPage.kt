@@ -4,7 +4,6 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.log.LoginLogRepository
-import de.sam.base.user.UserRepository
 import de.sam.base.utils.*
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
@@ -20,7 +19,6 @@ class UserLoginPage : Page(
 
     private val loginLogRepository: LoginLogRepository by inject()
     private val authenticationService: AuthenticationService by inject()
-    private val userRepository: UserRepository by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
@@ -63,10 +61,7 @@ class UserLoginPage : Page(
 
                     ctx.currentUserDTO = result.userDTO
 
-                    val date = DateTime.now()
-
-                    loginLogRepository.logLoginForUserId(ctx, result.userDTO.id, date)
-                    userRepository.updateLastLoginTime(result.userDTO.id, date)
+                    loginLogRepository.logLoginForUserId(ctx, result.userDTO.id, DateTime.now())
 
                     if (result.requireTOTPValidation) {
                         ctx.needsToVerifyTOTP = true

@@ -4,8 +4,9 @@ import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.database.FileDTO
 import de.sam.base.database.UserDTO
 import de.sam.base.database.jdbi
-import de.sam.base.file.FileController
 import de.sam.base.file.repository.FileRepository
+import de.sam.base.tasks.queue.TaskQueue
+import de.sam.base.tasks.types.files.FileParityCheckTask
 import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.joda.time.DateTime
@@ -19,6 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 class UserRepositoryImpl : UserRepository, KoinComponent {
     private val loginLogRepository: LoginLogRepository by inject()
     private val fileRepository: FileRepository by inject()
+    private val taskQueue: TaskQueue by inject()
 
     override fun getUserByUsername(username: String?): UserDTO? {
         val sql = """
@@ -135,10 +137,11 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         val rootFolder = fileRepository.getRootFolderForUser(userId)
             ?: throw Exception("Failed to get root folder for user $userId")
 
-        FileController().deleteFileList(listOf(rootFolder.id), userId)
-
         Logger.tag("Database").debug("Deleting orphaned files for user $userId")
         fileRepository.deleteAllFilesFromUser(userId)
+
+        // make sure the files are physically also deleted
+        taskQueue.enqueueTask(FileParityCheckTask())
 
         val sql = """
             DELETE FROM t_users

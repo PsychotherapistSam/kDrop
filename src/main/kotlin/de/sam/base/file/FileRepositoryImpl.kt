@@ -500,11 +500,12 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
      * @param userId The unique identifier of the user whose files need to be deleted.
      * @throws FileServiceException if an error occurs while deleting the files.
      */
-    override fun deleteAllFilesFromUser(userId: UUID) {
+    override fun deleteAllFilesFromUser(userId: UUID): List<FileDTO> {
         getRootFolderForUser(userId)?.let { root ->
             val files = getAllFilesFromFolderListRecursively(listOf(root.id))
-            deleteFilesAndShares(files.map { it.id })
+            return deleteFilesAndShares(files.map { it.id })
         }
+        return emptyList()
     }
 
 

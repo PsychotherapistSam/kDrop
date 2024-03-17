@@ -3,10 +3,12 @@ package de.sam.base.pages.user
 import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
+import de.sam.base.authentication.log.LoginLogRepository
 import de.sam.base.user.UserRoles
 import de.sam.base.utils.*
 import io.javalin.http.ForbiddenResponse
 import kotlinx.coroutines.runBlocking
+import org.joda.time.DateTime
 import org.koin.core.component.inject
 
 class UserRegistrationPage : Page(
@@ -18,6 +20,7 @@ class UserRegistrationPage : Page(
     }
 
     private val authenticationService: AuthenticationService by inject()
+    private val loginLogRepository: LoginLogRepository by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
@@ -68,6 +71,10 @@ class UserRegistrationPage : Page(
             when (result) {
                 is AuthenticationResult.Success -> {
                     if (!dontSetSession) {
+                        ctx.req().changeSessionId() // prevent session fixation attacks
+
+                        loginLogRepository.logLoginForUserId(ctx, result.userDTO.id, DateTime.now())
+
                         ctx.currentUserDTO = result.userDTO
                         ctx.hxRedirect("/")
                     }
