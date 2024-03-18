@@ -3,7 +3,6 @@ name: Build and Deploy
 on:
   push:
     branches: [ "master" ]
-    tags: [ "v" ]
 
 permissions:
   contents: read
@@ -47,21 +46,10 @@ jobs:
           registry: ${{ secrets.DOCKER_HOST }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Extract tag name and check for tag push
-        id: prep
-        run: |
-          if [[ ${{ github.ref }} == refs/tags/* ]]; then
-            echo "TAG_NAME=$(echo ${{ github.ref }} | sed 's,refs/tags/,,')" >> $GITHUB_ENV
-            echo "IS_TAG_PUSH=true" >> $GITHUB_ENV
-          else
-            echo "IS_TAG_PUSH=false" >> $GITHUB_ENV
-          fi
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKER_PATH }}:latest
-            ${{ if eq(env.IS_TAG_PUSH, 'true') }}${{ secrets.DOCKER_PATH }}:${{ env.TAG_NAME }}${{ endif }}
+          tags: ${{ secrets.DOCKER_PATH }}:latest
