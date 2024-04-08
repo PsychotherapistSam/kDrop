@@ -135,7 +135,7 @@ class FileController : KoinComponent {
 
     // from a share or from a file id
     fun getSingleFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: fileRepository.getFileById(ctx.share!!.file)
+        val file = ctx.fileDTOFromId ?: fileRepository.fileCache.get(ctx.share!!.file)
         ?: throw NotFoundResponse("File not found") // if not throw an error
             .also { Logger.tag("Web").error(it.message) }
 
@@ -164,17 +164,21 @@ class FileController : KoinComponent {
         // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
-        ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType)
+        // head request doesnt count as download
+        ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType, onlyHeader = ctx.method() == HandlerType.HEAD)
 
-        if (isShareRequest) {
-            ctx.share!!.downloadCount++
-            shareRepository.updateShareDownloadCount(ctx.share!!)
+        if (ctx.method() != HandlerType.HEAD) {
+            if (isShareRequest) {
+                ctx.share!!.downloadCount++
+                shareRepository.updateShareDownloadCount(ctx.share!!)
 
-            if (ctx.share!!.maxDownloads != null && ctx.share!!.maxDownloads!! > 0 && ctx.share!!.downloadCount >= ctx.share!!.maxDownloads!!) {
-                shareRepository.deleteShare(ctx.share!!.id)
+                if (ctx.share!!.maxDownloads != null && ctx.share!!.maxDownloads!! > 0 && ctx.share!!.downloadCount >= ctx.share!!.maxDownloads!!) {
+                    shareRepository.deleteShare(ctx.share!!.id)
+                }
             }
         }
     }
+
 
     fun updateFile(ctx: Context) {
         val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")

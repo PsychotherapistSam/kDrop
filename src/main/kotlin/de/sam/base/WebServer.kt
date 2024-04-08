@@ -204,6 +204,7 @@ class WebServer : KoinComponent {
                         put("/", FileController()::getFiles, UserRoles.USER)
                         delete("/", FileController()::deleteFiles, UserRoles.USER)
                         path("/{fileId}") {
+                            head("/", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
                             get("/", FileController()::getSingleFile, Requirement.HAS_ACCESS_TO_FILE)
                             put("/", FileController()::updateFile, UserRoles.USER, Requirement.HAS_ACCESS_TO_FILE)
                             delete(

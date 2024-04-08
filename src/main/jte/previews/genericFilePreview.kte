@@ -103,16 +103,24 @@
             <iframe src="${fileUrl}"
                     style="overflow: hidden; height: 65vh; width: 100%; border: none;"></iframe>
             @elseif(file.getTypeEnum() == FileType.VIDEO_MP4 || file.getTypeEnum() == FileType.AUDIO)
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.css">
-            <video controls crossorigin playsinline id="plyr">
-                <source src="${fileUrl}"
-                        type="${file.mimeType!!}">
-            </video>
-            <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js"></script>
-            <script>
-                const player = new Plyr('#plyr');
-                window.player = player;
-            </script>
+            <link rel="stylesheet" href="https://cdn.vidstack.io/player.css" />
+            <link rel="stylesheet" href="https://cdn.vidstack.io/plyr.css" />
+            <script src="https://cdn.vidstack.io/plyr" type="module"></script>
+            <media-player title="${file.name}" src="${fileUrl}">
+                <media-provider></media-provider>
+                <media-plyr-layout></media-plyr-layout>
+            </media-player>
+
+            <%--            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.css">--%>
+            <%--            <video controls crossorigin playsinline id="plyr">--%>
+            <%--                <source src="${fileUrl}"--%>
+            <%--                        type="${file.mimeType!!}">--%>
+            <%--            </video>--%>
+            <%--            <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js"></script>--%>
+            <%--            <script>--%>
+            <%--                const player = new Plyr('#plyr');--%>
+            <%--                window.player = player;--%>
+            <%--            </script>--%>
             @elseif(file.getTypeEnum() == FileType.IMAGE)
             <img class="ui centered image"
                  src="${fileUrl}"

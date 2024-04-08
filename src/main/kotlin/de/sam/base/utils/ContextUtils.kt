@@ -81,10 +81,14 @@ var Context.apiKeyUsed: ApiKeyDTO?
     get() = this.sessionAttribute("apiKeyUsed")
     set(apiKeyUsed) = this.sessionAttribute("apiKeyUsed", apiKeyUsed)
 
-fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment") {
+fun Context.resultFile(file: File, name: String, mimeType: String, dispositionType: String = "attachment", onlyHeader: Boolean = false) {
     // https://www.w3.org/Protocols/HTTP/Issues/content-disposition.txt 1.3, last paragraph
     this.header(Header.CONTENT_DISPOSITION, "$dispositionType; filename=$name")
     this.header(Header.CACHE_CONTROL, "max-age=31536000, immutable")
 
-    CustomSeekableWriter.write(this, FileInputStream(file), mimeType, file.length())
+    if (onlyHeader) {
+        this.header(Header.CONTENT_TYPE, mimeType)
+    } else {
+        CustomSeekableWriter.write(this, FileInputStream(file), mimeType, file.length())
+    }
 }
