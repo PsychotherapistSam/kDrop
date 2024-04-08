@@ -2,7 +2,6 @@
 @import de.sam.base.pages.admin.AdminIndexPage
 @import de.sam.base.pages.user.UserRegistrationPage
 @import de.sam.base.pages.user.UserLoginPage
-@import de.sam.base.utils.fileDTOFromId
 @import de.sam.base.utils.isLoggedIn
 @import de.sam.base.utils.preferencesString
 @import gg.jte.Content

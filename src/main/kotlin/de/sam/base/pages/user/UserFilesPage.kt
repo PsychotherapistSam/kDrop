@@ -5,7 +5,7 @@ import de.sam.base.database.FileDTO
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.sorting.FileSortingDirection
 import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.fileDTOFromId
+import de.sam.base.utils.fileId
 import de.sam.base.utils.isLoggedIn
 import de.sam.base.utils.logging.logTimeSpent
 import io.javalin.http.NotFoundResponse
@@ -37,7 +37,7 @@ class UserFilesPage : Page(
             it.name == (ctx.queryParam("sort") ?: "name")
         }
 
-        parent = ctx.fileDTOFromId!!
+        parent = fileRepository.fileCache.get(ctx.fileId) ?: throw NotFoundResponse("File not found")
 
         logTimeSpent("the breadcrumb traversal") {
             breadcrumbs = fileRepository.getFileBreadcrumb(parent.id)

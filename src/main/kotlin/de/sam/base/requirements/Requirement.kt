@@ -3,11 +3,8 @@ package de.sam.base.requirements
 import de.sam.base.authentication.apikey.ApiKeyRepository
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
-import de.sam.base.utils.apiKeyUsed
-import de.sam.base.utils.currentUserDTO
-import de.sam.base.utils.fileDTOFromId
+import de.sam.base.utils.*
 import de.sam.base.utils.logging.logTimeSpent
-import de.sam.base.utils.share
 import de.sam.base.utils.string.isUUID
 import io.javalin.http.Context
 import io.javalin.http.HandlerType
@@ -48,21 +45,19 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
 
             val contains = fileRepository.fileCache.getIfPresent(fileId) != null
 
-            if(!contains)
+            if (!contains)
                 Logger.tags("Requirements").info("File not cached")
             else
                 Logger.tags("Requirements").info("File cached")
 
-            ctx.fileDTOFromId = fileRepository.fileCache.get(fileId)
+            val file = fileRepository.fileCache.get(fileId) ?: return false
 
-            if (ctx.fileDTOFromId == null) {
-                return false
-            }
-
-            if (ctx.fileDTOFromId != null && !ctx.fileDTOFromId!!.isOwnedByUserId(ctx.currentUserDTO?.id)) {
+            if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
                 Logger.tags("Requirements").error("File not found: access manager")
                 return false
             }
+
+            ctx.fileId = file.id
 
             return true
         }

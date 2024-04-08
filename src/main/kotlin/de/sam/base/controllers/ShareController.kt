@@ -52,7 +52,7 @@ class ShareController : KoinComponent {
             throw BadRequestResponse("Could not create share (name already exists or is forbidden)")
         }
 
-        val file = fileRepository.getFileById(fileId.get())
+        val file = fileRepository.fileCache.get(fileId.get())
 
         if (file == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
             throw BadRequestResponse("File not found or not owned by you")

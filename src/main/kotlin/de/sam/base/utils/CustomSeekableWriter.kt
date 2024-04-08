@@ -11,7 +11,7 @@ import java.io.OutputStream
 import kotlin.math.min
 
 object CustomSeekableWriter {
-    private const val chunkSize = 128000 * 32
+    private const val chunkSize = 128000 * 32 * 4
 
     fun write(ctx: Context, inputStream: InputStream, contentType: String, totalBytes: Long) = ctx.async {
         val uncompressedStream = ctx.res().outputStream
@@ -34,7 +34,7 @@ object CustomSeekableWriter {
         val to = when {
             from + chunkSize > totalBytes -> totalBytes - 1 // chunk bigger than file, write all
             requestedRange.size == 2 -> requestedRange[1].toLong() // chunk smaller than file, to/from specified
-            else -> totalBytes - 1 // chunk smaller than file, to/from not specified -> return full header (jdownloader2 compatability)
+            else -> from + chunkSize -1 //totalBytes - 1 // chunk smaller than file, to/from not specified -> return full header (jdownloader2 compatability)
         }
         ctx.status(HttpStatus.PARTIAL_CONTENT)
         ctx.header(Header.CONTENT_TYPE, contentType)

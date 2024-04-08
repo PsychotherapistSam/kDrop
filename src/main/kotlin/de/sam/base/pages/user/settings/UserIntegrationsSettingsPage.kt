@@ -51,7 +51,7 @@ class UserIntegrationsSettingsPage : Page(
                     return
                 }
 
-                val file = fileRepository.getFileById(UUID.fromString(folderId))
+                val file = fileRepository.fileCache.get(UUID.fromString(folderId))
 
                 if (file == null || !file.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
                     messages.add(

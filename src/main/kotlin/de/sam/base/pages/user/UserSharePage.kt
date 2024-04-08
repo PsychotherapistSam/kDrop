@@ -6,10 +6,7 @@ import de.sam.base.database.FileDTO
 import de.sam.base.database.ShareDTO
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
-import de.sam.base.utils.RateLimiter
-import de.sam.base.utils.fileDTOFromId
-import de.sam.base.utils.realIp
-import de.sam.base.utils.share
+import de.sam.base.utils.*
 import io.javalin.http.Context
 import io.javalin.http.NotFoundResponse
 import kotlinx.coroutines.runBlocking
@@ -44,7 +41,7 @@ class UserSharePage : Page(
     override fun get() {
 
         share = ctx.share ?: throw NotFoundResponse("Share not found")
-        file = fileRepository.getFileById(share.file) ?: throw NotFoundResponse("File not found")
+        file = fileRepository.fileCache.get(share.file) ?: throw NotFoundResponse("File not found")
 
         passwordRequired = share.password != null
 
@@ -69,7 +66,7 @@ class UserSharePage : Page(
     }
 
     fun shareList(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+        val file = fileRepository.fileCache.get(ctx.fileId) ?: throw NotFoundResponse("File not found")
         val shares = shareRepository.getSharesForFile(file.id)
 
         ctx.render(

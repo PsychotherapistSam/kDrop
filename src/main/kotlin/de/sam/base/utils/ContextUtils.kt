@@ -8,6 +8,7 @@ import io.javalin.http.Context
 import io.javalin.http.Header
 import java.io.File
 import java.io.FileInputStream
+import java.util.UUID
 
 // https://github.com/tipsy/javalinstagram/blob/7d03477b89a21addc8cf734b52b292828d48eefe/src/main/kotlin/javalinstagram/Extensions.kt#L7
 var Context.currentUserDTO: UserDTO?
@@ -30,9 +31,9 @@ var Context.isMobileUser: Boolean
     get() = this.attribute<Boolean>("isMobile") == true
     set(value) = this.attribute("isMobile", value)
 
-var Context.fileDTOFromId: FileDTO?
-    get() = this.attribute<FileDTO>("requestFileDTOParameter")
-    set(value) = this.attribute("requestFileDTOParameter", value)
+var Context.fileId: UUID?
+    get() = this.attribute<UUID>("requestFileIdParameter")
+    set(value) = this.attribute("requestFileIdParameter", value)
 
 val Context.requestStartTime: Long
     get() = this.attribute("javalin-request-log-start-time") as Long? ?: 0L

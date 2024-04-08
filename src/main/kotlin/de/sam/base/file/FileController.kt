@@ -54,7 +54,7 @@ class FileController : KoinComponent {
             val userId = ctx.currentUserDTO!!.id
             val parentFileId = UUID.fromString(ctx.header("X-File-Parent-Id"))
 
-            val parentFile = fileRepository.getFileById(parentFileId)
+            val parentFile = fileRepository.fileCache.get(parentFileId)
             if (parentFile != null && !parentFile.isOwnedByUserId(userId)) {
                 tusFileUploadSerivce.deleteUpload(uploadURI)
                 throw BadRequestResponse("Parent folder does not exist or is not owned by you")
@@ -135,10 +135,10 @@ class FileController : KoinComponent {
 
     // from a share or from a file id
     fun getSingleFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: fileRepository.fileCache.get(ctx.share!!.file)
-        ?: throw NotFoundResponse("File not found") // if not throw an error
-            .also { Logger.tag("Web").error(it.message) }
-
+        val file = fileRepository.fileCache.get(ctx.fileId)
+            ?: fileRepository.fileCache.get(ctx.share!!.file)
+            ?: throw NotFoundResponse("File not found") // if not throw an error
+                .also { Logger.tag("Web").error(it.message) }
 
         val isShareRequest = ctx.share != null
         if (isShareRequest && ctx.share!!.password != null) {
@@ -165,7 +165,13 @@ class FileController : KoinComponent {
         val dispositionType = if (isDirectDownload) "attachment" else "inline"
 
         // head request doesnt count as download
-        ctx.resultFile(systemFile, file.name, file.mimeType!!, dispositionType, onlyHeader = ctx.method() == HandlerType.HEAD)
+        ctx.resultFile(
+            systemFile,
+            file.name,
+            file.mimeType!!,
+            dispositionType,
+            onlyHeader = ctx.method() == HandlerType.HEAD
+        )
 
         if (ctx.method() != HandlerType.HEAD) {
             if (isShareRequest) {
@@ -181,7 +187,9 @@ class FileController : KoinComponent {
 
 
     fun updateFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+        // conscious decision to not use the fileDTOFromId here, since we don't want to override possible other ´changes
+        val file = fileRepository.getFileById(ctx.fileId!!)
+            ?: throw NotFoundResponse("File not found")
 
         if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
             throw NotFoundResponse("File not found")
@@ -312,7 +320,7 @@ class FileController : KoinComponent {
 
         fileList.groupBy { it.parent }.forEach { (parent) ->
             if (parent != null) {
-                val parentFile = fileRepository.getFileById(parent)
+                val parentFile = fileRepository.fileCache.get(parent)
                 if (parentFile != null && parentFile.isFolder) {
                     Logger.tag("Web").debug("Recalculating folder size for ${parentFile.id}")
                     fileRepository.recalculateFolderSize(parentFile.id, userId)
@@ -329,7 +337,7 @@ class FileController : KoinComponent {
             }
         }, "Invalid file UUID").get()
 
-        val targetFile = ctx.fileDTOFromId
+        val targetFile = fileRepository.fileCache.get(ctx.fileId)
 
         val fileIDs = fileListString.split(",").map { UUID.fromString(it) }
 
@@ -365,7 +373,7 @@ class FileController : KoinComponent {
     }
 
     fun hashFile(ctx: Context) {
-        val file = ctx.fileDTOFromId ?: throw NotFoundResponse("File not found")
+        val file = fileRepository.fileCache.get(ctx.fileId) ?: throw NotFoundResponse("File not found")
 
         if (!file.isOwnedByUserId(ctx.currentUserDTO?.id)) {
             throw NotFoundResponse("File not found")
@@ -400,7 +408,7 @@ class FileController : KoinComponent {
 
         val parentId = UUID.fromString(ctx.queryParam("parent"))
 
-        val parent = fileRepository.getFileById(parentId)
+        val parent = fileRepository.fileCache.get(parentId)
 
         if (parent == null || !parent.isOwnedByUserId(ctx.currentUserDTO!!.id)) {
             throw BadRequestResponse("Parent folder does not exist or is not owned by you")
@@ -431,13 +439,14 @@ class FileController : KoinComponent {
     }
 
     fun getFileMetadata(ctx: Context) {
-        val file: FileDTO =
-            if (ctx.fileDTOFromId != null) {
-                ctx.fileDTOFromId!!
+        val fileId: UUID =
+            if (ctx.fileId != null) {
+                ctx.fileId!!
             } else {
-                val fileId = ctx.queryParamAsClass<UUID>("file").get()
-                fileRepository.getFileById(fileId) ?: throw NotFoundResponse("File not found")
+                ctx.queryParamAsClass<UUID>("file").get()
             }
+
+        val file = fileRepository.fileCache.get(fileId) ?: throw NotFoundResponse("File not found")
 
         val shares = shareRepository.getSharesForFile(file.id)
 

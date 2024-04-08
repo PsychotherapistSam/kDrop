@@ -17,7 +17,6 @@ import java.time.Duration
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.DurationUnit
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 class FileRepositoryImpl : FileRepository, KoinComponent {
@@ -152,11 +151,10 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
      * @param userId The ID of the user.
      * @throws FileServiceException If there is an error recalculating the folder size.
      */
-    @OptIn(ExperimentalTime::class)
     override fun recalculateFolderSize(folderId: UUID, userId: UUID) {
         try {
             measureTime {
-                var folder: FileDTO? = getFileById(folderId)
+                var folder: FileDTO? = fileCache.get(folderId)
 
                 while (folder != null) {
                     Logger.tag("Database").debug("updating folder ${folder.name} which was ${folder.sizeHR}")
@@ -213,6 +211,9 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                 .executeAndReturnGeneratedKeys()
                 .mapTo<FileDTO>()
                 .one()
+                .also {
+                    fileCache.invalidate(folderId)
+                }
         }
     }
 
@@ -300,6 +301,9 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                 .mapTo<FileDTO>()
                 .findOne()
                 .getOrNull()
+                .also {
+                    fileCache.invalidate(file.id)
+                }
         } catch (e: Exception) {
             throw FileServiceException("Could not update file with id ${file.id}", e)
         }
@@ -335,6 +339,9 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                             .add()
                     }
                     batch.execute()
+                        .also {
+                            fileCache.invalidateAll(files.map { it.id })
+                        }
                 }
             }
         } catch (e: Exception) {
@@ -444,6 +451,8 @@ class FileRepositoryImpl : FileRepository, KoinComponent {
                     .mapTo<FileDTO>()
                     .list()
                     .let { deletedFiles.addAll(it) }
+            }.also {
+                fileCache.invalidateAll(fileIDs)
             }
 
             deletedFiles
