@@ -60,7 +60,9 @@ object CustomSeekableWriter {
             val read = it.read(buffer, 0, buffer.size.toLong().coerceAtMost(bytesLeft).toInt())
             try {
                 this.write(buffer, 0, read)
+                this.flush()
             } catch (_: EOFException) {
+                break
             }
             bytesLeft -= read
         }
