@@ -11,7 +11,7 @@ import java.io.OutputStream
 import kotlin.math.min
 
 object CustomSeekableWriter {
-    private val chunkSize = 128000 * 32
+    private const val chunkSize = 128000 * 32
 
     fun write(ctx: Context, inputStream: InputStream, contentType: String, totalBytes: Long) = ctx.async {
         val uncompressedStream = ctx.res().outputStream

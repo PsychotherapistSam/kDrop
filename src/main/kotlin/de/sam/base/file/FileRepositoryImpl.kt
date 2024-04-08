@@ -1,5 +1,7 @@
 package de.sam.base.file
 
+import com.github.benmanes.caffeine.cache.Caffeine
+import com.github.benmanes.caffeine.cache.LoadingCache
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
@@ -11,6 +13,7 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.joda.time.DateTime
 import org.koin.core.component.KoinComponent
 import org.tinylog.kotlin.Logger
+import java.time.Duration
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.time.DurationUnit
@@ -18,6 +21,12 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 class FileRepositoryImpl : FileRepository, KoinComponent {
+    override val fileCache: LoadingCache<UUID, FileDTO> = Caffeine.newBuilder()
+        .maximumSize(10000)
+        .expireAfterWrite(Duration.ofMinutes(5))
+        .expireAfterAccess(Duration.ofMinutes(5))
+        .refreshAfterWrite(Duration.ofMinutes(5))
+        .build(this::getFileById)
 
     /**
      * Fetches a file from the database by its ID.

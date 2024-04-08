@@ -1,11 +1,14 @@
 package de.sam.base.file.repository
 
+import com.github.benmanes.caffeine.cache.LoadingCache
 import de.sam.base.database.FileDTO
 import de.sam.base.file.FolderTreeStructure
 import org.jdbi.v3.core.Handle
 import java.util.*
 
 interface FileRepository {
+    val fileCache: LoadingCache<UUID, FileDTO>
+
     fun getFileById(fileID: UUID): FileDTO?
     fun getFileBreadcrumb(fileID: UUID): List<FileDTO>
     fun getFolderContentForUser(folderId: UUID, userId: UUID): List<FileDTO>

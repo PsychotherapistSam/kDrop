@@ -9,7 +9,6 @@ import de.sam.base.authentication.log.LoginLogRepositoryImpl
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
 import de.sam.base.database.DatabaseManager
-import de.sam.base.file.FileCache
 import de.sam.base.file.FileRepositoryImpl
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
@@ -69,8 +68,6 @@ fun main() {
                 // if dev mode
 //                val codeResolver = DirectoryCodeResolver(Path.of("src", "main", "jte"))
 //                return TemplateEngine.create(codeResolver, ContentType.Html)
-
-
                 val templateEngine = TemplateEngine.createPrecompiled(ContentType.Html)
                 templateEngine.setTrimControlStructures(true)
                 templateEngine
@@ -81,7 +78,6 @@ fun main() {
                     .withUploadUri("/api/v1/files/upload")
                     .withUploadExpirationPeriod(1000 * 60 * 60) // 1 hour
             }
-            single { FileCache() }
         })
     }
 

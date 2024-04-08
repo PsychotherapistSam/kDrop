@@ -1,7 +1,6 @@
 package de.sam.base.requirements
 
 import de.sam.base.authentication.apikey.ApiKeyRepository
-import de.sam.base.file.FileCache
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
 import de.sam.base.utils.apiKeyUsed
@@ -30,7 +29,7 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
     },
     HAS_ACCESS_TO_FILE("This file does not exist or it has been deleted.", HttpStatus.NOT_FOUND) {
         override fun isMet(ctx: Context): Boolean {
-            val fileCache: FileCache by inject()
+            val fileRepository: FileRepository by inject()
 
             if (!IS_LOGGED_IN.isMet(ctx)) {
                 this.errorMessage = IS_LOGGED_IN.errorMessage
@@ -47,25 +46,14 @@ enum class Requirement(var errorMessage: String, var httpStatus: HttpStatus) : R
                 ctx.currentUserDTO!!.rootFolderId!!
             }
 
-            if (fileCache.containsKey(fileId) && System.currentTimeMillis() < fileCache[fileId]!!.first + 1000 * 10) {
-                val fileCacheEntry = fileCache[fileId]!!
-                ctx.fileDTOFromId = fileCacheEntry.second
-            } else {
-                if (fileCache.containsKey(fileId)) {
-                    fileCache.remove(fileId)
-                }
+            val contains = fileRepository.fileCache.getIfPresent(fileId) != null
 
-                logTimeSpent("Getting file by id", "Requirements") {
-                    val fileRepository: FileRepository by inject()
-                    val fileDTO = fileRepository.getFileById(fileId)
+            if(!contains)
+                Logger.tags("Requirements").info("File not cached")
+            else
+                Logger.tags("Requirements").info("File cached")
 
-                    if (fileDTO != null) {
-                        Logger.tags("Requirements").trace("Setting fileDTO and DAO to request attribute")
-                        ctx.fileDTOFromId = fileDTO
-                        fileCache[fileId] = Pair(System.currentTimeMillis(), fileDTO)
-                    }
-                }
-            }
+            ctx.fileDTOFromId = fileRepository.fileCache.get(fileId)
 
             if (ctx.fileDTOFromId == null) {
                 return false
