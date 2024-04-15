@@ -17,7 +17,7 @@ needs.
 
 - Java 18
 - Postgres Database
-- A web server (e.g. Apache, Nginx) for SSL Certificates
+- A web server (e.g. Apache, Nginx or Caddy) for SSL Certificates
 
 ### Installation (Manual)
 

@@ -1,0 +1,35 @@
+---
+host: "http://localhost"
+port: 7070
+baseUrl: "http://localhost:7070"
+enforceHost: false
+name: "kDrop"
+copyrightLine: "© kDrop. 2024. All rights reserved."
+description: ""
+passwordPepper: "your-random-string"
+maxUploadCount: 5
+database:
+  host: "db"
+  port: 5432
+  username: "myuser"
+  password: "mypassword"
+  database: "mydb"
+#captcha:
+#  service: "turnstile"
+#  siteKey: "your-site-key"
+#  secretKey: "your-secret-key"
+#  locations:
+#    - "UserLoginPage"
+allowUserRegistration: true
+devEnvironment: false
+logLevel: "TRACE"
+fileDirectory: "./upload"
+fileTempDirectory: "./temp/files"
+tusTempDirectory: "./temp/tus"
+hashing:
+  enabled: true
+  onUpload: false
+#tracking:
+#  cronitor:
+#    url: "https://rum.cronitor.io/script.js"
+#    clientKey: "your-client-key"
