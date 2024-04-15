@@ -35,20 +35,20 @@ dependencies {
     implementation("io.javalin:javalin-rendering:$javalin")
 
     // Logging
-    implementation("org.slf4j:slf4j-simple:2.0.12")
+    implementation("org.slf4j:slf4j-simple:2.0.13")
     val tinylog = "2.7.0"
     implementation("org.tinylog:tinylog-api-kotlin:$tinylog")
     implementation("org.tinylog:tinylog-impl:$tinylog")
 
     // Database
     implementation("com.zaxxer:HikariCP:5.1.0")
-    implementation("org.postgresql:postgresql:42.7.1")
+    implementation("org.postgresql:postgresql:42.7.3")
     val jdbi = "3.45.1"
     implementation("org.jdbi:jdbi3-core:$jdbi")
     implementation("org.jdbi:jdbi3-kotlin:$jdbi")
     implementation("org.jdbi:jdbi3-postgres:$jdbi")
 
-    val flyway = "10.9.0"
+    val flyway = "10.11.0"
     implementation("org.flywaydb:flyway-core:$flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql:$flyway")
 
@@ -66,12 +66,12 @@ dependencies {
     // Misc
     implementation("com.password4j:password4j:1.8.1")
     implementation("org.ocpsoft.prettytime:prettytime:5.0.7.Final")
-    implementation("commons-io:commons-io:2.15.1")
-    implementation("com.google.guava:guava:33.0.0-jre")
+    implementation("commons-io:commons-io:2.16.1")
+    implementation("com.google.guava:guava:33.1.0-jre")
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
     implementation("dev.samstevens.totp:totp:1.7.1")
     implementation("org.jetbrains:markdown:0.6.1")
-    implementation("io.insert-koin:koin-core:3.5.3")
+    implementation("io.insert-koin:koin-core:3.5.5")
 
     // TUS
     implementation("me.desair.tus:tus-java-server:1.0.0-3.0")
