@@ -131,6 +131,9 @@ tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
         // exclude flyway
         exclude(dependency("org.flywaydb:flyway-core"))
         exclude(dependency("org.flywaydb:flyway-database-postgresql"))
+
+        // caffeine
+        exclude(dependency("com.github.ben-manes.caffeine:caffeine"))
     }
     // https://github.com/flyway/flyway/issues/3757#issuecomment-1748825125
     mergeServiceFiles()
