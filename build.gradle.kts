@@ -71,7 +71,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
     implementation("dev.samstevens.totp:totp:1.7.1")
     implementation("org.jetbrains:markdown:0.6.1")
-    implementation("io.insert-koin:koin-core:3.5.5")
+    implementation("io.insert-koin:koin-core:3.5.3")
 
     // TUS
     implementation("me.desair.tus:tus-java-server:1.0.0-3.0")

@@ -9,7 +9,7 @@ import de.sam.base.authentication.log.LoginLogRepositoryImpl
 import de.sam.base.captcha.Captcha
 import de.sam.base.config.Configuration
 import de.sam.base.database.DatabaseManager
-import de.sam.base.file.FileRepositoryImpl
+import de.sam.base.file.repository.FileRepositoryImpl
 import de.sam.base.file.repository.FileRepository
 import de.sam.base.file.share.ShareRepository
 import de.sam.base.file.share.ShareRepositoryImpl

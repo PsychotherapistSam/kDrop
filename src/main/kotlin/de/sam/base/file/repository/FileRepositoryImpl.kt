@@ -1,11 +1,11 @@
-package de.sam.base.file
+package de.sam.base.file.repository
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.LoadingCache
 import de.sam.base.database.FileDTO
 import de.sam.base.database.jdbi
 import de.sam.base.exceptions.FileServiceException
-import de.sam.base.file.repository.FileRepository
+import de.sam.base.file.FolderTreeStructure
 import de.sam.base.file.sorting.FileSortingDirection
 import de.sam.base.utils.file.humanReadableByteCountBin
 import org.jdbi.v3.core.Handle
