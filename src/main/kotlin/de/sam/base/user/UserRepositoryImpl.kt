@@ -121,6 +121,7 @@ class UserRepositoryImpl : UserRepository, KoinComponent {
         } catch (e: SQLException) {
             Logger.tag("Database").error("Database error", e)
         } catch (e: Exception) {
+            e.printStackTrace()
             Logger.tag("Database").error("Unexpected error", e)
         }
         return null
