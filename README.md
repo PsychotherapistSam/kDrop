@@ -1,8 +1,8 @@
-# Kopimi/Share
+# kDrop
 
-This is the repository for the Kopimi/Share project.
+This is the repository for the kDrop project.
 
-## What is Kopimi/Share?
+## What is kDrop?
 
 It is essentially a more lightweight alternative to the Nextcloud Filemanager, albeit much simpler than Nextcloud in
 general (no calendar, contacts, syncing, extensions etc.). It is
@@ -15,34 +15,60 @@ needs.
 
 ### Requirements
 
-- Java 11
+- Java 18
 - Postgres Database
 - A web server (e.g. Apache, Nginx) for SSL Certificates
 
 ### Installation (Manual)
 
-1. Download the latest release from the [releases page](https://github.com/PsychotherapistSam/kopimi-share/releases) and
+1. Download the latest release from the [releases page](https://github.com/PsychotherapistSam/kDrop/releases) and
    move the jar file to a directory of your
    choice.
 2. Either copy the example `config.yml` file or run the jar file once to generate a new one.
 3. (Optional) if you want SSL you need to use a reverse proxy like nginx or apache.
 
-### Installation (Docker)
+### Installation (Docker Compose)
+_This will be added soon, as the image is still uploaded to my forgejo instance, but here's a sample docker-compose.yml
+You can build the docker image yourself by using the Dockerfile in the repository._
 
-_This will be added soon_
+```yaml
+version: "3.8"
+services:
+  app:
+    image: TBD
+    ports:
+      - 7070:7070
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - ./logs:/app/logs
+      - ./config.yml:/app/config.yml
+      - ./files:/app/files
+      - ./temp:/app/temp # can be omitted
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    restart: unless-stopped
+    volumes:
+      - ./db:/var/lib/postgresql/data
+```
+
 
 ## How to use
 
 ### Creating an Admin account
 
-As there currently is no setup page, you need to register an account on the website and then change the `roles` column
-in the Database to `ADMIN`.
+The first registered user will automatically be assigned the Admin role
 
 ## How to build
 
 ### Requirements
 
-- Java 11
+- Java 18
 - Gradle
 
 ### Building
@@ -54,9 +80,9 @@ in the Database to `ADMIN`.
 ## How to contribute
 
 If you want to contribute, please create a pull request. If you want to report a bug or have a question, please create
-an issue.
+an issue. Keep in mind that this is, for now, just a pet project of mine.
 
 ## License
 
 This project is licensed under
-the [GNU AGPLv3](https://github.com/PsychotherapistSam/kopimi-share/blob/master/LICENSE).
+the [GNU AGPLv3](https://github.com/PsychotherapistSam/kDrop/blob/master/LICENSE).

@@ -1,3 +1,1 @@
-
-rootProject.name = "KopimiShare"
-
+rootProject.name = "kDrop"
