@@ -4,6 +4,7 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.log.LoginLogRepository
+import de.sam.base.user.UserRepository
 import de.sam.base.utils.*
 import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
@@ -19,6 +20,7 @@ class UserLoginPage : Page(
 
     private val loginLogRepository: LoginLogRepository by inject()
     private val authenticationService: AuthenticationService by inject()
+    private val userRepository: UserRepository by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
@@ -75,6 +77,12 @@ class UserLoginPage : Page(
                 is AuthenticationResult.Failure -> {
                     lastTryUsername = username
                     errors.addAll(result.errors)
+
+                    // check if the user exists
+                    val user = userRepository.getUserByUsername(username)
+                    if(user != null) {
+                        loginLogRepository.logLoginForUserId(ctx, user.id, DateTime.now(), true)
+                    }
                 }
             }
 

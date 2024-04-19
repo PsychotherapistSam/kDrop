@@ -13,12 +13,13 @@ import java.util.*
 class LoginLogRepositoryImpl : LoginLogRepository, KoinComponent {
     private val userRepository: UserRepository by inject()
 
-    override fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime) {
-        userRepository.updateLastLoginTime(userId, date)
+    override fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime, failed: Boolean) {
+        if (!failed)
+            userRepository.updateLastLoginTime(userId, date)
 
         val sql = """
-            INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id)
-            VALUES (:id, :user, :ip, :userAgent, :date, :sessionId);
+            INSERT INTO t_login_log (id, "user", ip, user_agent, date, session_id, failed)
+            VALUES (:id, :user, :ip, :userAgent, :date, :sessionId, :failed);
         """.trimIndent()
 
         executeWithExceptionHandling("logging login for user $userId") {
@@ -29,7 +30,8 @@ class LoginLogRepositoryImpl : LoginLogRepository, KoinComponent {
                     .bind("ip", ctx.realIp)
                     .bind("userAgent", ctx.userAgent()!!)
                     .bind("date", date.toDate())
-                    .bind("sessionId", ctx.req().session.id)
+                    .bind("sessionId", if (!failed) ctx.req().session.id else null)
+                    .bind("failed", failed)
                     .execute()
             }
         }
@@ -140,7 +142,8 @@ class LoginLogRepositoryImpl : LoginLogRepository, KoinComponent {
                 user_agent = :userAgent,
                 date = :date,
                 session_id = :sessionId,
-                revoked = :revoked
+                revoked = :revoked,
+                failed = :failed
             WHERE id = :id;
         """.trimIndent()
 
@@ -154,6 +157,7 @@ class LoginLogRepositoryImpl : LoginLogRepository, KoinComponent {
                     .bind("sessionId", loginLog.sessionId)
                     .bind("id", loginLog.id)
                     .bind("revoked", loginLog.revoked)
+                    .bind("failed", loginLog.failed)
                     .execute()
             }
         }

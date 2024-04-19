@@ -14,7 +14,7 @@ interface LoginLogRepository : SqlRepository {
      * @param userId The unique identifier of the user.
      * @throws Exception if an error occurs while logging the login.
      */
-    fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime)
+    fun logLoginForUserId(ctx: Context, userId: UUID, date: DateTime, failed: Boolean = false)
 
     /**
      * Retrieves the login history for a given user.

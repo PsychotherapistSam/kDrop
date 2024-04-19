@@ -19,6 +19,7 @@ content = @`
         <div class="header">
             Only the last 30 days are displayed.
         </div>
+        <p>Rows marked in <span class="ui green text">green</span> are the current session. Rows marked in <span class="ui error text">red</span> are failed login attempts.</p>
     </div>
     <div class="ui basic fitted segment"
          _="${displayLoader}">
@@ -33,7 +34,7 @@ content = @`
             </thead>
             <tbody>
             @for(loginLog in page.loginLogList)
-                <tr>
+                <tr class="@if(loginLog.failed)error@endif">
                     !{val marking = if(loginLog.sessionId == page.ctx.req().session.id) "left green marked" else null}
                     <td class="${marking}" style="white-space: nowrap;">${loginLog.date.toReadableTimeString()}</td>
                     <td>
@@ -43,7 +44,11 @@ content = @`
                         </a>
                     </td>
                     <td>${loginLog.userAgent}</td>
-                    @if(loginLog.revoked)
+                    @if(loginLog.failed)
+                        <td class="disabled center aligned selectable negative">
+                            Failed
+                        </td>
+                    @elseif(loginLog.revoked)
                         <td class="disabled center aligned selectable negative">
                             Revoked
                         </td>

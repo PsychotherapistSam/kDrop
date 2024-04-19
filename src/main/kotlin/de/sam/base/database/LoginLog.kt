@@ -19,7 +19,8 @@ data class LoginLogDTO(
     var userAgent: String,
     var date: DateTime,
     var sessionId: String? = null,
-    var revoked: Boolean = false
+    var revoked: Boolean = false,
+    var failed: Boolean = false
 ) : Serializable
 
 class LoginLogDTOMapper : RowMapper<LoginLogDTO> {
@@ -31,7 +32,8 @@ class LoginLogDTOMapper : RowMapper<LoginLogDTO> {
             userAgent = rs.getString("user_agent"),
             date = DateTime(rs.getTimestamp("date")),
             sessionId = rs.getString("session_id"),
-            revoked = rs.getBoolean("revoked")
+            revoked = rs.getBoolean("revoked"),
+            failed = rs.getBoolean("failed")
         )
     }
 }
