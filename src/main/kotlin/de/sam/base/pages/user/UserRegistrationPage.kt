@@ -4,6 +4,7 @@ import de.sam.base.Page
 import de.sam.base.authentication.AuthenticationResult
 import de.sam.base.authentication.AuthenticationService
 import de.sam.base.authentication.log.LoginLogRepository
+import de.sam.base.user.UserRepository
 import de.sam.base.user.UserRoles
 import de.sam.base.utils.*
 import io.javalin.http.ForbiddenResponse
@@ -21,11 +22,13 @@ class UserRegistrationPage : Page(
 
     private val authenticationService: AuthenticationService by inject()
     private val loginLogRepository: LoginLogRepository by inject()
+    private val userRepository: UserRepository by inject()
 
     private val rateLimiter: RateLimiter by inject()
 
     private var lastTryUsername: String = ""
     var errors: MutableList<String> = mutableListOf()
+    var userIsFirst = false
 
     override fun before() {
         if (ctx.isLoggedIn && ctx.currentUserDTO!!.getHighestRolePowerLevel() < UserRoles.ADMIN.powerLevel) {
@@ -33,6 +36,10 @@ class UserRegistrationPage : Page(
         } else if (!ctx.isLoggedIn && !config.allowUserRegistration) {
             throw ForbiddenResponse("User registration is currently disabled.")
         }
+    }
+
+    override fun get() {
+        userIsFirst = userRepository.countTotalUsers() == 0
     }
 
     override fun post() {

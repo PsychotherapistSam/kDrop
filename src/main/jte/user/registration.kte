@@ -12,6 +12,14 @@ content = @`
             <div class="ui center aligned basic fitted segment">
                 <h1>${page.name}</h1>
             </div>
+            @if(page.userIsFirst)
+                <div class="ui warning message">
+                    <div class="header">
+                        Administrator Registration
+                    </div>
+                    <p>The first user to register will be granted administrator rights.</p>
+                </div>
+            @endif
             <form class="ui form" _="${displayLoader}">
                 <div class="field">
                     <label for="username">Username</label>
